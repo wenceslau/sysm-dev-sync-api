@@ -3,7 +3,7 @@
 **DevSync** is a collaborative knowledge management platform built for developers and teams.  
 It allows users to create, organize, and share technical knowledge through notes, questions, discussions, and more — combining the best of Notion, Stack Overflow, and internal wikis.
 
-This project is the **biggest personal challenge** of my software development career. It's designed to showcase 17 years of experience in full-stack development using **Java (Spring Boot)** and **Angular**, with a modular architecture inspired by **Domain-Driven Design (DDD)**.
+This project is the **biggest personal challenge** of my software development career. It's designed to showcase 17 years of experience in full-stack development, with a modular architecture inspired by **Domain-Driven Design (DDD)**.
 
 ---
 
