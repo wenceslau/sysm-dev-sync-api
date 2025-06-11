@@ -1,6 +1,7 @@
 package com.sysm.devsync.domain;
 
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 
 public class User {
@@ -9,30 +10,33 @@ public class User {
     private Instant createdAt;
     private Instant updatedAt;
 
-    private String username;
+    private String name;
     private String email;
     private String passwordHash;
     private String profilePictureUrl;
     private ROLE role; // ADMIN, MEMBER
 
-    public User(String username, String email, String profilePictureUrl, ROLE role){
-        validate(username, email, role);
+    private User(String id, Instant createdAt, Instant updatedAt,
+                 String name, String email, String passwordHash,
+                 String profilePictureUrl, ROLE role) {
 
-        this.id = UUID.randomUUID().toString();
-        this.createdAt = Instant.now();
-        this.updatedAt = Instant.now();
-        this.username = username;
+        this.id = id;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.name = name;
         this.email = email;
+        this.passwordHash = passwordHash;
         this.profilePictureUrl = profilePictureUrl;
         this.role = role;
 
+        validate(name, email, role);
     }
 
     public User update(String username, String email, ROLE role) {
         validate(username, email, role);
 
         this.updatedAt = Instant.now();
-        this.username = username;
+        this.name = username;
         this.email = email;
         this.role = role;
         return this;
@@ -54,8 +58,8 @@ public class User {
         return id;
     }
 
-    public String getUsername() {
-        return username;
+    public String getName() {
+        return name;
     }
 
     public String getEmail() {
@@ -94,17 +98,35 @@ public class User {
         }
     }
 
+    public final boolean equals(Object o) {
+        if (!(o instanceof User user)) return false;
+
+        return Objects.equals(id, user.id);
+    }
+
+    public final int hashCode() {
+        return Objects.hashCode(id);
+    }
+
+    public static User create(String username, String email,
+                              String profilePictureUrl, ROLE role) {
+        Instant now = Instant.now();
+        String id = UUID.randomUUID().toString();
+
+        return new User(id, now, now, username, email, null, profilePictureUrl, role);
+    }
+
     public static User build(String id, Instant createdAt, Instant updatedAt,
                               String username, String email, String passwordHash,
                               String profilePictureUrl, ROLE role) {
 
-        User user = new User(username, email, profilePictureUrl, role);
+        User user = new User(id, createdAt, updatedAt, username, email, passwordHash, profilePictureUrl, role);
 
         user.id = id;
         user.createdAt = createdAt;
         user.updatedAt = updatedAt;
 
-        user.username = username;
+        user.name = username;
         user.email = email;
         user.passwordHash = passwordHash;
         user.profilePictureUrl = profilePictureUrl;
