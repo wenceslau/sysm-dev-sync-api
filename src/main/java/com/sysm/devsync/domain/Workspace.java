@@ -6,10 +6,10 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-public class Workspacce {
+public class Workspace {
 
-    private String id;
-    private Instant createdAt;
+    private final String id;
+    private final Instant createdAt;
     private Instant updatedAt;
 
     private String name;
@@ -18,9 +18,9 @@ public class Workspacce {
     private User ownerId;
     private Set<User> members;
 
-    private Workspacce(String id, Instant createdAt, Instant updatedAt,
-                       String name, String description, boolean isPrivate,
-                       User ownerId, Set<User> members) {
+    private Workspace(String id, Instant createdAt, Instant updatedAt,
+                      String name, String description, boolean isPrivate,
+                      User ownerId, Set<User> members) {
 
         this.id = id;
         this.createdAt = createdAt;
@@ -48,7 +48,7 @@ public class Workspacce {
         }
     }
 
-    public Workspacce update(String name, String description) {
+    public Workspace update(String name, String description) {
 
         validate(name, description);
 
@@ -59,7 +59,7 @@ public class Workspacce {
         return this;
     }
 
-    public Workspacce changeOwner(User newOwner) {
+    public Workspace changeOwner(User newOwner) {
         if (newOwner == null) {
             throw new IllegalArgumentException("New owner cannot be null");
         }
@@ -70,7 +70,7 @@ public class Workspacce {
         return this;
     }
 
-    public Workspacce setPrivate(boolean isPrivate) {
+    public Workspace setPrivate(boolean isPrivate) {
         this.isPrivate = isPrivate;
         this.updatedAt = Instant.now();
         return this;
@@ -121,7 +121,7 @@ public class Workspacce {
     }
 
     public final boolean equals(Object o) {
-        if (!(o instanceof Workspacce that)) return false;
+        if (!(o instanceof Workspace that)) return false;
 
         return Objects.equals(id, that.id);
     }
@@ -130,12 +130,12 @@ public class Workspacce {
         return Objects.hashCode(id);
     }
 
-    public static Workspacce create(String name, String description, boolean isPrivate,
-                                    User ownerId, Set<User> members) {
+    public static Workspace create(String name, String description, boolean isPrivate,
+                                   User ownerId, Set<User> members) {
 
         String id = java.util.UUID.randomUUID().toString();
         Instant now = Instant.now();
-        return new Workspacce(
+        return new Workspace(
                 id,
                 now,
                 now,
@@ -147,11 +147,11 @@ public class Workspacce {
         );
     }
 
-    public static Workspacce build(String id, Instant createdAt, Instant updatedAt,
-                                   String name, String description, boolean isPrivate,
-                                   User ownerId, Set<User> members) {
+    public static Workspace build(String id, Instant createdAt, Instant updatedAt,
+                                  String name, String description, boolean isPrivate,
+                                  User ownerId, Set<User> members) {
 
-        return new Workspacce(
+        return new Workspace(
                 id,
                 createdAt,
                 updatedAt,
