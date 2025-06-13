@@ -87,6 +87,7 @@ public class NoteTest {
         });
         assertEquals("Content cannot be null", exception.getMessage());
     }
+
     // Note: Content can be empty, so no test for empty content throwing exception for create()
 
     @Test

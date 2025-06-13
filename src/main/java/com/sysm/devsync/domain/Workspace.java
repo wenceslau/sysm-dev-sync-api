@@ -131,7 +131,7 @@ public class Workspace {
     }
 
     public static Workspace create(String name, String description, boolean isPrivate,
-                                   String ownerId, Set<String> members) {
+                                   String ownerId) {
 
         String id = java.util.UUID.randomUUID().toString();
         Instant now = Instant.now();
@@ -143,7 +143,7 @@ public class Workspace {
                 description,
                 isPrivate,
                 ownerId,
-                members
+                new HashSet<>()
         );
     }
 
@@ -159,7 +159,7 @@ public class Workspace {
                 description,
                 isPrivate,
                 ownerId,
-                members
+                members != null ? new HashSet<>(members) : new HashSet<>()
         );
     }
 

@@ -41,10 +41,10 @@ class WorkspaceTest {
     @DisplayName("create should create workspace successfully with valid arguments")
     void create_shouldCreateWorkspace_whenArgumentsAreValid() {
         Instant beforeCreation = Instant.now();
-        Set<String> initialMembers = new HashSet<>();
-        initialMembers.add(member1);
 
-        Workspace workspace = Workspace.create(validName, validDescription, false, validOwner, initialMembers);
+        Workspace workspace = Workspace.create(validName, validDescription, false, validOwner);
+        workspace.addMember(member1);
+
         Instant afterCreation = Instant.now();
 
         assertNotNull(workspace.getId(), "ID should not be null");
@@ -75,7 +75,7 @@ class WorkspaceTest {
     @Test
     @DisplayName("create should initialize with empty members set if provided members set is empty")
     void create_shouldInitializeWithEmptyMembers_whenProvidedMembersIsEmpty() {
-        Workspace workspace = Workspace.create(validName, validDescription, true, validOwner, Collections.emptySet());
+        Workspace workspace = Workspace.create(validName, validDescription, true, validOwner);
         assertNotNull(workspace.getMembersId());
         assertTrue(workspace.getMembersId().isEmpty(), "Members should be an empty set");
     }
@@ -85,10 +85,9 @@ class WorkspaceTest {
     void create_shouldResultInNPEForGetMembers_ifMembersArgumentIsNull() {
         // Current behavior: if 'members' is null, 'this.members' in Workspacce becomes null.
         // getMembers() calls Collections.unmodifiableSet(null), throwing NPE.
-        Workspace workspaceWithNullMembers = Workspace.create(validName, validDescription, true, validOwner, null);
+        Workspace workspaceWithNullMembers = Workspace.create(validName, validDescription, true, validOwner);
 
-        assertThrows(NullPointerException.class, workspaceWithNullMembers::getMembersId,
-                "getMembers should throw NullPointerException if members was null at creation and no members added yet");
+        assertNotNull(workspaceWithNullMembers.getMembersId(), "Members should be an empty set");
 
         // However, addMember initializes the set if it's null
         workspaceWithNullMembers.addMember(member1);
@@ -102,7 +101,7 @@ class WorkspaceTest {
     @DisplayName("create should throw IllegalArgumentException for null name")
     void create_shouldThrowException_whenNameIsNull() {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            Workspace.create(null, validDescription, false, validOwner, Collections.emptySet());
+            Workspace.create(null, validDescription, false, validOwner);
         });
         assertEquals("Workspace name cannot be null or blank", exception.getMessage());
     }
@@ -111,7 +110,7 @@ class WorkspaceTest {
     @DisplayName("create should throw IllegalArgumentException for blank name")
     void create_shouldThrowException_whenNameIsBlank() {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            Workspace.create("  ", validDescription, false, validOwner, Collections.emptySet());
+            Workspace.create("  ", validDescription, false, validOwner);
         });
         assertEquals("Workspace name cannot be null or blank", exception.getMessage());
     }
@@ -120,7 +119,7 @@ class WorkspaceTest {
     @DisplayName("create should throw IllegalArgumentException for null description")
     void create_shouldThrowException_whenDescriptionIsNull() {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            Workspace.create(validName, null, false, validOwner, Collections.emptySet());
+            Workspace.create(validName, null, false, validOwner);
         });
         assertEquals("Workspace description cannot be null or blank", exception.getMessage());
     }
@@ -129,7 +128,7 @@ class WorkspaceTest {
     @DisplayName("create should throw IllegalArgumentException for blank description")
     void create_shouldThrowException_whenDescriptionIsBlank() {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            Workspace.create(validName, "  ", false, validOwner, Collections.emptySet());
+            Workspace.create(validName, "  ", false, validOwner);
         });
         assertEquals("Workspace description cannot be null or blank", exception.getMessage());
     }
@@ -138,7 +137,7 @@ class WorkspaceTest {
     @DisplayName("create should throw IllegalArgumentException for null ownerId")
     void create_shouldThrowException_whenOwnerIdIsNull() {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            Workspace.create(validName, validDescription, false, null, Collections.emptySet());
+            Workspace.create(validName, validDescription, false, null);
         });
         assertEquals("Owner cannot be null", exception.getMessage());
     }
@@ -186,8 +185,7 @@ class WorkspaceTest {
 
         Workspace workspaceWithNullMembers = Workspace.build(id, createdAt, updatedAt, validName, validDescription, true, validOwner, null);
 
-        assertThrows(NullPointerException.class, workspaceWithNullMembers::getMembersId,
-                "getMembers should throw NullPointerException if members was null at build and no members added yet");
+        assertNotNull(workspaceWithNullMembers.getMembersId(), "Members should be an empty set");
 
         workspaceWithNullMembers.addMember(member1); // addMember initializes the set
         assertNotNull(workspaceWithNullMembers.getMembersId());
@@ -225,7 +223,7 @@ class WorkspaceTest {
     @Test
     @DisplayName("update should modify name and description, and set/update timestamp")
     void update_shouldModifyNameAndDescription_andSetOrUpdateTimestamp() throws InterruptedException {
-        Workspace workspace = Workspace.create(validName, validDescription, false, validOwner, new HashSet<>());
+        Workspace workspace = Workspace.create(validName, validDescription, false, validOwner);
         assertNotNull(workspace.getUpdatedAt(), "UpdatedAt should be null after create()");
 
         Thread.sleep(1); // Ensure time moves forward
@@ -255,7 +253,7 @@ class WorkspaceTest {
     @Test
     @DisplayName("update should throw IllegalArgumentException for null name")
     void update_shouldThrowException_whenNameIsNull() {
-        Workspace workspace = Workspace.create(validName, validDescription, false, validOwner, Collections.emptySet());
+        Workspace workspace = Workspace.create(validName, validDescription, false, validOwner);
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             workspace.update(null, "New Description");
         });
@@ -266,7 +264,7 @@ class WorkspaceTest {
     @Test
     @DisplayName("update should throw IllegalArgumentException for blank name")
     void update_shouldThrowException_whenNameIsBlank() {
-        Workspace workspace = Workspace.create(validName, validDescription, false, validOwner, Collections.emptySet());
+        Workspace workspace = Workspace.create(validName, validDescription, false, validOwner);
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             workspace.update(" ", "New Description");
         });
@@ -276,7 +274,7 @@ class WorkspaceTest {
     @Test
     @DisplayName("update should throw IllegalArgumentException for null description")
     void update_shouldThrowException_whenDescriptionIsNull() {
-        Workspace workspace = Workspace.create(validName, validDescription, false, validOwner, Collections.emptySet());
+        Workspace workspace = Workspace.create(validName, validDescription, false, validOwner);
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             workspace.update("New Name", null);
         });
@@ -286,7 +284,7 @@ class WorkspaceTest {
     @Test
     @DisplayName("update should throw IllegalArgumentException for blank description")
     void update_shouldThrowException_whenDescriptionIsBlank() {
-        Workspace workspace = Workspace.create(validName, validDescription, false, validOwner, Collections.emptySet());
+        Workspace workspace = Workspace.create(validName, validDescription, false, validOwner);
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             workspace.update("New Name", "  ");
         });
@@ -297,7 +295,7 @@ class WorkspaceTest {
     @Test
     @DisplayName("changeOwner should update owner and timestamp")
     void changeOwner_shouldUpdateOwner_andUpdateTimestamp() throws InterruptedException {
-        Workspace workspace = Workspace.create(validName, validDescription, false, validOwner, Collections.emptySet());
+        Workspace workspace = Workspace.create(validName, validDescription, false, validOwner);
         User newOwner = User.create("newOwnerUser", "newowner@example.com", null, Role.ADMIN);
 
         // Ensure updatedAt is set if it was null, or capture current if already set by a previous update
@@ -316,7 +314,7 @@ class WorkspaceTest {
     @Test
     @DisplayName("changeOwner should throw IllegalArgumentException for null newOwner")
     void changeOwner_shouldThrowException_whenNewOwnerIsNull() {
-        Workspace workspace = Workspace.create(validName, validDescription, false, validOwner, Collections.emptySet());
+        Workspace workspace = Workspace.create(validName, validDescription, false, validOwner);
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             workspace.changeOwner(null);
         });
@@ -327,7 +325,7 @@ class WorkspaceTest {
     @Test
     @DisplayName("setPrivate should update isPrivate flag and timestamp")
     void setPrivate_shouldUpdateIsPrivate_andUpdateTimestamp() throws InterruptedException {
-        Workspace workspace = Workspace.create(validName, validDescription, false, validOwner, Collections.emptySet()); // Initially public
+        Workspace workspace = Workspace.create(validName, validDescription, false, validOwner); // Initially public
         assertFalse(workspace.isPrivate());
 
         workspace.update("temp name", "temp desc"); // Sets initial updatedAt
@@ -374,7 +372,7 @@ class WorkspaceTest {
     @Test
     @DisplayName("addMember should throw IllegalArgumentException if user is null")
     void addMember_shouldThrowException_whenUserIsNull() {
-        Workspace workspace = Workspace.create(validName, validDescription, false, validOwner, new HashSet<>());
+        Workspace workspace = Workspace.create(validName, validDescription, false, validOwner);
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             workspace.addMember(null);
         });
@@ -384,7 +382,7 @@ class WorkspaceTest {
     @Test
     @DisplayName("addMember should not update 'updatedAt' timestamp")
     void addMember_shouldNotUpdateTimestamp() throws InterruptedException {
-        Workspace workspace = Workspace.create(validName, validDescription, false, validOwner, new HashSet<>());
+        Workspace workspace = Workspace.create(validName, validDescription, false, validOwner);
         workspace.update("temp", "temp"); // Set an initial updatedAt
         Instant updatedAtBeforeAdd = workspace.getUpdatedAt();
         assertNotNull(updatedAtBeforeAdd);

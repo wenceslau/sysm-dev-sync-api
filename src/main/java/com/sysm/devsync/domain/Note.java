@@ -1,6 +1,7 @@
 package com.sysm.devsync.domain;
 
 import java.time.Instant;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -72,7 +73,7 @@ public class Note {
     }
 
     public Set<String> getTags() {
-        return tags;
+        return Collections.unmodifiableSet(tags);
     }
 
     public String getProjectId() {
@@ -144,7 +145,7 @@ public class Note {
                 updatedAt,
                 title,
                 content,
-                tags,
+                tags != null ? new HashSet<>(tags) : new HashSet<>(),
                 projectId,
                 authorId,
                 version
