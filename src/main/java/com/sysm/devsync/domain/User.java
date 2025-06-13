@@ -1,5 +1,7 @@
 package com.sysm.devsync.domain;
 
+import com.sysm.devsync.domain.enums.Role;
+
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
@@ -14,11 +16,11 @@ public class User {
     private String email;
     private String passwordHash;
     private String profilePictureUrl;
-    private ROLE role; // ADMIN, MEMBER
+    private Role role; // ADMIN, MEMBER
 
     private User(String id, Instant createdAt, Instant updatedAt,
                  String name, String email, String passwordHash,
-                 String profilePictureUrl, ROLE role) {
+                 String profilePictureUrl, Role role) {
 
         this.id = id;
         this.createdAt = createdAt;
@@ -32,7 +34,7 @@ public class User {
         validate(name, email, role);
     }
 
-    public User update(String username, String email, ROLE role) {
+    public User update(String username, String email, Role role) {
         validate(username, email, role);
 
         this.updatedAt = Instant.now();
@@ -74,7 +76,7 @@ public class User {
         return profilePictureUrl;
     }
 
-    public ROLE getRole() {
+    public Role getRole() {
         return role;
     }
 
@@ -86,7 +88,7 @@ public class User {
         return updatedAt;
     }
 
-    private void validate(String username, String email, ROLE role) {
+    private void validate(String username, String email, Role role) {
         if (username == null || username.isBlank()) {
             throw new IllegalArgumentException("Username cannot be null or empty");
         }
@@ -109,7 +111,7 @@ public class User {
     }
 
     public static User create(String username, String email,
-                              String profilePictureUrl, ROLE role) {
+                              String profilePictureUrl, Role role) {
         Instant now = Instant.now();
         String id = UUID.randomUUID().toString();
 
@@ -118,21 +120,9 @@ public class User {
 
     public static User build(String id, Instant createdAt, Instant updatedAt,
                               String username, String email, String passwordHash,
-                              String profilePictureUrl, ROLE role) {
+                              String profilePictureUrl, Role role) {
 
-        User user = new User(id, createdAt, updatedAt, username, email, passwordHash, profilePictureUrl, role);
-
-        user.id = id;
-        user.createdAt = createdAt;
-        user.updatedAt = updatedAt;
-
-        user.name = username;
-        user.email = email;
-        user.passwordHash = passwordHash;
-        user.profilePictureUrl = profilePictureUrl;
-        user.role = role;
-
-        return user;
+        return new User(id, createdAt, updatedAt, username, email, passwordHash, profilePictureUrl, role);
     }
 
 }

@@ -1,5 +1,6 @@
 package com.sysm.devsync.domain;
 
+import com.sysm.devsync.domain.enums.Role;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,9 +20,9 @@ class WorkspaceTest {
 
     private String validName;
     private String validDescription;
-    private User validOwner;
-    private User member1;
-    private User member2;
+    private String validOwner;
+    private String member1;
+    private String member2;
 
     @BeforeEach
     void setUp() {
@@ -29,9 +30,9 @@ class WorkspaceTest {
         validDescription = "A description for the test workspace.";
         // Assuming User.create is available and works as defined in UserTest.
         // ROLE enum is also assumed to be available.
-        validOwner = User.create("ownerUser", "owner@example.com", null, ROLE.ADMIN);
-        member1 = User.create("memberOne", "member1@example.com", null, ROLE.MEMBER);
-        member2 = User.create("memberTwo", "member2@example.com", null, ROLE.MEMBER);
+        validOwner = UUID.randomUUID().toString();
+        member1 =  UUID.randomUUID().toString();
+        member2 =  UUID.randomUUID().toString();
     }
 
     // --- Create Tests ---
@@ -40,7 +41,7 @@ class WorkspaceTest {
     @DisplayName("create should create workspace successfully with valid arguments")
     void create_shouldCreateWorkspace_whenArgumentsAreValid() {
         Instant beforeCreation = Instant.now();
-        Set<User> initialMembers = new HashSet<>();
+        Set<String> initialMembers = new HashSet<>();
         initialMembers.add(member1);
 
         Workspace workspace = Workspace.create(validName, validDescription, false, validOwner, initialMembers);
@@ -62,12 +63,12 @@ class WorkspaceTest {
         assertFalse(workspace.isPrivate(), "isPrivate should be false as provided");
         assertEquals(validOwner, workspace.getOwnerId());
 
-        assertNotNull(workspace.getMembers(), "Members set should not be null");
-        assertEquals(1, workspace.getMembers().size(), "Members set should contain one member");
-        assertTrue(workspace.getMembers().contains(member1), "Members set should contain the added member");
+        assertNotNull(workspace.getMembersId(), "Members set should not be null");
+        assertEquals(1, workspace.getMembersId().size(), "Members set should contain one member");
+        assertTrue(workspace.getMembersId().contains(member1), "Members set should contain the added member");
 
         // Test immutability of the returned members set
-        assertThrows(UnsupportedOperationException.class, () -> workspace.getMembers().add(member2),
+        assertThrows(UnsupportedOperationException.class, () -> workspace.getMembersId().add(member2),
                 "Should not be able to modify the members set returned by getMembers()");
     }
 
@@ -75,8 +76,8 @@ class WorkspaceTest {
     @DisplayName("create should initialize with empty members set if provided members set is empty")
     void create_shouldInitializeWithEmptyMembers_whenProvidedMembersIsEmpty() {
         Workspace workspace = Workspace.create(validName, validDescription, true, validOwner, Collections.emptySet());
-        assertNotNull(workspace.getMembers());
-        assertTrue(workspace.getMembers().isEmpty(), "Members should be an empty set");
+        assertNotNull(workspace.getMembersId());
+        assertTrue(workspace.getMembersId().isEmpty(), "Members should be an empty set");
     }
 
     @Test
@@ -86,14 +87,14 @@ class WorkspaceTest {
         // getMembers() calls Collections.unmodifiableSet(null), throwing NPE.
         Workspace workspaceWithNullMembers = Workspace.create(validName, validDescription, true, validOwner, null);
 
-        assertThrows(NullPointerException.class, workspaceWithNullMembers::getMembers,
+        assertThrows(NullPointerException.class, workspaceWithNullMembers::getMembersId,
                 "getMembers should throw NullPointerException if members was null at creation and no members added yet");
 
         // However, addMember initializes the set if it's null
         workspaceWithNullMembers.addMember(member1);
-        assertNotNull(workspaceWithNullMembers.getMembers());
-        assertEquals(1, workspaceWithNullMembers.getMembers().size());
-        assertTrue(workspaceWithNullMembers.getMembers().contains(member1));
+        assertNotNull(workspaceWithNullMembers.getMembersId());
+        assertEquals(1, workspaceWithNullMembers.getMembersId().size());
+        assertTrue(workspaceWithNullMembers.getMembersId().contains(member1));
     }
 
 
@@ -150,7 +151,7 @@ class WorkspaceTest {
         String id = UUID.randomUUID().toString();
         Instant createdAt = Instant.now().minus(1, ChronoUnit.DAYS);
         Instant updatedAt = Instant.now().minus(12, ChronoUnit.HOURS);
-        Set<User> members = new HashSet<>();
+        Set<String> members = new HashSet<>();
         members.add(member1);
 
         Workspace workspace = Workspace.build(id, createdAt, updatedAt, validName, validDescription, true, validOwner, members);
@@ -162,9 +163,9 @@ class WorkspaceTest {
         assertEquals(validDescription, workspace.getDescription());
         assertTrue(workspace.isPrivate());
         assertEquals(validOwner, workspace.getOwnerId());
-        assertNotNull(workspace.getMembers());
-        assertEquals(1, workspace.getMembers().size());
-        assertTrue(workspace.getMembers().contains(member1));
+        assertNotNull(workspace.getMembersId());
+        assertEquals(1, workspace.getMembersId().size());
+        assertTrue(workspace.getMembersId().contains(member1));
     }
 
     @Test
@@ -185,12 +186,12 @@ class WorkspaceTest {
 
         Workspace workspaceWithNullMembers = Workspace.build(id, createdAt, updatedAt, validName, validDescription, true, validOwner, null);
 
-        assertThrows(NullPointerException.class, workspaceWithNullMembers::getMembers,
+        assertThrows(NullPointerException.class, workspaceWithNullMembers::getMembersId,
                 "getMembers should throw NullPointerException if members was null at build and no members added yet");
 
         workspaceWithNullMembers.addMember(member1); // addMember initializes the set
-        assertNotNull(workspaceWithNullMembers.getMembers());
-        assertEquals(1, workspaceWithNullMembers.getMembers().size());
+        assertNotNull(workspaceWithNullMembers.getMembersId());
+        assertEquals(1, workspaceWithNullMembers.getMembersId().size());
     }
 
     @Test
@@ -248,7 +249,7 @@ class WorkspaceTest {
         assertNotNull(workspace.getCreatedAt());
         assertFalse(workspace.isPrivate());
         assertEquals(validOwner, workspace.getOwnerId());
-        assertTrue(workspace.getMembers().isEmpty());
+        assertTrue(workspace.getMembersId().isEmpty());
     }
 
     @Test
@@ -297,7 +298,7 @@ class WorkspaceTest {
     @DisplayName("changeOwner should update owner and timestamp")
     void changeOwner_shouldUpdateOwner_andUpdateTimestamp() throws InterruptedException {
         Workspace workspace = Workspace.create(validName, validDescription, false, validOwner, Collections.emptySet());
-        User newOwner = User.create("newOwnerUser", "newowner@example.com", null, ROLE.ADMIN);
+        User newOwner = User.create("newOwnerUser", "newowner@example.com", null, Role.ADMIN);
 
         // Ensure updatedAt is set if it was null, or capture current if already set by a previous update
         workspace.update("temp name", "temp desc"); // Sets initial updatedAt
@@ -305,10 +306,10 @@ class WorkspaceTest {
         assertNotNull(updatedAtBeforeChange);
         Thread.sleep(1);
 
-        Workspace updatedWorkspace = workspace.changeOwner(newOwner);
+        Workspace updatedWorkspace = workspace.changeOwner(newOwner.getId());
 
         assertSame(workspace, updatedWorkspace);
-        assertEquals(newOwner, workspace.getOwnerId());
+        assertEquals(newOwner.getId(), workspace.getOwnerId());
         assertTrue(workspace.getUpdatedAt().isAfter(updatedAtBeforeChange));
     }
 
@@ -356,18 +357,18 @@ class WorkspaceTest {
                 validName, validDescription, false, validOwner, null); // members is null
 
         workspace.addMember(member1);
-        assertNotNull(workspace.getMembers(), "Members set should be initialized by addMember");
-        assertEquals(1, workspace.getMembers().size());
-        assertTrue(workspace.getMembers().contains(member1));
+        assertNotNull(workspace.getMembersId(), "Members set should be initialized by addMember");
+        assertEquals(1, workspace.getMembersId().size());
+        assertTrue(workspace.getMembersId().contains(member1));
 
         workspace.addMember(member2);
-        assertEquals(2, workspace.getMembers().size());
-        assertTrue(workspace.getMembers().contains(member1));
-        assertTrue(workspace.getMembers().contains(member2));
+        assertEquals(2, workspace.getMembersId().size());
+        assertTrue(workspace.getMembersId().contains(member1));
+        assertTrue(workspace.getMembersId().contains(member2));
 
         // Adding the same member again should not change the set size
         workspace.addMember(member1);
-        assertEquals(2, workspace.getMembers().size());
+        assertEquals(2, workspace.getMembersId().size());
     }
 
     @Test
@@ -404,12 +405,12 @@ class WorkspaceTest {
         String name = "Getter Test Name";
         String description = "Getter Test Description";
         boolean isPrivate = true;
-        User owner = User.create("getterOwner", "getter@owner.com", null, ROLE.ADMIN);
-        Set<User> members = new HashSet<>();
-        User getterMember = User.create("getterMember", "getter@member.com", null, ROLE.MEMBER);
-        members.add(getterMember);
+        User owner = User.create("getterOwner", "getter@owner.com", null, Role.ADMIN);
+        Set<String> members = new HashSet<>();
+        User getterMember = User.create("getterMember", "getter@member.com", null, Role.MEMBER);
+        members.add(getterMember.getId());
 
-        Workspace workspace = Workspace.build(id, createdAt, updatedAt, name, description, isPrivate, owner, members);
+        Workspace workspace = Workspace.build(id, createdAt, updatedAt, name, description, isPrivate, owner.getId(), members);
 
         assertEquals(id, workspace.getId());
         assertEquals(createdAt, workspace.getCreatedAt());
@@ -417,12 +418,12 @@ class WorkspaceTest {
         assertEquals(name, workspace.getName());
         assertEquals(description, workspace.getDescription());
         assertEquals(isPrivate, workspace.isPrivate());
-        assertEquals(owner, workspace.getOwnerId());
+        assertEquals(owner.getId(), workspace.getOwnerId());
 
-        assertNotNull(workspace.getMembers());
-        assertEquals(1, workspace.getMembers().size());
-        assertTrue(workspace.getMembers().contains(getterMember));
-        assertThrows(UnsupportedOperationException.class, () -> workspace.getMembers().clear(),
+        assertNotNull(workspace.getMembersId());
+        assertEquals(1, workspace.getMembersId().size());
+        assertTrue(workspace.getMembersId().contains(getterMember.getId()));
+        assertThrows(UnsupportedOperationException.class, () -> workspace.getMembersId().clear(),
                 "Should not be able to modify members set via getter");
     }
 
@@ -437,10 +438,10 @@ class WorkspaceTest {
         // Create a third workspace with a different ID
         Workspace ws3 = Workspace.build(UUID.randomUUID().toString(), Instant.now(), Instant.now(), "Name1", "Desc1", false, validOwner, null);
 
-        assertTrue(ws1.equals(ws2), "Equals should return true for workspaces with the same ID");
+        assertEquals(ws1, ws2, "Equals should return true for workspaces with the same ID");
         assertEquals(ws1.hashCode(), ws2.hashCode(), "HashCode should be the same for workspaces with the same ID");
 
-        assertFalse(ws1.equals(ws3), "Equals should return false for workspaces with different IDs");
+        assertNotEquals(ws1, ws3, "Equals should return false for workspaces with different IDs");
         // Note: HashCode *could* be the same for different IDs (collision), but unlikely for UUIDs.
         // The primary contract is: if equals() is true, hashCode() must be same.
         // If equals() is false, hashCode() can be same or different.
@@ -450,7 +451,7 @@ class WorkspaceTest {
         }
 
 
-        assertFalse(ws1.equals(null), "Equals should return false when comparing with null");
-        assertFalse(ws1.equals(new Object()), "Equals should return false when comparing with an object of a different type");
+        assertNotEquals(null, ws1, "Equals should return false when comparing with null");
+        assertNotEquals(new Object(), ws1, "Equals should return false when comparing with an object of a different type");
     }
 }

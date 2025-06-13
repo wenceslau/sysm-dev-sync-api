@@ -1,5 +1,6 @@
 package com.sysm.devsync.domain;
 
+import com.sysm.devsync.domain.enums.Role;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,14 +16,14 @@ class UserTest {
     private String validUsername;
     private String validEmail;
     private String validProfilePictureUrl;
-    private ROLE validRole;
+    private Role validRole;
 
     @BeforeEach
     void setUp() {
         validUsername = "testuser";
         validEmail = "test@example.com";
         validProfilePictureUrl = "http://example.com/pic.jpg";
-        validRole = ROLE.MEMBER; // Assuming ROLE is an enum with MEMBER and ADMIN
+        validRole = Role.MEMBER; // Assuming ROLE is an enum with MEMBER and ADMIN
     }
 
     // --- Create Tests ---
@@ -143,7 +144,7 @@ class UserTest {
 
         String newUsername = "updatedUser";
         String newEmail = "updated@example.com";
-        ROLE newRole = ROLE.ADMIN;
+        Role newRole = Role.ADMIN;
 
         User updatedUser = user.update(newUsername, newEmail, newRole);
 
@@ -165,7 +166,7 @@ class UserTest {
     void update_shouldThrowException_whenUsernameIsNull() {
         User user = User.create(validUsername, validEmail, validProfilePictureUrl, validRole);
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            user.update(null, "new@email.com", ROLE.ADMIN);
+            user.update(null, "new@email.com", Role.ADMIN);
         });
         assertEquals("Username cannot be null or empty", exception.getMessage());
     }
@@ -175,7 +176,7 @@ class UserTest {
     void update_shouldThrowException_whenUsernameIsBlank() {
         User user = User.create(validUsername, validEmail, validProfilePictureUrl, validRole);
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            user.update("  ", "new@email.com", ROLE.ADMIN);
+            user.update("  ", "new@email.com", Role.ADMIN);
         });
         assertEquals("Username cannot be null or empty", exception.getMessage());
     }
@@ -185,7 +186,7 @@ class UserTest {
     void update_shouldThrowException_whenEmailIsNull() {
         User user = User.create(validUsername, validEmail, validProfilePictureUrl, validRole);
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            user.update("newUsername", null, ROLE.ADMIN);
+            user.update("newUsername", null, Role.ADMIN);
         });
         assertEquals("Email cannot be null or empty", exception.getMessage());
     }
@@ -195,7 +196,7 @@ class UserTest {
     void update_shouldThrowException_whenEmailIsBlank() {
         User user = User.create(validUsername, validEmail, validProfilePictureUrl, validRole);
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            user.update("newUsername", "  ", ROLE.ADMIN);
+            user.update("newUsername", "  ", Role.ADMIN);
         });
         assertEquals("Email cannot be null or empty", exception.getMessage());
     }
@@ -317,7 +318,7 @@ class UserTest {
         String email = "build@example.com";
         String passwordHash = "buildPasswordHash";
         String profilePictureUrl = "http://build.com/pic.png";
-        ROLE role = ROLE.ADMIN;
+        Role role = Role.ADMIN;
 
         User user = User.build(id, createdAt, updatedAt, username, email, passwordHash, profilePictureUrl, role);
 
@@ -339,7 +340,7 @@ class UserTest {
         Instant updatedAt = Instant.now().minus(1, ChronoUnit.HOURS);
         String username = "buildUserOptional";
         String email = "buildopt@example.com";
-        ROLE role = ROLE.MEMBER;
+        Role role = Role.MEMBER;
 
         User user = User.build(id, createdAt, updatedAt, username, email, null, null, role);
 
@@ -425,7 +426,7 @@ class UserTest {
         String email = "getter@example.com";
         String passwordHash = "getterPasswordHash";
         String profilePictureUrl = "http://getter.com/pic.png";
-        ROLE role = ROLE.ADMIN;
+        Role role = Role.ADMIN;
 
         // Use build to set all fields for a comprehensive getter test
         User user = User.build(id, createdAt, updatedAt, username, email, passwordHash, profilePictureUrl, role);

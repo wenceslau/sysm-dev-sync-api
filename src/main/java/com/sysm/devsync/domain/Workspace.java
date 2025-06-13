@@ -15,12 +15,12 @@ public class Workspace {
     private String name;
     private String description;
     private boolean isPrivate;
-    private User ownerId;
-    private Set<User> members;
+    private String ownerId;
+    private Set<String> membersId;
 
     private Workspace(String id, Instant createdAt, Instant updatedAt,
                       String name, String description, boolean isPrivate,
-                      User ownerId, Set<User> members) {
+                      String ownerId, Set<String> membersId) {
 
         this.id = id;
         this.createdAt = createdAt;
@@ -29,7 +29,7 @@ public class Workspace {
         this.description = description;
         this.isPrivate = isPrivate;
         this.ownerId = ownerId;
-        this.members = members;
+        this.membersId = membersId;
 
         validate(name, description);
 
@@ -59,13 +59,13 @@ public class Workspace {
         return this;
     }
 
-    public Workspace changeOwner(User newOwner) {
-        if (newOwner == null) {
+    public Workspace changeOwner(String newOwnerId) {
+        if (newOwnerId == null) {
             throw new IllegalArgumentException("New owner cannot be null");
         }
 
         this.updatedAt = Instant.now();
-        this.ownerId = newOwner;
+        this.ownerId = newOwnerId;
 
         return this;
     }
@@ -76,16 +76,16 @@ public class Workspace {
         return this;
     }
 
-    public void addMember(User user) {
-        if (user == null) {
+    public void addMember(String userId) {
+        if (userId == null) {
             throw new IllegalArgumentException("User cannot be null");
         }
 
-        if (members == null) {
-            members = new HashSet<>();
+        if (membersId == null) {
+            membersId = new HashSet<>();
         }
 
-        this.members.add(user);
+        this.membersId.add(userId);
     }
 
     public String getId() {
@@ -112,12 +112,12 @@ public class Workspace {
         return isPrivate;
     }
 
-    public User getOwnerId() {
+    public String getOwnerId() {
         return ownerId;
     }
 
-    public Set<User> getMembers() {
-        return Collections.unmodifiableSet(members);
+    public Set<String> getMembersId() {
+        return Collections.unmodifiableSet(membersId);
     }
 
     public final boolean equals(Object o) {
@@ -131,7 +131,7 @@ public class Workspace {
     }
 
     public static Workspace create(String name, String description, boolean isPrivate,
-                                   User ownerId, Set<User> members) {
+                                   String ownerId, Set<String> members) {
 
         String id = java.util.UUID.randomUUID().toString();
         Instant now = Instant.now();
@@ -149,7 +149,7 @@ public class Workspace {
 
     public static Workspace build(String id, Instant createdAt, Instant updatedAt,
                                   String name, String description, boolean isPrivate,
-                                  User ownerId, Set<User> members) {
+                                  String ownerId, Set<String> members) {
 
         return new Workspace(
                 id,
