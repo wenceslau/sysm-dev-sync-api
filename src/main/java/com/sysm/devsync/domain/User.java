@@ -8,8 +8,8 @@ import java.util.UUID;
 
 public class User {
 
-    private String id;
-    private Instant createdAt;
+    private final String id;
+    private final Instant createdAt;
     private Instant updatedAt;
 
     private String name;
