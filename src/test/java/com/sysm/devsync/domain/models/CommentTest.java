@@ -1,4 +1,4 @@
-package com.sysm.devsync.domain;
+package com.sysm.devsync.domain.models;
 
 import com.sysm.devsync.domain.enums.TargetType;
 import org.junit.jupiter.api.BeforeEach;

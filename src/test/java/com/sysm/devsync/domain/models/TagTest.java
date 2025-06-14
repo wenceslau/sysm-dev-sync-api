@@ -1,4 +1,4 @@
-package com.sysm.devsync.domain;
+package com.sysm.devsync.domain.models;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
