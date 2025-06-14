@@ -19,7 +19,7 @@ public class Note {
     private String content;
     private Set<String> tags;
 
-    public Note(String id, Instant createdAt, Instant updatedAt,
+    private Note(String id, Instant createdAt, Instant updatedAt,
                 String title, String content, Set<String> tags,
                 String projectId, String authorId, int version) {
         this.id = id;

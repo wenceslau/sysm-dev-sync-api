@@ -21,7 +21,7 @@ public class Answer {
     private boolean isAccepted;
     private Instant updatedAt;
 
-    public Answer(String id, String questionId, String authorId,
+    private Answer(String id, String questionId, String authorId,
                   Instant createdAt, String content, boolean isAccepted,
                   Instant updatedAt) {
         this.id = id;
@@ -35,16 +35,16 @@ public class Answer {
     }
 
     public void validate() {
-        if (id == null || id.isEmpty()) {
+        if (id == null || id.isBlank()) {
             throw new IllegalArgumentException("ID cannot be null or empty");
         }
-        if (authorId == null || authorId.isEmpty()) {
+        if (authorId == null || authorId.isBlank()) {
             throw new IllegalArgumentException("Author ID cannot be null or empty");
         }
-        if (questionId == null || questionId.isEmpty()) {
+        if (questionId == null || questionId.isBlank()) {
             throw new IllegalArgumentException("Question ID cannot be null or empty");
         }
-        if (content == null || content.isEmpty()) {
+        if (content == null || content.isBlank()) {
             throw new IllegalArgumentException("Content cannot be null or empty");
         }
     }

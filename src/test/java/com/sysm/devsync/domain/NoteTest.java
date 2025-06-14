@@ -260,13 +260,13 @@ public class NoteTest {
     }
 
     @Test
-    @DisplayName("addTag() should initialize tags set if it's null and add tag")
+    @DisplayName("addTag() should check if tag is empty on initialization")
     void addTag_shouldInitializeTagsAndAddTag_ifTagsIsNull() {
         // Create a note where 'tags' might be null (e.g., if build allowed it, or direct constructor use without init)
         // For this test, let's use build and pass null, relying on addTag's internal null check
         Note note = Note.build(UUID.randomUUID().toString(), Instant.now(), Instant.now(),
                 validTitle, validContent, null, validProjectId, validAuthorId, 1);
-        assertNull(note.getTags(), "Tags should be null initially for this specific test setup");
+        assertTrue(note.getTags().isEmpty(), "Tags should be empty initially");
 
         note.addTag("firstTag");
         assertNotNull(note.getTags(), "Tags should be initialized by addTag");
@@ -349,10 +349,10 @@ public class NoteTest {
     void removeTag_shouldDoNothing_ifTagsSetIsNull() {
         Note note = Note.build(UUID.randomUUID().toString(), Instant.now(), Instant.now(),
                 validTitle, validContent, null, validProjectId, validAuthorId, 1);
-        assertNull(note.getTags());
+        assertTrue(note.getTags().isEmpty());
 
         assertDoesNotThrow(() -> note.removeTag("anyTag"));
-        assertNull(note.getTags(), "Tags should remain null");
+        assertTrue(note.getTags().isEmpty(), "Tags should remain empty if they were null");
     }
 
     @Test

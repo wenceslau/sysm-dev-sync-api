@@ -1,6 +1,6 @@
 package com.sysm.devsync.domain;
 
-import com.sysm.devsync.domain.enums.Status;
+import com.sysm.devsync.domain.enums.StatusQuestion;
 
 import java.time.Instant;
 import java.util.HashSet;
@@ -28,13 +28,13 @@ public class Question {
     private String title;
     private String description;
 
-    private Status status; // OPEN, CLOSED, RESOLVED
+    private StatusQuestion statusQuestion; // OPEN, CLOSED, RESOLVED
     private Instant updatedAt;
 
 
-    public Question(String id, Instant createdAt, String projectId,
+    private Question(String id, Instant createdAt, String projectId,
                     String authorId, Set<String> tags, String title,
-                    String description, Status status, Instant updatedAt) {
+                    String description, StatusQuestion statusQuestion, Instant updatedAt) {
         this.id = id;
         this.createdAt = createdAt;
         this.projectId = projectId;
@@ -42,7 +42,7 @@ public class Question {
         this.tags = tags;
         this.title = title;
         this.description = description;
-        this.status = status;
+        this.statusQuestion = statusQuestion;
         this.updatedAt = updatedAt;
         validate();
     }
@@ -79,13 +79,13 @@ public class Question {
         return this;
     }
 
-    public Question changeStatus(Status status) {
-        if (status == null) {
+    public Question changeStatus(StatusQuestion statusQuestion) {
+        if (statusQuestion == null) {
             throw new IllegalArgumentException("Status cannot be null");
         }
 
         this.updatedAt = Instant.now();
-        this.status = status;
+        this.statusQuestion = statusQuestion;
         return this;
     }
 
@@ -133,8 +133,8 @@ public class Question {
         return tags;
     }
 
-    public Status getStatus() {
-        return status;
+    public StatusQuestion getStatus() {
+        return statusQuestion;
     }
 
     public Instant getUpdatedAt() {
@@ -152,14 +152,14 @@ public class Question {
                 new HashSet<>(),
                 title,
                 description,
-                Status.OPEN,
+                StatusQuestion.OPEN,
                 now
         );
     }
 
     public static Question build(String id, Instant createdAt, Instant updatedAt,
                                  String title, String description, Set<String> tags,
-                                 String projectId, String authorId, Status status) {
+                                 String projectId, String authorId, StatusQuestion statusQuestion) {
         return new Question(
                 id,
                 createdAt,
@@ -168,7 +168,7 @@ public class Question {
                 new HashSet<>(tags),
                 title,
                 description,
-                status,
+                statusQuestion,
                 updatedAt
         );
     }

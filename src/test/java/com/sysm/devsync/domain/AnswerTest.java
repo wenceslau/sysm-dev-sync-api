@@ -283,34 +283,4 @@ public class AnswerTest {
         assertEquals(updatedAt, answer.getUpdatedAt());
     }
 
-    @Test
-    @DisplayName("Constructor validate method should be called and throw for invalid fields")
-    void constructor_validate_shouldThrowForInvalidFields() {
-        String validId = UUID.randomUUID().toString();
-        Instant now = Instant.now();
-
-        // Test invalid id
-        assertThrows(IllegalArgumentException.class, () ->
-                new Answer(null, validQuestionId, validAuthorId, now, validContent, false, now), "Null id");
-        assertThrows(IllegalArgumentException.class, () ->
-                new Answer("", validQuestionId, validAuthorId, now, validContent, false, now), "Empty id");
-
-        // Test invalid authorId
-        assertThrows(IllegalArgumentException.class, () ->
-                new Answer(validId, validQuestionId, null, now, validContent, false, now), "Null authorId");
-        assertThrows(IllegalArgumentException.class, () ->
-                new Answer(validId, validQuestionId, "", now, validContent, false, now), "Empty authorId");
-
-        // Test invalid questionId
-        assertThrows(IllegalArgumentException.class, () ->
-                new Answer(validId, null, validAuthorId, now, validContent, false, now), "Null questionId");
-        assertThrows(IllegalArgumentException.class, () ->
-                new Answer(validId, "", validAuthorId, now, validContent, false, now), "Empty questionId");
-
-        // Test invalid content
-        assertThrows(IllegalArgumentException.class, () ->
-                new Answer(validId, validQuestionId, validAuthorId, now, null, false, now), "Null content");
-        assertThrows(IllegalArgumentException.class, () ->
-                new Answer(validId, validQuestionId, validAuthorId, now, "", false, now), "Empty content");
-    }
 }

@@ -1,12 +1,12 @@
 package com.sysm.devsync.domain.enums;
 
-public enum Role {
+public enum RoleUser {
     ADMIN("ADMIN"),
     MEMBER("MEMBER");
 
     private final String value;
 
-    Role(String value) {
+    RoleUser(String value) {
         this.value = value;
     }
 

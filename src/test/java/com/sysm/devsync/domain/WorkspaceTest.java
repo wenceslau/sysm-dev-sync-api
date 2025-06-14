@@ -1,6 +1,6 @@
 package com.sysm.devsync.domain;
 
-import com.sysm.devsync.domain.enums.Role;
+import com.sysm.devsync.domain.enums.RoleUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -296,7 +296,7 @@ class WorkspaceTest {
     @DisplayName("changeOwner should update owner and timestamp")
     void changeOwner_shouldUpdateOwner_andUpdateTimestamp() throws InterruptedException {
         Workspace workspace = Workspace.create(validName, validDescription, false, validOwner);
-        User newOwner = User.create("newOwnerUser", "newowner@example.com", null, Role.ADMIN);
+        User newOwner = User.create("newOwnerUser", "newowner@example.com", null, RoleUser.ADMIN);
 
         // Ensure updatedAt is set if it was null, or capture current if already set by a previous update
         workspace.update("temp name", "temp desc"); // Sets initial updatedAt
@@ -403,9 +403,9 @@ class WorkspaceTest {
         String name = "Getter Test Name";
         String description = "Getter Test Description";
         boolean isPrivate = true;
-        User owner = User.create("getterOwner", "getter@owner.com", null, Role.ADMIN);
+        User owner = User.create("getterOwner", "getter@owner.com", null, RoleUser.ADMIN);
         Set<String> members = new HashSet<>();
-        User getterMember = User.create("getterMember", "getter@member.com", null, Role.MEMBER);
+        User getterMember = User.create("getterMember", "getter@member.com", null, RoleUser.MEMBER);
         members.add(getterMember.getId());
 
         Workspace workspace = Workspace.build(id, createdAt, updatedAt, name, description, isPrivate, owner.getId(), members);

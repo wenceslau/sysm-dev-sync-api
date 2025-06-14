@@ -1,6 +1,6 @@
 package com.sysm.devsync.domain;
 
-import com.sysm.devsync.domain.enums.Role;
+import com.sysm.devsync.domain.enums.RoleUser;
 
 import java.time.Instant;
 import java.util.Objects;
@@ -16,11 +16,11 @@ public class User {
     private String email;
     private String passwordHash;
     private String profilePictureUrl;
-    private Role role; // ADMIN, MEMBER
+    private RoleUser roleUser; // ADMIN, MEMBER
 
     private User(String id, Instant createdAt, Instant updatedAt,
                  String name, String email, String passwordHash,
-                 String profilePictureUrl, Role role) {
+                 String profilePictureUrl, RoleUser roleUser) {
 
         this.id = id;
         this.createdAt = createdAt;
@@ -29,18 +29,18 @@ public class User {
         this.email = email;
         this.passwordHash = passwordHash;
         this.profilePictureUrl = profilePictureUrl;
-        this.role = role;
+        this.roleUser = roleUser;
 
-        validate(name, email, role);
+        validate(name, email, roleUser);
     }
 
-    public User update(String username, String email, Role role) {
-        validate(username, email, role);
+    public User update(String username, String email, RoleUser roleUser) {
+        validate(username, email, roleUser);
 
         this.updatedAt = Instant.now();
         this.name = username;
         this.email = email;
-        this.role = role;
+        this.roleUser = roleUser;
         return this;
     }
 
@@ -76,8 +76,8 @@ public class User {
         return profilePictureUrl;
     }
 
-    public Role getRole() {
-        return role;
+    public RoleUser getRole() {
+        return roleUser;
     }
 
     public Instant getCreatedAt() {
@@ -88,14 +88,14 @@ public class User {
         return updatedAt;
     }
 
-    private void validate(String username, String email, Role role) {
+    private void validate(String username, String email, RoleUser roleUser) {
         if (username == null || username.isBlank()) {
             throw new IllegalArgumentException("Username cannot be null or empty");
         }
         if (email == null || email.isBlank()) {
             throw new IllegalArgumentException("Email cannot be null or empty");
         }
-        if (role == null) {
+        if (roleUser == null) {
             throw new IllegalArgumentException("Role cannot be null or empty");
         }
     }
@@ -111,18 +111,18 @@ public class User {
     }
 
     public static User create(String username, String email,
-                              String profilePictureUrl, Role role) {
+                              String profilePictureUrl, RoleUser roleUser) {
         Instant now = Instant.now();
         String id = UUID.randomUUID().toString();
 
-        return new User(id, now, now, username, email, null, profilePictureUrl, role);
+        return new User(id, now, now, username, email, null, profilePictureUrl, roleUser);
     }
 
     public static User build(String id, Instant createdAt, Instant updatedAt,
                               String username, String email, String passwordHash,
-                              String profilePictureUrl, Role role) {
+                              String profilePictureUrl, RoleUser roleUser) {
 
-        return new User(id, createdAt, updatedAt, username, email, passwordHash, profilePictureUrl, role);
+        return new User(id, createdAt, updatedAt, username, email, passwordHash, profilePictureUrl, roleUser);
     }
 
 }
