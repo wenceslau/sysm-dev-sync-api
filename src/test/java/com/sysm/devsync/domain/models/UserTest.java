@@ -68,7 +68,8 @@ class UserTest {
     @DisplayName("Create should allow blank profilePictureUrl")
     void create_shouldAllowBlankProfilePictureUrl() {
         User user = User.create(validUsername, validEmail,  validUserRole);
-        user.updateProfilePicture(" ");
+        user.updateProfilePicture(" "); // This test seems to be testing updateProfilePicture more than create
+        // For create, profilePictureUrl is always null initially by design of User.create
         assertEquals(" ", user.getProfilePictureUrl(), "ProfilePictureUrl should be blank if passed as blank");
     }
 
@@ -109,17 +110,18 @@ class UserTest {
     }
 
     @Test
-    @DisplayName("Create should throw IllegalArgumentException for null role")
-    void create_shouldThrowException_whenRoleIsNull() {
+    @DisplayName("Create should throw IllegalArgumentException for invalid email format")
+    void create_shouldThrowException_whenEmailIsInvalid() {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            User.create(validUsername, validEmail, null);
+            User.create(validUsername, "invalidemail", validUserRole);
         });
-        assertEquals("Role cannot be null or empty", exception.getMessage());
+        assertEquals("Email cannot be null or empty", exception.getMessage()); // Message might need adjustment if User.create has more specific email validation message
     }
 
+
     @Test
-    @DisplayName("Create should throw IllegalArgumentException for blank role")
-    void create_shouldThrowException_whenRoleIsBlank() {
+    @DisplayName("Create should throw IllegalArgumentException for null role")
+    void create_shouldThrowException_whenRoleIsNull() {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             User.create(validUsername, validEmail, null);
         });
@@ -132,7 +134,7 @@ class UserTest {
     @DisplayName("Update method should modify user details and update timestamp")
     void update_shouldModifyUserDetails_andUpdateTimestamp() throws InterruptedException {
         User user = User.create(validUsername, validEmail, validUserRole);
-        user.updateProfilePicture(validProfilePictureUrl);
+        user.updateProfilePicture(validProfilePictureUrl); // Set an initial profile picture
         Instant initialUpdatedAt = user.getUpdatedAt();
         String initialId = user.getId();
         Instant initialCreatedAt = user.getCreatedAt();
@@ -203,6 +205,16 @@ class UserTest {
     }
 
     @Test
+    @DisplayName("Update method should throw IllegalArgumentException for invalid email format")
+    void update_shouldThrowException_whenEmailIsInvalid() {
+        User user = User.create(validUsername, validEmail, validUserRole);
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            user.update("newUsername", "invalidemail", UserRole.ADMIN);
+        });
+        assertEquals("Email cannot be null or empty", exception.getMessage()); // Message might need adjustment
+    }
+
+    @Test
     @DisplayName("Update method should throw IllegalArgumentException for null role")
     void update_shouldThrowException_whenRoleIsNull() {
         User user = User.create(validUsername, validEmail, validUserRole);
@@ -212,15 +224,120 @@ class UserTest {
         assertEquals("Role cannot be null or empty", exception.getMessage());
     }
 
+    // --- UpdateName Method Tests ---
     @Test
-    @DisplayName("Update method should throw IllegalArgumentException for blank role")
-    void update_shouldThrowException_whenRoleIsBlank() {
+    @DisplayName("UpdateName should update name and timestamp")
+    void updateName_shouldUpdateNameAndTimestamp() throws InterruptedException {
+        User user = User.create(validUsername, validEmail, validUserRole);
+        Instant initialUpdatedAt = user.getUpdatedAt();
+        String newName = "newName";
+
+        Thread.sleep(1); // Ensure time moves forward
+        user.updateName(newName);
+
+        assertEquals(newName, user.getName());
+        assertTrue(user.getUpdatedAt().isAfter(initialUpdatedAt));
+        // Verify other fields remain unchanged
+        assertEquals(validEmail, user.getEmail());
+        assertEquals(validUserRole, user.getRole());
+    }
+
+    @Test
+    @DisplayName("UpdateName should throw IllegalArgumentException for null name")
+    void updateName_shouldThrowException_whenNameIsNull() {
         User user = User.create(validUsername, validEmail, validUserRole);
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            user.update("newUsername", "new@email.com", null);
+            user.updateName(null);
+        });
+        assertEquals("Name cannot be null or empty", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("UpdateName should throw IllegalArgumentException for blank name")
+    void updateName_shouldThrowException_whenNameIsBlank() {
+        User user = User.create(validUsername, validEmail, validUserRole);
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            user.updateName("   ");
+        });
+        assertEquals("Name cannot be null or empty", exception.getMessage());
+    }
+
+    // --- UpdateEmail Method Tests ---
+    @Test
+    @DisplayName("UpdateEmail should update email and timestamp")
+    void updateEmail_shouldUpdateEmailAndTimestamp() throws InterruptedException {
+        User user = User.create(validUsername, validEmail, validUserRole);
+        Instant initialUpdatedAt = user.getUpdatedAt();
+        String newEmail = "new.email@example.com";
+
+        Thread.sleep(1); // Ensure time moves forward
+        user.updateEmail(newEmail);
+
+        assertEquals(newEmail, user.getEmail());
+        assertTrue(user.getUpdatedAt().isAfter(initialUpdatedAt));
+        // Verify other fields remain unchanged
+        assertEquals(validUsername, user.getName());
+        assertEquals(validUserRole, user.getRole());
+    }
+
+    @Test
+    @DisplayName("UpdateEmail should throw IllegalArgumentException for null email")
+    void updateEmail_shouldThrowException_whenEmailIsNull() {
+        User user = User.create(validUsername, validEmail, validUserRole);
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            user.updateEmail(null);
+        });
+        assertEquals("Email cannot be null or empty", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("UpdateEmail should throw IllegalArgumentException for blank email")
+    void updateEmail_shouldThrowException_whenEmailIsBlank() {
+        User user = User.create(validUsername, validEmail, validUserRole);
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            user.updateEmail("   ");
+        });
+        assertEquals("Email cannot be null or empty", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("UpdateEmail should throw IllegalArgumentException for invalid email format")
+    void updateEmail_shouldThrowException_whenEmailIsInvalid() {
+        User user = User.create(validUsername, validEmail, validUserRole);
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            user.updateEmail("invalidformat");
+        });
+        assertEquals("Email cannot be null or empty", exception.getMessage()); // Or more specific message if your validation provides it
+    }
+
+    // --- UpdateUserRole Method Tests ---
+    @Test
+    @DisplayName("UpdateUserRole should update role and timestamp")
+    void updateUserRole_shouldUpdateRoleAndTimestamp() throws InterruptedException {
+        User user = User.create(validUsername, validEmail, validUserRole);
+        Instant initialUpdatedAt = user.getUpdatedAt();
+        UserRole newRole = UserRole.ADMIN;
+
+        Thread.sleep(1); // Ensure time moves forward
+        user.updateUserRole(newRole);
+
+        assertEquals(newRole, user.getRole());
+        assertTrue(user.getUpdatedAt().isAfter(initialUpdatedAt));
+        // Verify other fields remain unchanged
+        assertEquals(validUsername, user.getName());
+        assertEquals(validEmail, user.getEmail());
+    }
+
+    @Test
+    @DisplayName("UpdateUserRole should throw IllegalArgumentException for null role")
+    void updateUserRole_shouldThrowException_whenRoleIsNull() {
+        User user = User.create(validUsername, validEmail, validUserRole);
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            user.updateUserRole(null);
         });
         assertEquals("Role cannot be null or empty", exception.getMessage());
     }
+
 
     // --- UpdatePassword Method Tests ---
     @Test
@@ -267,7 +384,7 @@ class UserTest {
     @DisplayName("UpdateProfilePicture method should update URL and timestamp")
     void updateProfilePicture_shouldUpdateUrl_andUpdateTimestamp() throws InterruptedException {
         User user = User.create(validUsername, validEmail, validUserRole);
-        user.updateProfilePicture(validProfilePictureUrl);
+        // user.updateProfilePicture(validProfilePictureUrl); // Not needed, as create doesn't set it
         Instant initialUpdatedAt = user.getUpdatedAt();
         String newProfilePictureUrl = "http://example.com/new_pic.jpg";
 
@@ -290,7 +407,7 @@ class UserTest {
     @DisplayName("UpdateProfilePicture method should allow null URL")
     void updateProfilePicture_shouldAllowNullUrl() throws InterruptedException {
         User user = User.create(validUsername, validEmail,  validUserRole);
-        user.updateProfilePicture(validProfilePictureUrl);
+        user.updateProfilePicture(validProfilePictureUrl); // Set an initial one
         Instant initialUpdatedAt = user.getUpdatedAt();
         Thread.sleep(1); // Ensure time moves forward
 
@@ -303,7 +420,7 @@ class UserTest {
     @DisplayName("UpdateProfilePicture method should allow blank URL")
     void updateProfilePicture_shouldAllowBlankUrl() throws InterruptedException {
         User user = User.create(validUsername, validEmail,  validUserRole);
-        user.updateProfilePicture(validProfilePictureUrl);
+        user.updateProfilePicture(validProfilePictureUrl); // Set an initial one
         Instant initialUpdatedAt = user.getUpdatedAt();
         Thread.sleep(1); // Ensure time moves forward
 
@@ -360,7 +477,7 @@ class UserTest {
     }
 
     @Test
-    @DisplayName("Build method should throw IllegalArgumentException for null username due to create validation")
+    @DisplayName("Build method should throw IllegalArgumentException for null username")
     void build_shouldThrowException_whenUsernameIsNull() {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             User.build(UUID.randomUUID().toString(), Instant.now(), Instant.now(),
@@ -370,7 +487,7 @@ class UserTest {
     }
 
     @Test
-    @DisplayName("Build method should throw IllegalArgumentException for blank username due to create validation")
+    @DisplayName("Build method should throw IllegalArgumentException for blank username")
     void build_shouldThrowException_whenUsernameIsBlank() {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             User.build(UUID.randomUUID().toString(), Instant.now(), Instant.now(),
@@ -379,9 +496,8 @@ class UserTest {
         assertEquals("Username cannot be null or empty", exception.getMessage());
     }
 
-
     @Test
-    @DisplayName("Build method should throw IllegalArgumentException for null email due to create validation")
+    @DisplayName("Build method should throw IllegalArgumentException for null email")
     void build_shouldThrowException_whenEmailIsNull() {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             User.build(UUID.randomUUID().toString(), Instant.now(), Instant.now(),
@@ -391,7 +507,7 @@ class UserTest {
     }
 
     @Test
-    @DisplayName("Build method should throw IllegalArgumentException for blank email due to create validation")
+    @DisplayName("Build method should throw IllegalArgumentException for blank email")
     void build_shouldThrowException_whenEmailIsBlank() {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             User.build(UUID.randomUUID().toString(), Instant.now(), Instant.now(),
@@ -401,18 +517,18 @@ class UserTest {
     }
 
     @Test
-    @DisplayName("Build method should throw IllegalArgumentException for null role due to create validation")
-    void build_shouldThrowException_whenRoleIsNull() {
+    @DisplayName("Build method should throw IllegalArgumentException for invalid email format")
+    void build_shouldThrowException_whenEmailIsInvalid() {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             User.build(UUID.randomUUID().toString(), Instant.now(), Instant.now(),
-                    validUsername, validEmail, "hash", validProfilePictureUrl, null);
+                    validUsername, "invalidemail", "hash", validProfilePictureUrl, validUserRole);
         });
-        assertEquals("Role cannot be null or empty", exception.getMessage());
+        assertEquals("Email cannot be null or empty", exception.getMessage()); // Message might need adjustment
     }
 
     @Test
-    @DisplayName("Build method should throw IllegalArgumentException for blank role due to create validation")
-    void build_shouldThrowException_whenRoleIsBlank() {
+    @DisplayName("Build method should throw IllegalArgumentException for null role")
+    void build_shouldThrowException_whenRoleIsNull() {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             User.build(UUID.randomUUID().toString(), Instant.now(), Instant.now(),
                     validUsername, validEmail, "hash", validProfilePictureUrl, null);
@@ -426,14 +542,13 @@ class UserTest {
     void getters_shouldReturnCorrectValues() {
         String id = UUID.randomUUID().toString();
         Instant createdAt = Instant.now();
-        Instant updatedAt = createdAt; // Initially the same, but build will set it
+        Instant updatedAt = createdAt;
         String username = "getterUser";
         String email = "getter@example.com";
         String passwordHash = "getterPasswordHash";
         String profilePictureUrl = "http://getter.com/pic.png";
         UserRole userRole = UserRole.ADMIN;
 
-        // Use build to set all fields for a comprehensive getter test
         User user = User.build(id, createdAt, updatedAt, username, email, passwordHash, profilePictureUrl, userRole);
 
         assertEquals(id, user.getId());

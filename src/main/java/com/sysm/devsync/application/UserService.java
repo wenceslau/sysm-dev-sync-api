@@ -44,6 +44,26 @@ public class UserService {
         userPersistence.update(user);
     }
 
+    public void updateUserPatch(String userId, UserCreateUpdate userUpdate) {
+        User user = userPersistence.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if (StringUtils.hasText(userUpdate.name())) {
+            user.updateName(userUpdate.name());
+        }
+        if (StringUtils.hasText(userUpdate.email())) {
+            user.updateEmail(userUpdate.email());
+        }
+        if (userUpdate.userRole() != null) {
+            user.updateUserRole(userUpdate.userRole());
+        }
+        if (StringUtils.hasText(userUpdate.profilePictureUrl())) {
+            user.updateProfilePicture(userUpdate.profilePictureUrl());
+        }
+
+        userPersistence.update(user);
+    }
+
     public void deleteUser(String userId) {
         userPersistence.deleteById(userId);
     }

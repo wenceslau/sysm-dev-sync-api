@@ -44,6 +44,30 @@ public class User extends AbstractModel {
         return this;
     }
 
+    public void updateName(String name) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Name cannot be null or empty");
+        }
+        this.name = name;
+        this.updatedAt = Instant.now();
+    }
+
+    public void updateEmail(String email) {
+        if (email == null || email.isBlank() || !email.matches("^[\\w-.]+@[\\w-]+\\.[a-z]{2,}$")) {
+            throw new IllegalArgumentException("Email cannot be null or empty");
+        }
+        this.email = email;
+        this.updatedAt = Instant.now();
+    }
+
+    public void updateUserRole(UserRole userRole) {
+        if (userRole == null) {
+            throw new IllegalArgumentException("Role cannot be null or empty");
+        }
+        this.userRole = userRole;
+        this.updatedAt = Instant.now();
+    }
+
     public User updatePassword(String passwordHash) {
         this.passwordHash = passwordHash;
         this.updatedAt = Instant.now();
@@ -118,8 +142,8 @@ public class User extends AbstractModel {
     }
 
     public static User build(String id, Instant createdAt, Instant updatedAt,
-                              String username, String email, String passwordHash,
-                              String profilePictureUrl, UserRole userRole) {
+                             String username, String email, String passwordHash,
+                             String profilePictureUrl, UserRole userRole) {
 
         return new User(id, createdAt, updatedAt, username, email, passwordHash, profilePictureUrl, userRole);
     }
