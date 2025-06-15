@@ -262,9 +262,8 @@ class ProjectTest {
         Thread.sleep(1); // Ensure updatedAt will be different
 
         String newWorkspaceId = UUID.randomUUID().toString();
-        Project updatedProject = project.changeWorkspace(newWorkspaceId);
+        project.changeWorkspace(newWorkspaceId);
 
-        assertSame(project, updatedProject, "changeWorkspace method should return the same instance");
         assertEquals(newWorkspaceId, project.getWorkspaceId());
         assertTrue(project.getUpdatedAt().isAfter(initialUpdatedAt), "UpdatedAt should be after the initial value");
 

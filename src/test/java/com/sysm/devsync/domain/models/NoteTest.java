@@ -1,5 +1,6 @@
 package com.sysm.devsync.domain.models;
 
+import com.sysm.devsync.domain.enums.UserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -242,6 +243,36 @@ public class NoteTest {
         Note note = Note.create(validTitle, validContent, validProjectId, validAuthorId);
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             note.update("New Title", null);
+        });
+        assertEquals("Content cannot be null", exception.getMessage());
+    }
+
+
+    @Test
+    @DisplayName("UpdateUserRole should update role and timestamp")
+    void updateNoteContent_shouldUpdateContentAndTimestamp() throws InterruptedException {
+        String newContent = "Updated content for the note.";
+        Note note = Note.create(validTitle, validContent, validProjectId, validAuthorId);
+        Instant initialUpdatedAt = note.getUpdatedAt();
+
+        Thread.sleep(1); // Ensure time moves forward
+        note.updateContent(newContent);
+
+        assertEquals(newContent, note.getContent());
+        assertTrue(note.getUpdatedAt().isAfter(initialUpdatedAt));
+        // Verify other fields remain unchanged
+        assertEquals(validTitle, note.getTitle());
+        assertEquals(validProjectId, note.getProjectId());
+        assertEquals(validAuthorId, note.getAuthorId());
+        assertEquals(2, note.getVersion(), "Version should be w as updateContent increment it");
+    }
+
+    @Test
+    @DisplayName("UpdateUserRole should throw IllegalArgumentException for null role")
+    void updateNoteContent_shouldThrowException_whenContentIsNull() {
+        Note note = Note.create(validTitle, validContent, validProjectId, validAuthorId);
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            note.updateContent(null);
         });
         assertEquals("Content cannot be null", exception.getMessage());
     }

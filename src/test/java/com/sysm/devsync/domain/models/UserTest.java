@@ -350,9 +350,8 @@ class UserTest {
 
         Thread.sleep(1); // Ensure time moves forward
 
-        User updatedUser = user.updatePassword(newPasswordHash);
+        user.updatePassword(newPasswordHash);
 
-        assertSame(user, updatedUser, "UpdatePassword method should return the same instance");
         assertEquals(newPasswordHash, user.getPasswordHash());
         assertTrue(user.getUpdatedAt().isAfter(initialUpdatedAt));
 
@@ -390,9 +389,8 @@ class UserTest {
 
         Thread.sleep(1); // Ensure time moves forward
 
-        User updatedUser = user.updateProfilePicture(newProfilePictureUrl);
+        user.updateProfilePicture(newProfilePictureUrl);
 
-        assertSame(user, updatedUser, "UpdateProfilePicture method should return the same instance");
         assertEquals(newProfilePictureUrl, user.getProfilePictureUrl());
         assertTrue(user.getUpdatedAt().isAfter(initialUpdatedAt));
 

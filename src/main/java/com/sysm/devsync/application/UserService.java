@@ -1,7 +1,6 @@
 package com.sysm.devsync.application;
 
-import com.sysm.devsync.domain.PersistencePort;
-import com.sysm.devsync.domain.Pagination;
+import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.models.User;
 import com.sysm.devsync.controller.dto.CreateResponse;
@@ -73,7 +72,7 @@ public class UserService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 
-    public Pagination<User> getAllUsers(SearchQuery query) {
+    public Page<User> getAllUsers(SearchQuery query) {
         return userPersistence.findAll(query);
     }
 

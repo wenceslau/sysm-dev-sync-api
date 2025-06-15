@@ -101,6 +101,15 @@ public class Note extends AbstractModel {
         this.version++;
     }
 
+    public void updateContent(String content) {
+        if (content == null) {
+            throw new IllegalArgumentException("Content cannot be null");
+        }
+        this.content = content;
+        this.updatedAt = Instant.now();
+        this.version++;
+    }
+
     public void addTag(String tag) {
         if (tag == null || tag.isEmpty()) {
             throw new IllegalArgumentException("Tag cannot be null or empty");

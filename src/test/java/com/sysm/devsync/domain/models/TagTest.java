@@ -178,9 +178,8 @@ class TagTest {
         Tag tag = Tag.create(validName, validColor);
         String newDescription = "All about Java programming.";
 
-        Tag updatedTag = tag.updateDescription(newDescription);
+        tag.updateDescription(newDescription);
 
-        assertSame(tag, updatedTag);
         assertEquals(newDescription, tag.getDescription());
         // Ensure other fields are not changed
         assertEquals(validName, tag.getName());
@@ -212,9 +211,8 @@ class TagTest {
         Tag tag = Tag.create(validName, validColor);
         String newCategory = "Backend";
 
-        Tag updatedTag = tag.updateCategory(newCategory);
+        tag.updateCategory(newCategory);
 
-        assertSame(tag, updatedTag);
         assertEquals(newCategory, tag.getCategory());
         // Ensure other fields are not changed
         assertEquals(validName, tag.getName());
@@ -246,8 +244,7 @@ class TagTest {
         Tag tag = Tag.create(validName, validColor);
         assertEquals(0, tag.getCountUsage());
 
-        Tag updatedTag = tag.incrementUsage();
-        assertSame(tag, updatedTag);
+        tag.incrementUsage();
         assertEquals(1, tag.getCountUsage());
 
         tag.incrementUsage();

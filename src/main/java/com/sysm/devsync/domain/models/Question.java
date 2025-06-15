@@ -79,30 +79,27 @@ public class Question extends AbstractModel {
         return this;
     }
 
-    public Question changeStatus(StatusQuestion statusQuestion) {
+    public void changeStatus(StatusQuestion statusQuestion) {
         if (statusQuestion == null) {
             throw new IllegalArgumentException("Status cannot be null");
         }
 
         this.updatedAt = Instant.now();
         this.statusQuestion = statusQuestion;
-        return this;
     }
 
-    public Question addTag(String tag) {
+    public void addTag(String tag) {
         if (tag == null || tag.isEmpty()) {
             throw new IllegalArgumentException("Tag cannot be null or empty");
         }
         this.tagsId.add(tag);
-        return this;
     }
 
-    public Question removeTag(String tag) {
+    public void removeTag(String tag) {
         if (tag == null || tag.isEmpty()) {
             throw new IllegalArgumentException("Tag cannot be null or empty");
         }
         this.tagsId.remove(tag);
-        return this;
     }
 
     public String getId() {

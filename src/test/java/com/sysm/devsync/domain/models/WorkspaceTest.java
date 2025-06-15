@@ -304,9 +304,8 @@ class WorkspaceTest {
         assertNotNull(updatedAtBeforeChange);
         Thread.sleep(1);
 
-        Workspace updatedWorkspace = workspace.changeOwner(newOwner.getId());
+        workspace.changeOwner(newOwner.getId());
 
-        assertSame(workspace, updatedWorkspace);
         assertEquals(newOwner.getId(), workspace.getOwnerId());
         assertTrue(workspace.getUpdatedAt().isAfter(updatedAtBeforeChange));
     }
@@ -333,8 +332,7 @@ class WorkspaceTest {
         assertNotNull(updatedAtBeforeSetTrue);
         Thread.sleep(1);
 
-        Workspace updatedWorkspace = workspace.setPrivate(true);
-        assertSame(workspace, updatedWorkspace);
+        workspace.setPrivate(true);
         assertTrue(workspace.isPrivate());
         assertTrue(workspace.getUpdatedAt().isAfter(updatedAtBeforeSetTrue), "UpdatedAt should be after setting private to true");
 

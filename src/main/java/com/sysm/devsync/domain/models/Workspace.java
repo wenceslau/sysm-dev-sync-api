@@ -59,7 +59,7 @@ public class Workspace extends AbstractModel {
         return this;
     }
 
-    public Workspace changeOwner(String newOwnerId) {
+    public void changeOwner(String newOwnerId) {
         if (newOwnerId == null) {
             throw new IllegalArgumentException("New owner cannot be null");
         }
@@ -67,13 +67,11 @@ public class Workspace extends AbstractModel {
         this.updatedAt = Instant.now();
         this.ownerId = newOwnerId;
 
-        return this;
     }
 
-    public Workspace setPrivate(boolean isPrivate) {
+    public void setPrivate(boolean isPrivate) {
         this.isPrivate = isPrivate;
         this.updatedAt = Instant.now();
-        return this;
     }
 
     public void addMember(String userId) {

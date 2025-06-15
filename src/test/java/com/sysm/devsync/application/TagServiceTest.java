@@ -1,7 +1,7 @@
 package com.sysm.devsync.application;
 
-
-import com.sysm.devsync.domain.Pagination;
+import com.sysm.devsync.domain.Page;
+import com.sysm.devsync.domain.Pageable;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.models.Tag;
 import com.sysm.devsync.controller.dto.CreateResponse;
@@ -253,16 +253,16 @@ class TagServiceTest {
     @DisplayName("getAllTags should return pagination result from repository")
     void getAllTags_shouldReturnPaginationResult_fromRepository() {
         // Arrange
-        SearchQuery query = new SearchQuery(1, 10, "name", "asc", "search");
-        Pagination<Tag> expectedPagination = new Pagination<>(1, 10, 0,  Collections.emptyList());
-        when(tagPersistence.findAll(query)).thenReturn(expectedPagination);
+        SearchQuery query = new SearchQuery(new Pageable(1, 10,  "asc", "search"), "name");
+        Page<Tag> expectedPage = new Page<>(1, 10, 0,  Collections.emptyList());
+        when(tagPersistence.findAll(query)).thenReturn(expectedPage);
 
         // Act
-        Pagination<Tag> actualPagination = tagService.getAllTags(query);
+        Page<Tag> actualPage = tagService.getAllTags(query);
 
         // Assert
-        assertNotNull(actualPagination);
-        assertSame(expectedPagination, actualPagination);
+        assertNotNull(actualPage);
+        assertSame(expectedPage, actualPage);
         verify(tagPersistence, times(1)).findAll(query);
     }
 }

@@ -54,19 +54,16 @@ public class Tag extends AbstractModel {
         return this;
     }
 
-    public Tag updateDescription(String description) {
+    public void updateDescription(String description) {
         this.description = description;
-        return this;
     }
 
-    public Tag updateCategory(String category) {
+    public void updateCategory(String category) {
         this.category = category;
-        return this;
     }
 
-    public Tag incrementUsage() {
+    public void incrementUsage() {
         this.countUsage++;
-        return this;
     }
 
     public String getId() {

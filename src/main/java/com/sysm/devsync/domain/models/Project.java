@@ -62,13 +62,12 @@ public class Project extends AbstractModel {
         return this;
     }
 
-    public Project changeWorkspace(String newWorkspaceId) {
+    public void changeWorkspace(String newWorkspaceId) {
         if (newWorkspaceId == null || newWorkspaceId.isBlank()) {
             throw new IllegalArgumentException("New workspace ID cannot be null or blank");
         }
         this.workspaceId = newWorkspaceId;
         this.updatedAt = Instant.now();
-        return this;
     }
 
     public static Project create(String name, String description, String workspaceId) {

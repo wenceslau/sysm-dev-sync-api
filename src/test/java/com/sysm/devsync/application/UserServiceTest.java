@@ -1,6 +1,7 @@
 package com.sysm.devsync.application;
 
-import com.sysm.devsync.domain.Pagination;
+import com.sysm.devsync.domain.Page;
+import com.sysm.devsync.domain.Pageable;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.enums.UserRole;
 import com.sysm.devsync.domain.models.User;
@@ -411,16 +412,16 @@ class UserServiceTest {
     @DisplayName("getAllUsers should return pagination result from repository")
     void getAllUsers_shouldReturnPaginationResult_fromRepository() {
         // Arrange
-        SearchQuery query = new SearchQuery(1, 10, "name", "asc", "search");
-        Pagination<User> expectedPagination = new Pagination<>(1, 10, 0L, Collections.emptyList()); // Ensure totalElements is Long
-        when(userPersistence.findAll(query)).thenReturn(expectedPagination);
+        SearchQuery query = new SearchQuery(new Pageable(1, 10,  "asc", "search"), "name");
+        Page<User> expectedPage = new Page<>(1, 10, 0L, Collections.emptyList()); // Ensure totalElements is Long
+        when(userPersistence.findAll(query)).thenReturn(expectedPage);
 
         // Act
-        Pagination<User> actualPagination = userService.getAllUsers(query);
+        Page<User> actualPage = userService.getAllUsers(query);
 
         // Assert
-        assertNotNull(actualPagination);
-        assertSame(expectedPagination, actualPagination);
+        assertNotNull(actualPage);
+        assertSame(expectedPage, actualPage);
         verify(userPersistence, times(1)).findAll(query);
     }
 }
@@ -634,7 +635,7 @@ class UserServiceTest {
 //    @DisplayName("getAllUsers should return pagination result from repository")
 //    void getAllUsers_shouldReturnPaginationResult_fromRepository() {
 //        // Arrange
-//        SearchQuery query = new SearchQuery(1, 10, "name", "asc", "search");
+//        SearchQuery query = new SearchQuery(new Pageable(1, 10) "name", "asc", "search");
 //        Pagination<User> expectedPagination = new Pagination<>(1, 10, 0, Collections.emptyList());
 //        when(userPersistence.findAll(query)).thenReturn(expectedPagination);
 //

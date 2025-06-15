@@ -58,16 +58,14 @@ public class Answer extends AbstractModel {
         return this;
     }
 
-    public Answer accept() {
+    public void accept() {
         this.isAccepted = true;
         this.updatedAt = Instant.now();
-        return this;
     }
 
-    public Answer reject() {
+    public void reject() {
         this.isAccepted = false;
         this.updatedAt = Instant.now();
-        return this;
     }
 
     public String getId() {

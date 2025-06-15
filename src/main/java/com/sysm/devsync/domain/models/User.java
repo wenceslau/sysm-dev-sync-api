@@ -68,16 +68,14 @@ public class User extends AbstractModel {
         this.updatedAt = Instant.now();
     }
 
-    public User updatePassword(String passwordHash) {
+    public void updatePassword(String passwordHash) {
         this.passwordHash = passwordHash;
         this.updatedAt = Instant.now();
-        return this;
     }
 
-    public User updateProfilePicture(String profilePictureUrl) {
+    public void updateProfilePicture(String profilePictureUrl) {
         this.profilePictureUrl = profilePictureUrl;
         this.updatedAt = Instant.now();
-        return this;
     }
 
     public String getId() {
