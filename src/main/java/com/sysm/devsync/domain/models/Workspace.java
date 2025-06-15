@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-public class Workspace {
+public class Workspace extends AbstractModel {
 
     private final String id;
     private final Instant createdAt;

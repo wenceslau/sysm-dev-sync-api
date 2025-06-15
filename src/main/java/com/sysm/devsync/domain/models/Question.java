@@ -6,7 +6,7 @@ import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Question {
+public class Question extends AbstractModel {
 
     /*
         id: UUID
@@ -23,7 +23,7 @@ public class Question {
     private final Instant createdAt;
     private final String projectId;
     private final String authorId;
-    private final Set<String> tags;
+    private final Set<String> tagsId;
 
     private String title;
     private String description;
@@ -33,13 +33,13 @@ public class Question {
 
 
     private Question(String id, Instant createdAt, String projectId,
-                    String authorId, Set<String> tags, String title,
-                    String description, StatusQuestion statusQuestion, Instant updatedAt) {
+                     String authorId, Set<String> tagsId, String title,
+                     String description, StatusQuestion statusQuestion, Instant updatedAt) {
         this.id = id;
         this.createdAt = createdAt;
         this.projectId = projectId;
         this.authorId = authorId;
-        this.tags = tags;
+        this.tagsId = tagsId;
         this.title = title;
         this.description = description;
         this.statusQuestion = statusQuestion;
@@ -93,7 +93,7 @@ public class Question {
         if (tag == null || tag.isEmpty()) {
             throw new IllegalArgumentException("Tag cannot be null or empty");
         }
-        this.tags.add(tag);
+        this.tagsId.add(tag);
         return this;
     }
 
@@ -101,7 +101,7 @@ public class Question {
         if (tag == null || tag.isEmpty()) {
             throw new IllegalArgumentException("Tag cannot be null or empty");
         }
-        this.tags.remove(tag);
+        this.tagsId.remove(tag);
         return this;
     }
 
@@ -129,8 +129,8 @@ public class Question {
         return description;
     }
 
-    public Set<String> getTags() {
-        return tags;
+    public Set<String> getTagsId() {
+        return tagsId;
     }
 
     public StatusQuestion getStatus() {

@@ -2,7 +2,7 @@ package com.sysm.devsync.domain.models;
 
 import java.time.Instant;
 
-public class Project {
+public class Project extends AbstractModel {
 
     private final String id;
     private final Instant createdAt;

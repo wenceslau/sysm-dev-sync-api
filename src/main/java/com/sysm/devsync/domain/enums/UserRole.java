@@ -1,6 +1,6 @@
 package com.sysm.devsync.domain.enums;
 
-public enum RoleUser {
+public enum UserRole {
     ADMIN,
     MEMBER
 }

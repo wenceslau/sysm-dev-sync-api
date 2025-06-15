@@ -1,12 +1,12 @@
 package com.sysm.devsync.domain.models;
 
-import com.sysm.devsync.domain.enums.RoleUser;
+import com.sysm.devsync.domain.enums.UserRole;
 
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
-public class User {
+public class User extends AbstractModel {
 
     private final String id;
     private final Instant createdAt;
@@ -16,11 +16,11 @@ public class User {
     private String email;
     private String passwordHash;
     private String profilePictureUrl;
-    private RoleUser roleUser; // ADMIN, MEMBER
+    private UserRole userRole; // ADMIN, MEMBER
 
     private User(String id, Instant createdAt, Instant updatedAt,
                  String name, String email, String passwordHash,
-                 String profilePictureUrl, RoleUser roleUser) {
+                 String profilePictureUrl, UserRole userRole) {
 
         this.id = id;
         this.createdAt = createdAt;
@@ -29,18 +29,18 @@ public class User {
         this.email = email;
         this.passwordHash = passwordHash;
         this.profilePictureUrl = profilePictureUrl;
-        this.roleUser = roleUser;
+        this.userRole = userRole;
 
-        validate(name, email, roleUser);
+        validate(name, email, userRole);
     }
 
-    public User update(String username, String email, RoleUser roleUser) {
-        validate(username, email, roleUser);
+    public User update(String username, String email, UserRole userRole) {
+        validate(username, email, userRole);
 
         this.updatedAt = Instant.now();
         this.name = username;
         this.email = email;
-        this.roleUser = roleUser;
+        this.userRole = userRole;
         return this;
     }
 
@@ -76,8 +76,8 @@ public class User {
         return profilePictureUrl;
     }
 
-    public RoleUser getRole() {
-        return roleUser;
+    public UserRole getRole() {
+        return userRole;
     }
 
     public Instant getCreatedAt() {
@@ -88,14 +88,14 @@ public class User {
         return updatedAt;
     }
 
-    private void validate(String username, String email, RoleUser roleUser) {
+    private void validate(String username, String email, UserRole userRole) {
         if (username == null || username.isBlank()) {
             throw new IllegalArgumentException("Username cannot be null or empty");
         }
-        if (email == null || email.isBlank()) {
+        if (email == null || email.isBlank() || !email.matches("^[\\w-.]+@[\\w-]+\\.[a-z]{2,}$")) {
             throw new IllegalArgumentException("Email cannot be null or empty");
         }
-        if (roleUser == null) {
+        if (userRole == null) {
             throw new IllegalArgumentException("Role cannot be null or empty");
         }
     }
@@ -110,19 +110,18 @@ public class User {
         return Objects.hashCode(id);
     }
 
-    public static User create(String username, String email,
-                              String profilePictureUrl, RoleUser roleUser) {
+    public static User create(String username, String email, UserRole userRole) {
         Instant now = Instant.now();
         String id = UUID.randomUUID().toString();
 
-        return new User(id, now, now, username, email, null, profilePictureUrl, roleUser);
+        return new User(id, now, now, username, email, null, null, userRole);
     }
 
     public static User build(String id, Instant createdAt, Instant updatedAt,
                               String username, String email, String passwordHash,
-                              String profilePictureUrl, RoleUser roleUser) {
+                              String profilePictureUrl, UserRole userRole) {
 
-        return new User(id, createdAt, updatedAt, username, email, passwordHash, profilePictureUrl, roleUser);
+        return new User(id, createdAt, updatedAt, username, email, passwordHash, profilePictureUrl, userRole);
     }
 
 }

@@ -2,7 +2,7 @@ package com.sysm.devsync.domain.models;
 
 import java.time.Instant;
 
-public class Answer {
+public class Answer extends AbstractModel {
 
     /*
         id: UUID

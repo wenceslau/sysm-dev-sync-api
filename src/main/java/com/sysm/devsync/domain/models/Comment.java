@@ -4,7 +4,7 @@ import com.sysm.devsync.domain.enums.TargetType;
 
 import java.time.Instant;
 
-public class Comment {
+public class Comment extends AbstractModel {
 
     /*
         id: UUID

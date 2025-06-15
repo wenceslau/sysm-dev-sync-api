@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Note {
+public class Note extends AbstractModel {
 
     private final String id;
     private final Instant createdAt;
@@ -17,17 +17,17 @@ public class Note {
 
     private String title;
     private String content;
-    private Set<String> tags;
+    private Set<String> tagsId;
 
     private Note(String id, Instant createdAt, Instant updatedAt,
-                String title, String content, Set<String> tags,
+                String title, String content, Set<String> tagsId,
                 String projectId, String authorId, int version) {
         this.id = id;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.title = title;
         this.content = content;
-        this.tags = tags;
+        this.tagsId = tagsId;
         this.projectId = projectId;
         this.authorId = authorId;
         this.version = version;
@@ -72,8 +72,8 @@ public class Note {
         return content;
     }
 
-    public Set<String> getTags() {
-        return Collections.unmodifiableSet(tags);
+    public Set<String> getTagsId() {
+        return Collections.unmodifiableSet(tagsId);
     }
 
     public String getProjectId() {
@@ -105,18 +105,18 @@ public class Note {
         if (tag == null || tag.isEmpty()) {
             throw new IllegalArgumentException("Tag cannot be null or empty");
         }
-        if (this.tags == null) {
-            this.tags = new HashSet<>();
+        if (this.tagsId == null) {
+            this.tagsId = new HashSet<>();
         }
-        this.tags.add(tag);
+        this.tagsId.add(tag);
     }
 
     public void removeTag(String tag) {
         if (tag == null || tag.isEmpty()) {
             throw new IllegalArgumentException("Tag cannot be null or empty");
         }
-        if (this.tags != null) {
-            this.tags.remove(tag);
+        if (this.tagsId != null) {
+            this.tagsId.remove(tag);
         }
     }
 

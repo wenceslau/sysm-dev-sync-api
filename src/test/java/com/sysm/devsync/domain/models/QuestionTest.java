@@ -57,8 +57,8 @@ class QuestionTest {
         assertTrue(!question.getCreatedAt().isBefore(beforeCreation) && !question.getCreatedAt().isAfter(afterCreation),
                 "CreatedAt should be very close to the time of creation");
 
-        assertNotNull(question.getTags(), "Tags should be initialized as an empty set");
-        assertTrue(question.getTags().isEmpty(), "Tags should be empty on creation");
+        assertNotNull(question.getTagsId(), "Tags should be initialized as an empty set");
+        assertTrue(question.getTagsId().isEmpty(), "Tags should be empty on creation");
         assertEquals(StatusQuestion.OPEN, question.getStatus(), "Status should be OPEN on creation");
     }
 
@@ -146,8 +146,8 @@ class QuestionTest {
         assertEquals(updatedAt, question.getUpdatedAt());
         assertEquals(validTitle, question.getTitle());
         assertEquals(validDescription, question.getDescription());
-        assertEquals(tags, question.getTags()); // build creates a new HashSet from the input
-        assertNotSame(tags, question.getTags(), "Build should create a new Set instance for tags");
+        assertEquals(tags, question.getTagsId()); // build creates a new HashSet from the input
+        assertNotSame(tags, question.getTagsId(), "Build should create a new Set instance for tags");
         assertEquals(validProjectId, question.getProjectId());
         assertEquals(validAuthorId, question.getAuthorId());
         assertEquals(statusQuestion, question.getStatus());
@@ -184,9 +184,9 @@ class QuestionTest {
         Set<String> emptyTags = Collections.emptySet();
         Question question = Question.build(UUID.randomUUID().toString(), Instant.now(), Instant.now(),
                 validTitle, validDescription, emptyTags, validProjectId, validAuthorId, StatusQuestion.OPEN);
-        assertNotNull(question.getTags());
-        assertTrue(question.getTags().isEmpty());
-        assertNotSame(emptyTags, question.getTags(), "Build should create a new Set instance for tags");
+        assertNotNull(question.getTagsId());
+        assertTrue(question.getTagsId().isEmpty());
+        assertNotSame(emptyTags, question.getTagsId(), "Build should create a new Set instance for tags");
     }
 
     @Test
@@ -212,7 +212,7 @@ class QuestionTest {
         Instant initialCreatedAt = question.getCreatedAt();
         String initialProjectId = question.getProjectId();
         String initialAuthorId = question.getAuthorId();
-        Set<String> initialTags = new HashSet<>(question.getTags()); // Copy for comparison
+        Set<String> initialTags = new HashSet<>(question.getTagsId()); // Copy for comparison
         StatusQuestion initialStatusQuestion = question.getStatus();
 
         Thread.sleep(1); // Ensure updatedAt will be different
@@ -230,7 +230,7 @@ class QuestionTest {
         assertEquals(initialCreatedAt, question.getCreatedAt());
         assertEquals(initialProjectId, question.getProjectId());
         assertEquals(initialAuthorId, question.getAuthorId());
-        assertEquals(initialTags, question.getTags(), "Tags should not be changed by update()");
+        assertEquals(initialTags, question.getTagsId(), "Tags should not be changed by update()");
         assertEquals(initialStatusQuestion, question.getStatus(), "Status should not be changed by update()");
     }
 
@@ -305,12 +305,12 @@ class QuestionTest {
     void addTag_shouldAddNewTag() {
         Question question = Question.create(validTitle, validDescription, validProjectId, validAuthorId);
         question.addTag("java");
-        assertTrue(question.getTags().contains("java"));
-        assertEquals(1, question.getTags().size());
+        assertTrue(question.getTagsId().contains("java"));
+        assertEquals(1, question.getTagsId().size());
 
         question.addTag("spring");
-        assertTrue(question.getTags().contains("spring"));
-        assertEquals(2, question.getTags().size());
+        assertTrue(question.getTagsId().contains("spring"));
+        assertEquals(2, question.getTagsId().size());
     }
 
     @Test
@@ -319,7 +319,7 @@ class QuestionTest {
         Question question = Question.create(validTitle, validDescription, validProjectId, validAuthorId);
         question.addTag("uniqueTag");
         question.addTag("uniqueTag");
-        assertEquals(1, question.getTags().size());
+        assertEquals(1, question.getTagsId().size());
     }
 
     @Test
@@ -365,9 +365,9 @@ class QuestionTest {
         question.addTag("tagToKeep");
 
         question.removeTag("tagToRemove");
-        assertFalse(question.getTags().contains("tagToRemove"));
-        assertTrue(question.getTags().contains("tagToKeep"));
-        assertEquals(1, question.getTags().size());
+        assertFalse(question.getTagsId().contains("tagToRemove"));
+        assertTrue(question.getTagsId().contains("tagToKeep"));
+        assertEquals(1, question.getTagsId().size());
     }
 
     @Test
@@ -375,21 +375,21 @@ class QuestionTest {
     void removeTag_shouldDoNothing_ifTagDoesNotExist() {
         Question question = Question.create(validTitle, validDescription, validProjectId, validAuthorId);
         question.addTag("existingTag");
-        int initialSize = question.getTags().size();
+        int initialSize = question.getTagsId().size();
 
         question.removeTag("nonExistentTag");
-        assertEquals(initialSize, question.getTags().size());
-        assertTrue(question.getTags().contains("existingTag"));
+        assertEquals(initialSize, question.getTagsId().size());
+        assertTrue(question.getTagsId().contains("existingTag"));
     }
 
     @Test
     @DisplayName("removeTag() should do nothing if tags set is empty")
     void removeTag_shouldDoNothing_ifTagsSetIsEmpty() {
         Question question = Question.create(validTitle, validDescription, validProjectId, validAuthorId);
-        assertTrue(question.getTags().isEmpty());
+        assertTrue(question.getTagsId().isEmpty());
 
         assertDoesNotThrow(() -> question.removeTag("anyTag"));
-        assertTrue(question.getTags().isEmpty());
+        assertTrue(question.getTagsId().isEmpty());
     }
 
     @Test
@@ -449,7 +449,7 @@ class QuestionTest {
         assertEquals(updatedAt, question.getUpdatedAt());
         assertEquals(title, question.getTitle());
         assertEquals(description, question.getDescription());
-        assertEquals(tags, question.getTags());
+        assertEquals(tags, question.getTagsId());
         assertEquals(projectId, question.getProjectId());
         assertEquals(authorId, question.getAuthorId());
         assertEquals(statusQuestion, question.getStatus());

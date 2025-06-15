@@ -56,8 +56,8 @@ public class NoteTest {
         assertTrue(!note.getCreatedAt().isBefore(beforeCreation) && !note.getCreatedAt().isAfter(afterCreation),
                 "CreatedAt should be very close to the time of creation");
 
-        assertNotNull(note.getTags(), "Tags should be initialized as an empty set");
-        assertTrue(note.getTags().isEmpty(), "Tags should be empty on creation");
+        assertNotNull(note.getTagsId(), "Tags should be initialized as an empty set");
+        assertTrue(note.getTagsId().isEmpty(), "Tags should be empty on creation");
         assertEquals(1, note.getVersion(), "Version should be 1 on creation");
     }
 
@@ -144,7 +144,7 @@ public class NoteTest {
         assertEquals(updatedAt, note.getUpdatedAt());
         assertEquals(validTitle, note.getTitle());
         assertEquals(validContent, note.getContent());
-        assertEquals(tags, note.getTags());
+        assertEquals(tags, note.getTagsId());
         assertEquals(validProjectId, note.getProjectId());
         assertEquals(validAuthorId, note.getAuthorId());
         assertEquals(version, note.getVersion());
@@ -156,8 +156,8 @@ public class NoteTest {
         Set<String> emptyTags = Collections.emptySet(); // or new HashSet<>()
         Note note = Note.build(UUID.randomUUID().toString(), Instant.now(), Instant.now(),
                 validTitle, validContent, emptyTags, validProjectId, validAuthorId, 1);
-        assertNotNull(note.getTags());
-        assertTrue(note.getTags().isEmpty());
+        assertNotNull(note.getTagsId());
+        assertTrue(note.getTagsId().isEmpty());
         // Depending on whether the constructor copies the set or uses the reference:
         // If it copies: assertNotSame(emptyTags, note.getTags());
         // If it uses reference (as it seems to): assertSame(emptyTags, note.getTags());
@@ -187,7 +187,7 @@ public class NoteTest {
         Instant initialCreatedAt = note.getCreatedAt();
         String initialProjectId = note.getProjectId();
         String initialAuthorId = note.getAuthorId();
-        Set<String> initialTags = new HashSet<>(note.getTags()); // Copy for comparison
+        Set<String> initialTags = new HashSet<>(note.getTagsId()); // Copy for comparison
 
         Thread.sleep(1); // Ensure updatedAt will be different
 
@@ -205,7 +205,7 @@ public class NoteTest {
         assertEquals(initialCreatedAt, note.getCreatedAt());
         assertEquals(initialProjectId, note.getProjectId());
         assertEquals(initialAuthorId, note.getAuthorId());
-        assertEquals(initialTags, note.getTags(), "Tags should not be changed by update()");
+        assertEquals(initialTags, note.getTagsId(), "Tags should not be changed by update()");
     }
 
     @Test
@@ -255,8 +255,8 @@ public class NoteTest {
         note.addTag("initialTag"); // Ensure tags set is initialized and has one item
 
         note.addTag("newTag");
-        assertTrue(note.getTags().contains("newTag"));
-        assertEquals(2, note.getTags().size());
+        assertTrue(note.getTagsId().contains("newTag"));
+        assertEquals(2, note.getTagsId().size());
     }
 
     @Test
@@ -266,12 +266,12 @@ public class NoteTest {
         // For this test, let's use build and pass null, relying on addTag's internal null check
         Note note = Note.build(UUID.randomUUID().toString(), Instant.now(), Instant.now(),
                 validTitle, validContent, null, validProjectId, validAuthorId, 1);
-        assertTrue(note.getTags().isEmpty(), "Tags should be empty initially");
+        assertTrue(note.getTagsId().isEmpty(), "Tags should be empty initially");
 
         note.addTag("firstTag");
-        assertNotNull(note.getTags(), "Tags should be initialized by addTag");
-        assertTrue(note.getTags().contains("firstTag"));
-        assertEquals(1, note.getTags().size());
+        assertNotNull(note.getTagsId(), "Tags should be initialized by addTag");
+        assertTrue(note.getTagsId().contains("firstTag"));
+        assertEquals(1, note.getTagsId().size());
     }
 
     @Test
@@ -280,7 +280,7 @@ public class NoteTest {
         Note note = Note.create(validTitle, validContent, validProjectId, validAuthorId);
         note.addTag("uniqueTag");
         note.addTag("uniqueTag");
-        assertEquals(1, note.getTags().size());
+        assertEquals(1, note.getTagsId().size());
     }
 
     @Test
@@ -327,9 +327,9 @@ public class NoteTest {
         note.addTag("tagToKeep");
 
         note.removeTag("tagToRemove");
-        assertFalse(note.getTags().contains("tagToRemove"));
-        assertTrue(note.getTags().contains("tagToKeep"));
-        assertEquals(1, note.getTags().size());
+        assertFalse(note.getTagsId().contains("tagToRemove"));
+        assertTrue(note.getTagsId().contains("tagToKeep"));
+        assertEquals(1, note.getTagsId().size());
     }
 
     @Test
@@ -337,11 +337,11 @@ public class NoteTest {
     void removeTag_shouldDoNothing_ifTagDoesNotExist() {
         Note note = Note.create(validTitle, validContent, validProjectId, validAuthorId);
         note.addTag("existingTag");
-        int initialSize = note.getTags().size();
+        int initialSize = note.getTagsId().size();
 
         note.removeTag("nonExistentTag");
-        assertEquals(initialSize, note.getTags().size());
-        assertTrue(note.getTags().contains("existingTag"));
+        assertEquals(initialSize, note.getTagsId().size());
+        assertTrue(note.getTagsId().contains("existingTag"));
     }
 
     @Test
@@ -349,20 +349,20 @@ public class NoteTest {
     void removeTag_shouldDoNothing_ifTagsSetIsNull() {
         Note note = Note.build(UUID.randomUUID().toString(), Instant.now(), Instant.now(),
                 validTitle, validContent, null, validProjectId, validAuthorId, 1);
-        assertTrue(note.getTags().isEmpty());
+        assertTrue(note.getTagsId().isEmpty());
 
         assertDoesNotThrow(() -> note.removeTag("anyTag"));
-        assertTrue(note.getTags().isEmpty(), "Tags should remain empty if they were null");
+        assertTrue(note.getTagsId().isEmpty(), "Tags should remain empty if they were null");
     }
 
     @Test
     @DisplayName("removeTag() should do nothing if tags set is empty")
     void removeTag_shouldDoNothing_ifTagsSetIsEmpty() {
         Note note = Note.create(validTitle, validContent, validProjectId, validAuthorId); // Tags is empty HashSet
-        assertTrue(note.getTags().isEmpty());
+        assertTrue(note.getTagsId().isEmpty());
 
         assertDoesNotThrow(() -> note.removeTag("anyTag"));
-        assertTrue(note.getTags().isEmpty());
+        assertTrue(note.getTagsId().isEmpty());
     }
 
 
@@ -423,7 +423,7 @@ public class NoteTest {
         assertEquals(updatedAt, note.getUpdatedAt());
         assertEquals(title, note.getTitle());
         assertEquals(content, note.getContent());
-        assertEquals(tags, note.getTags());
+        assertEquals(tags, note.getTagsId());
         assertEquals(projectId, note.getProjectId());
         assertEquals(authorId, note.getAuthorId());
         assertEquals(version, note.getVersion());

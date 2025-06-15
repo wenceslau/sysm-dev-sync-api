@@ -1,6 +1,6 @@
 package com.sysm.devsync.domain.models;
 
-public class Tag {
+public class Tag extends AbstractModel {
 
     /*
         id: UUID
