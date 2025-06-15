@@ -5,7 +5,7 @@ import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.models.User;
 import com.sysm.devsync.controller.dto.CreateResponse;
 import com.sysm.devsync.controller.dto.request.UserCreateUpdate;
-import com.sysm.devsync.domain.repositories.UserPersistencePort;
+import com.sysm.devsync.domain.persistence.UserPersistencePort;
 import org.springframework.util.StringUtils;
 
 public class UserService {

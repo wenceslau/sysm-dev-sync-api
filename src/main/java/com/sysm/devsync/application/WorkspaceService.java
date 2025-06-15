@@ -5,8 +5,8 @@ import com.sysm.devsync.controller.dto.request.WorkspaceCreateUpdate;
 import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.models.Workspace;
-import com.sysm.devsync.domain.repositories.UserPersistencePort;
-import com.sysm.devsync.domain.repositories.WorkspacePersistencePort;
+import com.sysm.devsync.domain.persistence.UserPersistencePort;
+import com.sysm.devsync.domain.persistence.WorkspacePersistencePort;
 
 public class WorkspaceService {
 

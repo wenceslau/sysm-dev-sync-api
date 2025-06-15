@@ -5,8 +5,8 @@ import com.sysm.devsync.controller.dto.request.ProjectCreateUpdate;
 import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.models.Project;
-import com.sysm.devsync.domain.repositories.ProjectPersistencePort;
-import com.sysm.devsync.domain.repositories.WorkspacePersistencePort;
+import com.sysm.devsync.domain.persistence.ProjectPersistencePort;
+import com.sysm.devsync.domain.persistence.WorkspacePersistencePort;
 
 public class ProjectService {
 

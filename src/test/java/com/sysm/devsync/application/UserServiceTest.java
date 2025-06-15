@@ -7,7 +7,7 @@ import com.sysm.devsync.domain.enums.UserRole;
 import com.sysm.devsync.domain.models.User;
 import com.sysm.devsync.controller.dto.CreateResponse;
 import com.sysm.devsync.controller.dto.request.UserCreateUpdate;
-import com.sysm.devsync.domain.repositories.UserPersistencePort;
+import com.sysm.devsync.domain.persistence.UserPersistencePort;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;

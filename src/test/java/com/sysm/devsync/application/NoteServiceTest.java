@@ -6,10 +6,10 @@ import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.Pageable;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.models.Note;
-import com.sysm.devsync.domain.repositories.NotePersistencePort;
-import com.sysm.devsync.domain.repositories.ProjectPersistencePort;
-import com.sysm.devsync.domain.repositories.TagPersistencePort;
-import com.sysm.devsync.domain.repositories.UserPersistencePort;
+import com.sysm.devsync.domain.persistence.NotePersistencePort;
+import com.sysm.devsync.domain.persistence.ProjectPersistencePort;
+import com.sysm.devsync.domain.persistence.TagPersistencePort;
+import com.sysm.devsync.domain.persistence.UserPersistencePort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -357,7 +357,7 @@ class NoteServiceTest {
     void getAllNotes_withSearchQuery_shouldThrowException_whenQueryIsNull() {
         // Act & Assert
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            noteService.getAllNotes((SearchQuery) null);
+            noteService.getAllNotes(null);
         });
         assertEquals("Invalid query parameters", exception.getMessage());
         verify(notePersistence, never()).findAll(any(SearchQuery.class));

@@ -6,11 +6,10 @@ import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.Pageable;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.models.Note;
-import com.sysm.devsync.domain.repositories.NotePersistencePort;
-import com.sysm.devsync.domain.repositories.ProjectPersistencePort;
-import com.sysm.devsync.domain.repositories.TagPersistencePort;
-import com.sysm.devsync.domain.repositories.UserPersistencePort;
-import org.springframework.util.StringUtils;
+import com.sysm.devsync.domain.persistence.NotePersistencePort;
+import com.sysm.devsync.domain.persistence.ProjectPersistencePort;
+import com.sysm.devsync.domain.persistence.TagPersistencePort;
+import com.sysm.devsync.domain.persistence.UserPersistencePort;
 
 public class NoteService {
 

@@ -6,7 +6,7 @@ import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.models.Tag;
 import com.sysm.devsync.controller.dto.CreateResponse;
 import com.sysm.devsync.controller.dto.request.TagCreateUpdate;
-import com.sysm.devsync.domain.repositories.TagPersistencePort;
+import com.sysm.devsync.domain.persistence.TagPersistencePort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
