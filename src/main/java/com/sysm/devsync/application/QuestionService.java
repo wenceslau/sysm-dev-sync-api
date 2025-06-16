@@ -31,12 +31,12 @@ public class QuestionService {
     public CreateResponse createQuestion(QuestionCreateUpdate questionCreateUpdate, String authorId) {
         var projectExist = projectPersistence.existsById(questionCreateUpdate.projectId());
         if (!projectExist) {
-            throw new NotFoundException("Project not found");
+            throw new NotFoundException("Project not found", questionCreateUpdate.projectId());
         }
 
         var userExists = userPersistence.existsById(authorId);
         if (!userExists) {
-            throw new NotFoundException("User not found");
+            throw new NotFoundException("User not found", authorId);
         }
 
         var question = Question.create(
@@ -52,7 +52,7 @@ public class QuestionService {
 
     public void updateQuestion(String questionId, QuestionCreateUpdate questionUpdate) {
         var question = questionPersistence.findById(questionId)
-                .orElseThrow(() -> new NotFoundException("Question not found"));
+                .orElseThrow(() -> new NotFoundException("Question not found", questionId));
 
         question.update(
                 questionUpdate.title(),
@@ -64,7 +64,7 @@ public class QuestionService {
 
     public void updateQuestionStatus(String questionId, QuestionStatus questionUpdate) {
         var question = questionPersistence.findById(questionId)
-                .orElseThrow(() -> new NotFoundException("Question not found"));
+                .orElseThrow(() -> new NotFoundException("Question not found", questionId));
 
         question.changeStatus(questionUpdate);
 
@@ -73,11 +73,11 @@ public class QuestionService {
 
     public void addTagToQuestion(String questionId, String tagId) {
         var question = questionPersistence.findById(questionId)
-                .orElseThrow(() -> new NotFoundException("Question not found"));
+                .orElseThrow(() -> new NotFoundException("Question not found", questionId));
 
         var tagExist = tagPersistence.existsById(tagId);
         if (!tagExist) {
-            throw new NotFoundException("Tag not found");
+            throw new NotFoundException("Tag not found", tagId);
         }
 
         question.addTag(tagId);
@@ -86,11 +86,11 @@ public class QuestionService {
 
     public void removeTagFromQuestion(String questionId, String tagId) {
         var question = questionPersistence.findById(questionId)
-                .orElseThrow(() -> new NotFoundException("Question not found"));
+                .orElseThrow(() -> new NotFoundException("Question not found", questionId));
 
         var tagExist = tagPersistence.existsById(tagId);
         if (!tagExist) {
-            throw new NotFoundException("Tag not found");
+            throw new NotFoundException("Tag not found", tagId);
         }
 
         question.removeTag(tagId);
@@ -100,7 +100,7 @@ public class QuestionService {
     public void deleteQuestion(String questionId) {
         var exist = questionPersistence.existsById(questionId);
         if (!exist) {
-            throw new NotFoundException("Question not found");
+            throw new NotFoundException("Question not found", questionId);
         }
 
         questionPersistence.deleteById(questionId);
@@ -108,13 +108,13 @@ public class QuestionService {
 
     public Question getQuestionById(String questionId) {
         return questionPersistence.findById(questionId)
-                .orElseThrow(() -> new NotFoundException("Question not found"));
+                .orElseThrow(() -> new NotFoundException("Question not found", questionId));
     }
 
     public Page<Question> getAllQuestions(Pageable pageable, String projectId) {
         var projectExist = projectPersistence.existsById(projectId);
         if (!projectExist) {
-            throw new NotFoundException("Project not found");
+            throw new NotFoundException("Project not found", projectId);
         }
 
         return questionPersistence.findAllByProjectId(pageable, projectId);

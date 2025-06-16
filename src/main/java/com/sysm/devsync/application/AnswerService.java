@@ -28,12 +28,12 @@ public class AnswerService {
     public CreateResponse createAnswer(AnswerCreateUpdate answerCreateUpdate, String questionId, String authorId) {
         var questionExist = questionPersistence.existsById(questionId);
         if (!questionExist) {
-            throw new NotFoundException("Question not found");
+            throw new NotFoundException("Question not found", questionId);
         }
 
         var authorExist = userPersistencePort.existsById(authorId);
         if (!authorExist) {
-            throw new NotFoundException("Author not found");
+            throw new NotFoundException("Author not found", authorId);
         }
 
         var answer = Answer.create(
@@ -49,7 +49,7 @@ public class AnswerService {
 
     public void updateAnswer(String answerId, AnswerCreateUpdate answerUpdate) {
         var answer = answerPersistence.findById(answerId)
-                .orElseThrow(() -> new NotFoundException("Answer not found"));
+                .orElseThrow(() -> new NotFoundException("Answer not found", answerId));
 
         answer.update(answerUpdate.content());
         answerPersistence.update(answer);
@@ -57,7 +57,7 @@ public class AnswerService {
 
     public void acceptAnswer(String answerId) {
         var answer = answerPersistence.findById(answerId)
-                .orElseThrow(() -> new NotFoundException("Answer not found"));
+                .orElseThrow(() -> new NotFoundException("Answer not found", answerId));
 
         answer.accept();
         answerPersistence.update(answer);
@@ -65,7 +65,7 @@ public class AnswerService {
 
     public void rejectAnswer(String answerId) {
         var answer = answerPersistence.findById(answerId)
-                .orElseThrow(() -> new NotFoundException("Answer not found"));
+                .orElseThrow(() -> new NotFoundException("Answer not found", answerId));
 
         answer.reject();
         answerPersistence.update(answer);
@@ -74,7 +74,7 @@ public class AnswerService {
     public void deleteAnswer(String answerId) {
         var exist = answerPersistence.existsById(answerId);
         if (!exist) {
-            throw new NotFoundException("Answer not found");
+            throw new NotFoundException("Answer not found", answerId);
         }
 
         answerPersistence.deleteById(answerId);
@@ -82,13 +82,13 @@ public class AnswerService {
 
     public Answer getAnswerById(String answerId) {
         return answerPersistence.findById(answerId)
-                .orElseThrow(() -> new NotFoundException("Answer not found"));
+                .orElseThrow(() -> new NotFoundException("Answer not found", answerId));
     }
 
     public Page<Answer> getAllAnswers(Pageable pageable, String questionId) {
         var questionExist = questionPersistence.existsById(questionId);
         if (!questionExist) {
-            throw new NotFoundException("Question not found");
+            throw new NotFoundException("Question not found", questionId);
         }
 
         return answerPersistence.findAllByQuestionId(pageable, questionId);
