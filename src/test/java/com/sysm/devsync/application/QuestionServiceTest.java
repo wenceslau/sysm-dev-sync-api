@@ -398,7 +398,7 @@ class QuestionServiceTest {
     void getAllQuestions_withSearchQuery_shouldThrowIllegalArgumentException_whenQueryIsNull() {
         // Act & Assert
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            questionService.getAllQuestions((SearchQuery) null);
+            questionService.getAllQuestions( null);
         });
         assertEquals("Invalid query parameters", exception.getMessage());
         verify(questionPersistence, never()).findAll(any(SearchQuery.class));
