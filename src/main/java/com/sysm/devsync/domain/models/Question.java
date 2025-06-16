@@ -1,6 +1,6 @@
 package com.sysm.devsync.domain.models;
 
-import com.sysm.devsync.domain.enums.StatusQuestion;
+import com.sysm.devsync.domain.enums.QuestionStatus;
 
 import java.time.Instant;
 import java.util.HashSet;
@@ -28,13 +28,13 @@ public class Question extends AbstractModel {
     private String title;
     private String description;
 
-    private StatusQuestion statusQuestion; // OPEN, CLOSED, RESOLVED
+    private QuestionStatus questionStatus; // OPEN, CLOSED, RESOLVED
     private Instant updatedAt;
 
 
     private Question(String id, Instant createdAt, String projectId,
                      String authorId, Set<String> tagsId, String title,
-                     String description, StatusQuestion statusQuestion, Instant updatedAt) {
+                     String description, QuestionStatus questionStatus, Instant updatedAt) {
         this.id = id;
         this.createdAt = createdAt;
         this.projectId = projectId;
@@ -42,7 +42,7 @@ public class Question extends AbstractModel {
         this.tagsId = tagsId;
         this.title = title;
         this.description = description;
-        this.statusQuestion = statusQuestion;
+        this.questionStatus = questionStatus;
         this.updatedAt = updatedAt;
         validate();
     }
@@ -79,13 +79,13 @@ public class Question extends AbstractModel {
         return this;
     }
 
-    public void changeStatus(StatusQuestion statusQuestion) {
-        if (statusQuestion == null) {
+    public void changeStatus(QuestionStatus questionStatus) {
+        if (questionStatus == null) {
             throw new IllegalArgumentException("Status cannot be null");
         }
 
         this.updatedAt = Instant.now();
-        this.statusQuestion = statusQuestion;
+        this.questionStatus = questionStatus;
     }
 
     public void addTag(String tag) {
@@ -130,8 +130,8 @@ public class Question extends AbstractModel {
         return tagsId;
     }
 
-    public StatusQuestion getStatus() {
-        return statusQuestion;
+    public QuestionStatus getStatus() {
+        return questionStatus;
     }
 
     public Instant getUpdatedAt() {
@@ -149,14 +149,14 @@ public class Question extends AbstractModel {
                 new HashSet<>(),
                 title,
                 description,
-                StatusQuestion.OPEN,
+                QuestionStatus.OPEN,
                 now
         );
     }
 
     public static Question build(String id, Instant createdAt, Instant updatedAt,
                                  String title, String description, Set<String> tags,
-                                 String projectId, String authorId, StatusQuestion statusQuestion) {
+                                 String projectId, String authorId, QuestionStatus questionStatus) {
         return new Question(
                 id,
                 createdAt,
@@ -165,7 +165,7 @@ public class Question extends AbstractModel {
                 new HashSet<>(tags),
                 title,
                 description,
-                statusQuestion,
+                questionStatus,
                 updatedAt
         );
     }

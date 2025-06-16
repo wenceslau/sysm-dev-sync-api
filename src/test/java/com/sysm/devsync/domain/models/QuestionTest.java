@@ -1,6 +1,6 @@
 package com.sysm.devsync.domain.models;
 
-import com.sysm.devsync.domain.enums.StatusQuestion;
+import com.sysm.devsync.domain.enums.QuestionStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -59,7 +59,7 @@ class QuestionTest {
 
         assertNotNull(question.getTagsId(), "Tags should be initialized as an empty set");
         assertTrue(question.getTagsId().isEmpty(), "Tags should be empty on creation");
-        assertEquals(StatusQuestion.OPEN, question.getStatus(), "Status should be OPEN on creation");
+        assertEquals(QuestionStatus.OPEN, question.getStatus(), "Status should be OPEN on creation");
     }
 
     @Test
@@ -136,10 +136,10 @@ class QuestionTest {
         Instant createdAt = Instant.now().minus(1, ChronoUnit.DAYS);
         Instant updatedAt = Instant.now().minus(12, ChronoUnit.HOURS);
         Set<String> tags = new HashSet<>(Set.of("java", "spring"));
-        StatusQuestion statusQuestion = StatusQuestion.RESOLVED;
+        QuestionStatus questionStatus = QuestionStatus.RESOLVED;
 
         Question question = Question.build(id, createdAt, updatedAt, validTitle, validDescription,
-                tags, validProjectId, validAuthorId, statusQuestion);
+                tags, validProjectId, validAuthorId, questionStatus);
 
         assertEquals(id, question.getId());
         assertEquals(createdAt, question.getCreatedAt());
@@ -150,7 +150,7 @@ class QuestionTest {
         assertNotSame(tags, question.getTagsId(), "Build should create a new Set instance for tags");
         assertEquals(validProjectId, question.getProjectId());
         assertEquals(validAuthorId, question.getAuthorId());
-        assertEquals(statusQuestion, question.getStatus());
+        assertEquals(questionStatus, question.getStatus());
     }
 
     @Test
@@ -167,7 +167,7 @@ class QuestionTest {
         // Given the current implementation:
         assertThrows(NullPointerException.class, () -> {
             Question.build(UUID.randomUUID().toString(), Instant.now(), Instant.now(),
-                    validTitle, validDescription, null, validProjectId, validAuthorId, StatusQuestion.OPEN);
+                    validTitle, validDescription, null, validProjectId, validAuthorId, QuestionStatus.OPEN);
         }, "build() should throw NullPointerException if null is passed for tags and not handled");
 
 
@@ -183,7 +183,7 @@ class QuestionTest {
     void build_shouldUseProvidedEmptySetForTags() {
         Set<String> emptyTags = Collections.emptySet();
         Question question = Question.build(UUID.randomUUID().toString(), Instant.now(), Instant.now(),
-                validTitle, validDescription, emptyTags, validProjectId, validAuthorId, StatusQuestion.OPEN);
+                validTitle, validDescription, emptyTags, validProjectId, validAuthorId, QuestionStatus.OPEN);
         assertNotNull(question.getTagsId());
         assertTrue(question.getTagsId().isEmpty());
         assertNotSame(emptyTags, question.getTagsId(), "Build should create a new Set instance for tags");
@@ -194,7 +194,7 @@ class QuestionTest {
     void build_shouldThrowException_whenIdIsNull() {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             Question.build(null, Instant.now(), Instant.now(), validTitle, validDescription,
-                    new HashSet<>(), validProjectId, validAuthorId, StatusQuestion.OPEN);
+                    new HashSet<>(), validProjectId, validAuthorId, QuestionStatus.OPEN);
         });
         assertEquals("ID cannot be null or empty", exception.getMessage());
     }
@@ -213,7 +213,7 @@ class QuestionTest {
         String initialProjectId = question.getProjectId();
         String initialAuthorId = question.getAuthorId();
         Set<String> initialTags = new HashSet<>(question.getTagsId()); // Copy for comparison
-        StatusQuestion initialStatusQuestion = question.getStatus();
+        QuestionStatus initialQuestionStatus = question.getStatus();
 
         Thread.sleep(1); // Ensure updatedAt will be different
 
@@ -231,7 +231,7 @@ class QuestionTest {
         assertEquals(initialProjectId, question.getProjectId());
         assertEquals(initialAuthorId, question.getAuthorId());
         assertEquals(initialTags, question.getTagsId(), "Tags should not be changed by update()");
-        assertEquals(initialStatusQuestion, question.getStatus(), "Status should not be changed by update()");
+        assertEquals(initialQuestionStatus, question.getStatus(), "Status should not be changed by update()");
     }
 
     @Test
@@ -279,12 +279,12 @@ class QuestionTest {
     void changeStatus_shouldUpdateStatusAndTimestamp() throws InterruptedException {
         Question question = Question.create(validTitle, validDescription, validProjectId, validAuthorId);
         Instant initialUpdatedAt = question.getUpdatedAt();
-        StatusQuestion newStatusQuestion = StatusQuestion.CLOSED;
+        QuestionStatus newQuestionStatus = QuestionStatus.CLOSED;
 
         Thread.sleep(1); // Ensure updatedAt will be different
-        question.changeStatus(newStatusQuestion);
+        question.changeStatus(newQuestionStatus);
 
-        assertEquals(newStatusQuestion, question.getStatus());
+        assertEquals(newQuestionStatus, question.getStatus());
         assertTrue(question.getUpdatedAt().isAfter(initialUpdatedAt));
     }
 
@@ -347,12 +347,12 @@ class QuestionTest {
     void addTag_shouldNotChangeUpdatedAtOrStatus() {
         Question question = Question.create(validTitle, validDescription, validProjectId, validAuthorId);
         Instant updatedAtBefore = question.getUpdatedAt();
-        StatusQuestion statusQuestionBefore = question.getStatus();
+        QuestionStatus questionStatusBefore = question.getStatus();
 
         question.addTag("someTag");
 
         assertEquals(updatedAtBefore, question.getUpdatedAt(), "UpdatedAt should not change after adding a tag");
-        assertEquals(statusQuestionBefore, question.getStatus(), "Status should not change after adding a tag");
+        assertEquals(questionStatusBefore, question.getStatus(), "Status should not change after adding a tag");
     }
 
     // --- Instance Method: removeTag() ---
@@ -420,12 +420,12 @@ class QuestionTest {
         Question question = Question.create(validTitle, validDescription, validProjectId, validAuthorId);
         question.addTag("tagToRemove");
         Instant updatedAtBefore = question.getUpdatedAt();
-        StatusQuestion statusQuestionBefore = question.getStatus();
+        QuestionStatus questionStatusBefore = question.getStatus();
 
         question.removeTag("tagToRemove");
 
         assertEquals(updatedAtBefore, question.getUpdatedAt(), "UpdatedAt should not change after removing a tag");
-        assertEquals(statusQuestionBefore, question.getStatus(), "Status should not change after removing a tag");
+        assertEquals(questionStatusBefore, question.getStatus(), "Status should not change after removing a tag");
     }
 
     // --- Getters (Basic check, mostly covered by other tests) ---
@@ -440,9 +440,9 @@ class QuestionTest {
         Set<String> tags = new HashSet<>(Set.of("getterTag1", "getterTag2"));
         String projectId = UUID.randomUUID().toString();
         String authorId = UUID.randomUUID().toString();
-        StatusQuestion statusQuestion = StatusQuestion.CLOSED;
+        QuestionStatus questionStatus = QuestionStatus.CLOSED;
 
-        Question question = Question.build(id, createdAt, updatedAt, title, description, tags, projectId, authorId, statusQuestion);
+        Question question = Question.build(id, createdAt, updatedAt, title, description, tags, projectId, authorId, questionStatus);
 
         assertEquals(id, question.getId());
         assertEquals(createdAt, question.getCreatedAt());
@@ -452,7 +452,7 @@ class QuestionTest {
         assertEquals(tags, question.getTagsId());
         assertEquals(projectId, question.getProjectId());
         assertEquals(authorId, question.getAuthorId());
-        assertEquals(statusQuestion, question.getStatus());
+        assertEquals(questionStatus, question.getStatus());
     }
 
 }

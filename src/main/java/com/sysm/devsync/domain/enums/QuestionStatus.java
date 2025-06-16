@@ -1,6 +1,6 @@
 package com.sysm.devsync.domain.enums;
 
-public enum StatusQuestion {
+public enum QuestionStatus {
     OPEN,
     CLOSED,
     RESOLVED
