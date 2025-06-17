@@ -1,8 +1,8 @@
 package com.sysm.devsync.application;
 
-import com.sysm.devsync.controller.dto.CreateResponse;
-import com.sysm.devsync.controller.dto.request.WorkspaceCreateUpdate;
-import com.sysm.devsync.domain.Page;
+import com.sysm.devsync.infrastructure.controller.dto.CreateResponse;
+import com.sysm.devsync.infrastructure.controller.dto.request.WorkspaceCreateUpdate;
+import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.models.Workspace;
 import com.sysm.devsync.domain.persistence.UserPersistencePort;
@@ -99,7 +99,7 @@ public class WorkspaceService {
                 .orElseThrow(() -> new IllegalArgumentException("Workspace not found"));
     }
 
-    public Page<Workspace> getAllWorkspaces(SearchQuery query) {
+    public Pagination<Workspace> getAllWorkspaces(SearchQuery query) {
         return workspacePersistence.findAll(query);
     }
 

@@ -1,8 +1,8 @@
 package com.sysm.devsync.application;
 
-import com.sysm.devsync.controller.dto.CreateResponse;
-import com.sysm.devsync.controller.dto.request.NoteCreateUpdate;
-import com.sysm.devsync.domain.Page;
+import com.sysm.devsync.infrastructure.controller.dto.CreateResponse;
+import com.sysm.devsync.infrastructure.controller.dto.request.NoteCreateUpdate;
+import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.Pageable;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.models.Note;
@@ -111,14 +111,14 @@ public class NoteService {
                 .orElseThrow(() -> new IllegalArgumentException("Note not found"));
     }
 
-    public Page<Note> getAllNotes(SearchQuery query) {
+    public Pagination<Note> getAllNotes(SearchQuery query) {
         if (query == null) {
             throw new IllegalArgumentException("Invalid query parameters");
         }
         return notePersistence.findAll(query);
     }
 
-    public Page<Note> getAllNotes(Pageable pageable, String projectId) {
+    public Pagination<Note> getAllNotes(Pageable pageable, String projectId) {
         var exists = projectPersistence.existsById(projectId);
         if (!exists) {
             throw new IllegalArgumentException("Project not found");

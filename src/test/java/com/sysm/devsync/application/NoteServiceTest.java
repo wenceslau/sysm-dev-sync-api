@@ -1,8 +1,8 @@
 package com.sysm.devsync.application;
 
-import com.sysm.devsync.controller.dto.CreateResponse;
-import com.sysm.devsync.controller.dto.request.NoteCreateUpdate;
-import com.sysm.devsync.domain.Page;
+import com.sysm.devsync.infrastructure.controller.dto.CreateResponse;
+import com.sysm.devsync.infrastructure.controller.dto.request.NoteCreateUpdate;
+import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.Pageable;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.models.Note;
@@ -340,15 +340,15 @@ class NoteServiceTest {
     void getAllNotes_withSearchQuery_shouldReturnPageFromPersistence() {
         // Arrange
         SearchQuery query = new SearchQuery(new Pageable(0, 10, "createdAt", "DESC"),"search term");
-        Page<Note> expectedPage = new Page<>(0, 10, 0L, Collections.emptyList());
-        when(notePersistence.findAll(query)).thenReturn(expectedPage);
+        Pagination<Note> expectedPagination = new Pagination<>(0, 10, 0L, Collections.emptyList());
+        when(notePersistence.findAll(query)).thenReturn(expectedPagination);
 
         // Act
-        Page<Note> actualPage = noteService.getAllNotes(query);
+        Pagination<Note> actualPagination = noteService.getAllNotes(query);
 
         // Assert
-        assertNotNull(actualPage);
-        assertSame(expectedPage, actualPage);
+        assertNotNull(actualPagination);
+        assertSame(expectedPagination, actualPagination);
         verify(notePersistence).findAll(query);
     }
 
@@ -368,16 +368,16 @@ class NoteServiceTest {
     void getAllNotes_withPageableAndProjectId_shouldReturnPage_whenProjectExists() {
         // Arrange
         Pageable pageable =  new Pageable(0, 10, "createdAt", "asc");
-        Page<Note> expectedPage = new Page<>(0, 10, 0L, Collections.emptyList());
+        Pagination<Note> expectedPagination = new Pagination<>(0, 10, 0L, Collections.emptyList());
         when(projectPersistence.existsById(projectId)).thenReturn(true);
-        when(notePersistence.findAllByProjectId(pageable, projectId)).thenReturn(expectedPage);
+        when(notePersistence.findAllByProjectId(pageable, projectId)).thenReturn(expectedPagination);
 
         // Act
-        Page<Note> actualPage = noteService.getAllNotes(pageable, projectId);
+        Pagination<Note> actualPagination = noteService.getAllNotes(pageable, projectId);
 
         // Assert
-        assertNotNull(actualPage);
-        assertSame(expectedPage, actualPage);
+        assertNotNull(actualPagination);
+        assertSame(expectedPagination, actualPagination);
         verify(projectPersistence).existsById(projectId);
         verify(notePersistence).findAllByProjectId(pageable, projectId);
     }

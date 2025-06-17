@@ -14,6 +14,6 @@ public interface PersistencePort<T> {
 
     boolean existsById(String id);
 
-    Page<T> findAll(SearchQuery query);
+    Pagination<T> findAll(SearchQuery query);
 
 }

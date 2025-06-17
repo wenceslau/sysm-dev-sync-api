@@ -1,9 +1,9 @@
 package com.sysm.devsync.application;
 
-import com.sysm.devsync.controller.dto.CreateResponse;
-import com.sysm.devsync.controller.dto.request.QuestionCreateUpdate;
+import com.sysm.devsync.infrastructure.controller.dto.CreateResponse;
+import com.sysm.devsync.infrastructure.controller.dto.request.QuestionCreateUpdate;
 import com.sysm.devsync.domain.NotFoundException;
-import com.sysm.devsync.domain.Page;
+import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.Pageable;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.enums.QuestionStatus;
@@ -347,16 +347,16 @@ class QuestionServiceTest {
     void getAllQuestions_withPageableAndProjectId_shouldReturnPage_whenProjectExists() {
         // Arrange
         Pageable pageable = new Pageable(0, 10, "createdAt", "desc"); // Assuming a static factory method for Pageable
-        Page<Question> expectedPage = new Page<>(0, 10, 0L, Collections.emptyList());
+        Pagination<Question> expectedPagination = new Pagination<>(0, 10, 0L, Collections.emptyList());
         when(projectPersistence.existsById(projectId)).thenReturn(true);
-        when(questionPersistence.findAllByProjectId(pageable, projectId)).thenReturn(expectedPage);
+        when(questionPersistence.findAllByProjectId(pageable, projectId)).thenReturn(expectedPagination);
 
         // Act
-        Page<Question> actualPage = questionService.getAllQuestions(pageable, projectId);
+        Pagination<Question> actualPagination = questionService.getAllQuestions(pageable, projectId);
 
         // Assert
-        assertNotNull(actualPage);
-        assertSame(expectedPage, actualPage);
+        assertNotNull(actualPagination);
+        assertSame(expectedPagination, actualPagination);
         verify(projectPersistence).existsById(projectId);
         verify(questionPersistence).findAllByProjectId(pageable, projectId);
     }
@@ -381,15 +381,15 @@ class QuestionServiceTest {
     void getAllQuestions_withSearchQuery_shouldReturnPageFromPersistence() {
         // Arrange
         SearchQuery query = new SearchQuery(new Pageable(0, 10, "createdAt", "desc"), "title");
-        Page<Question> expectedPage = new Page<>(0, 10, 0L, Collections.emptyList());
-        when(questionPersistence.findAll(query)).thenReturn(expectedPage);
+        Pagination<Question> expectedPagination = new Pagination<>(0, 10, 0L, Collections.emptyList());
+        when(questionPersistence.findAll(query)).thenReturn(expectedPagination);
 
         // Act
-        Page<Question> actualPage = questionService.getAllQuestions(query);
+        Pagination<Question> actualPagination = questionService.getAllQuestions(query);
 
         // Assert
-        assertNotNull(actualPage);
-        assertSame(expectedPage, actualPage);
+        assertNotNull(actualPagination);
+        assertSame(expectedPagination, actualPagination);
         verify(questionPersistence).findAll(query);
     }
 

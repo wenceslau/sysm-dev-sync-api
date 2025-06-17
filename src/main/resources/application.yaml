@@ -1,0 +1,49 @@
+server:
+  servlet:
+    context-path: ${web-server.context_path}
+  port: ${web-server.port}
+  compression:
+    enabled: true                                           # Whether response compression is enabled.
+    mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json # Comma-separated list of MIME types that should be compressed.
+    min-response-size: 1024                                 # Minimum "Content-Length" value that is required for compression to be performed.
+  undertow:
+    threads:
+      worker: ${web-server.undertow_threads_worker}             # Generally this should be reasonably high, at least 10 per CPU core: https://undertow.io/undertow-docs/undertow-docs-2.1.0/index.html#listeners-2
+      io: ${web-server.undertow_threads_io}                     # One IO thread per CPU core is a reasonable default: https://undertow.io/undertow-docs/undertow-docs-2.1.0/index.html#listeners-2
+
+spring:
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+  datasource:
+    url: ${database.url}
+    username: ${database.username}
+    password: ${database.password}
+    driver-class-name: ${database.driver_class_name}
+    hikari:
+      auto-commit: false
+      connection-timeout: 250
+      max-lifetime: 600000
+      maximum-pool-size: 10
+      minimum-idle: 10
+      pool-name: master
+
+  jpa:
+    open-in-view: false
+    show-sql: ${database.jpa_show_sql}
+    defer-datasource-initialization: ${database.jpa_defer_datasource_initialization}
+    hibernate:
+      ddl-auto: ${database.hibernate_ddl_auto}
+    properties:
+      "[hibernate.dialect]": ${database.hibernate_dialect}
+      "[hibernate.generate_statistics]": false
+      "[hibernate.connection.provider_disables_autocommit]": true
+
+logging:
+  level:
+    root: ${log.level_root}
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

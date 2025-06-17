@@ -1,5 +1,6 @@
 package com.sysm.devsync.domain.models;
 
+import com.sysm.devsync.domain.ModelTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -10,6 +11,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@ModelTest
 public class AnswerTest {
 
     private String validQuestionId;

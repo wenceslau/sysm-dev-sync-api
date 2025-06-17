@@ -1,8 +1,8 @@
 package com.sysm.devsync.application;
 
-import com.sysm.devsync.controller.dto.CreateResponse;
-import com.sysm.devsync.controller.dto.request.ProjectCreateUpdate;
-import com.sysm.devsync.domain.Page;
+import com.sysm.devsync.infrastructure.controller.dto.CreateResponse;
+import com.sysm.devsync.infrastructure.controller.dto.request.ProjectCreateUpdate;
+import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.Pageable;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.models.Project;
@@ -253,15 +253,15 @@ class ProjectServiceTest {
     void getAllProjects_shouldReturnPaginationResult_fromPersistence() {
         // Arrange
         SearchQuery query = new SearchQuery(new Pageable(1,10,  "asc", "search"), "name");
-        Page<Project> expectedPage = new Page<>(1, 10, 0, Collections.emptyList());
-        when(projectPersistencePort.findAll(query)).thenReturn(expectedPage);
+        Pagination<Project> expectedPagination = new Pagination<>(1, 10, 0, Collections.emptyList());
+        when(projectPersistencePort.findAll(query)).thenReturn(expectedPagination);
 
         // Act
-        Page<Project> actualPage = projectService.getAllProjects(query);
+        Pagination<Project> actualPagination = projectService.getAllProjects(query);
 
         // Assert
-        assertNotNull(actualPage);
-        assertSame(expectedPage, actualPage);
+        assertNotNull(actualPagination);
+        assertSame(expectedPagination, actualPagination);
         verify(projectPersistencePort, times(1)).findAll(query);
     }
 }

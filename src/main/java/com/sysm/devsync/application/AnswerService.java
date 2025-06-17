@@ -1,9 +1,9 @@
 package com.sysm.devsync.application;
 
-import com.sysm.devsync.controller.dto.CreateResponse;
-import com.sysm.devsync.controller.dto.request.AnswerCreateUpdate;
+import com.sysm.devsync.infrastructure.controller.dto.CreateResponse;
+import com.sysm.devsync.infrastructure.controller.dto.request.AnswerCreateUpdate;
 import com.sysm.devsync.domain.NotFoundException;
-import com.sysm.devsync.domain.Page;
+import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.Pageable;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.models.Answer;
@@ -85,7 +85,7 @@ public class AnswerService {
                 .orElseThrow(() -> new NotFoundException("Answer not found", answerId));
     }
 
-    public Page<Answer> getAllAnswers(Pageable pageable, String questionId) {
+    public Pagination<Answer> getAllAnswers(Pageable pageable, String questionId) {
         var questionExist = questionPersistence.existsById(questionId);
         if (!questionExist) {
             throw new NotFoundException("Question not found", questionId);
@@ -94,7 +94,7 @@ public class AnswerService {
         return answerPersistence.findAllByQuestionId(pageable, questionId);
     }
 
-    public Page<Answer> getAllAnswers(SearchQuery query) {
+    public Pagination<Answer> getAllAnswers(SearchQuery query) {
         if (query == null) {
             throw new IllegalArgumentException("Invalid query parameters");
         }

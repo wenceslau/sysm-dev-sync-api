@@ -1,0 +1,18 @@
+database:
+  url: jdbc:h2:mem://tests:MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
+  username: sa
+  password: sa
+  jpa_show_sql: false
+  jpa_defer_datasource_initialization: false
+  hibernate_ddl_auto: create-drop
+  hibernate_dialect: org.hibernate.dialect.H2Dialect
+  driver_class_name: org.h2.Driver
+
+web-server:
+  port: 7979
+  context_path: /
+  undertow_threads_worker: 32
+  undertow_threads_io: 2
+
+log:
+  level_root: INFO

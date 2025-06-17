@@ -1,9 +1,9 @@
 package com.sysm.devsync.application;
 
-import com.sysm.devsync.controller.dto.CreateResponse;
-import com.sysm.devsync.controller.dto.request.CommentCreateUpdate;
+import com.sysm.devsync.infrastructure.controller.dto.CreateResponse;
+import com.sysm.devsync.infrastructure.controller.dto.request.CommentCreateUpdate;
 import com.sysm.devsync.domain.NotFoundException;
-import com.sysm.devsync.domain.Page;
+import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.Pageable;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.enums.TargetType;
@@ -308,16 +308,16 @@ class CommentServiceTest {
         @DisplayName("should return page when NOTE target exists")
         void getAllComments_noteTargetExists() {
             // Arrange
-            Page<Comment> expectedPage = new Page<>(0, 10, 0L, Collections.emptyList());
+            Pagination<Comment> expectedPagination = new Pagination<>(0, 10, 0L, Collections.emptyList());
             when(notePersistence.existsById(targetId)).thenReturn(true);
-            when(commentPersistence.findAllByTargetId(pageable, TargetType.NOTE, targetId)).thenReturn(expectedPage);
+            when(commentPersistence.findAllByTargetId(pageable, TargetType.NOTE, targetId)).thenReturn(expectedPagination);
 
             // Act
-            Page<Comment> actualPage = commentService.getAllComments(pageable, targetId, TargetType.NOTE);
+            Pagination<Comment> actualPagination = commentService.getAllComments(pageable, targetId, TargetType.NOTE);
 
             // Assert
-            assertNotNull(actualPage);
-            assertSame(expectedPage, actualPage);
+            assertNotNull(actualPagination);
+            assertSame(expectedPagination, actualPagination);
             verify(notePersistence).existsById(targetId);
             verify(commentPersistence).findAllByTargetId(pageable, TargetType.NOTE, targetId);
         }
@@ -390,15 +390,15 @@ class CommentServiceTest {
         void getAllComments_withSearchQuery_success() {
             // Arrange
             SearchQuery query = new SearchQuery(new Pageable(1, 10, "id", "desc"), "content");
-            Page<Comment> expectedPage = new Page<>(0, 10, 0L, Collections.emptyList());
-            when(commentPersistence.findAll(query)).thenReturn(expectedPage);
+            Pagination<Comment> expectedPagination = new Pagination<>(0, 10, 0L, Collections.emptyList());
+            when(commentPersistence.findAll(query)).thenReturn(expectedPagination);
 
             // Act
-            Page<Comment> actualPage = commentService.getAllComments(query);
+            Pagination<Comment> actualPagination = commentService.getAllComments(query);
 
             // Assert
-            assertNotNull(actualPage);
-            assertSame(expectedPage, actualPage);
+            assertNotNull(actualPagination);
+            assertSame(expectedPagination, actualPagination);
             verify(commentPersistence).findAll(query);
         }
 

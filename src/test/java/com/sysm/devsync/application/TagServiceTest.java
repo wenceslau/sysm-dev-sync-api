@@ -1,11 +1,11 @@
 package com.sysm.devsync.application;
 
-import com.sysm.devsync.domain.Page;
+import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.Pageable;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.models.Tag;
-import com.sysm.devsync.controller.dto.CreateResponse;
-import com.sysm.devsync.controller.dto.request.TagCreateUpdate;
+import com.sysm.devsync.infrastructure.controller.dto.CreateResponse;
+import com.sysm.devsync.infrastructure.controller.dto.request.TagCreateUpdate;
 import com.sysm.devsync.domain.persistence.TagPersistencePort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -254,15 +254,15 @@ class TagServiceTest {
     void getAllTags_shouldReturnPaginationResult_fromRepository() {
         // Arrange
         SearchQuery query = new SearchQuery(new Pageable(1, 10,  "asc", "search"), "name");
-        Page<Tag> expectedPage = new Page<>(1, 10, 0,  Collections.emptyList());
-        when(tagPersistence.findAll(query)).thenReturn(expectedPage);
+        Pagination<Tag> expectedPagination = new Pagination<>(1, 10, 0,  Collections.emptyList());
+        when(tagPersistence.findAll(query)).thenReturn(expectedPagination);
 
         // Act
-        Page<Tag> actualPage = tagService.getAllTags(query);
+        Pagination<Tag> actualPagination = tagService.getAllTags(query);
 
         // Assert
-        assertNotNull(actualPage);
-        assertSame(expectedPage, actualPage);
+        assertNotNull(actualPagination);
+        assertSame(expectedPagination, actualPagination);
         verify(tagPersistence, times(1)).findAll(query);
     }
 }

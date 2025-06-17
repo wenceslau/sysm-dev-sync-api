@@ -1,4 +1,4 @@
-package com.sysm.devsync.controller.dto.response;
+package com.sysm.devsync.infrastructure.controller.dto.response;
 
 import com.sysm.devsync.domain.enums.UserRole;
 

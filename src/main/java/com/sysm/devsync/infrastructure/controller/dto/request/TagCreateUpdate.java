@@ -1,4 +1,4 @@
-package com.sysm.devsync.controller.dto.request;
+package com.sysm.devsync.infrastructure.controller.dto.request;
 
 public record TagCreateUpdate(
         String name,

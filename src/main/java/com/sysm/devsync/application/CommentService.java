@@ -1,9 +1,9 @@
 package com.sysm.devsync.application;
 
-import com.sysm.devsync.controller.dto.CreateResponse;
-import com.sysm.devsync.controller.dto.request.CommentCreateUpdate;
+import com.sysm.devsync.infrastructure.controller.dto.CreateResponse;
+import com.sysm.devsync.infrastructure.controller.dto.request.CommentCreateUpdate;
 import com.sysm.devsync.domain.NotFoundException;
-import com.sysm.devsync.domain.Page;
+import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.Pageable;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.enums.TargetType;
@@ -69,13 +69,13 @@ public class CommentService {
                 .orElseThrow(() -> new NotFoundException("Comment not found", commentId));
     }
 
-    public Page<Comment> getAllComments(Pageable pageable, String targetId, TargetType targetType) {
+    public Pagination<Comment> getAllComments(Pageable pageable, String targetId, TargetType targetType) {
         validateTargetExistence(targetId, targetType);
         return commentPersistence.findAllByTargetId(pageable, targetType, targetId);
 
     }
 
-    public Page<Comment> getAllComments(SearchQuery query) {
+    public Pagination<Comment> getAllComments(SearchQuery query) {
         if (query == null) {
             throw new IllegalArgumentException("Invalid query parameters");
         }

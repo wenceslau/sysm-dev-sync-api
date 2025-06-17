@@ -1,8 +1,8 @@
 package com.sysm.devsync.application;
 
-import com.sysm.devsync.controller.dto.CreateResponse;
-import com.sysm.devsync.controller.dto.request.ProjectCreateUpdate;
-import com.sysm.devsync.domain.Page;
+import com.sysm.devsync.infrastructure.controller.dto.CreateResponse;
+import com.sysm.devsync.infrastructure.controller.dto.request.ProjectCreateUpdate;
+import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.models.Project;
 import com.sysm.devsync.domain.persistence.ProjectPersistencePort;
@@ -69,7 +69,7 @@ public class ProjectService {
                 .orElseThrow(() -> new IllegalArgumentException("Project not found"));
     }
 
-    public Page<Project> getAllProjects(SearchQuery query) {
+    public Pagination<Project> getAllProjects(SearchQuery query) {
         return projectPersistence.findAll(query);
     }
 

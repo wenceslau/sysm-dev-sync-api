@@ -1,8 +1,8 @@
 package com.sysm.devsync.application;
 
-import com.sysm.devsync.controller.dto.CreateResponse;
-import com.sysm.devsync.controller.dto.request.WorkspaceCreateUpdate;
-import com.sysm.devsync.domain.Page;
+import com.sysm.devsync.infrastructure.controller.dto.CreateResponse;
+import com.sysm.devsync.infrastructure.controller.dto.request.WorkspaceCreateUpdate;
+import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.Pageable;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.models.Workspace;
@@ -374,15 +374,15 @@ class WorkspaceServiceTest {
     void getAllWorkspaces_shouldReturnPaginationResult_fromRepository() {
         // Arrange
         SearchQuery query = new SearchQuery(new Pageable(1, 10, "asc", "search"), "name");
-        Page<Workspace> expectedPage = new Page<>(1, 10, 0, Collections.emptyList());
-        when(workspacePersistence.findAll(query)).thenReturn(expectedPage);
+        Pagination<Workspace> expectedPagination = new Pagination<>(1, 10, 0, Collections.emptyList());
+        when(workspacePersistence.findAll(query)).thenReturn(expectedPagination);
 
         // Act
-        Page<Workspace> actualPage = workspaceService.getAllWorkspaces(query);
+        Pagination<Workspace> actualPagination = workspaceService.getAllWorkspaces(query);
 
         // Assert
-        assertNotNull(actualPage);
-        assertSame(expectedPage, actualPage);
+        assertNotNull(actualPagination);
+        assertSame(expectedPagination, actualPagination);
         verify(workspacePersistence, times(1)).findAll(query);
     }
 }
