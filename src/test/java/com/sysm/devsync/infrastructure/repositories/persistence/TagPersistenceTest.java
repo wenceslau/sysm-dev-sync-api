@@ -1,4 +1,4 @@
-package com.sysm.devsync.infrastructure.repositories.tag;
+package com.sysm.devsync.infrastructure.repositories.persistence;
 
 import com.sysm.devsync.domain.BusinessException;
 import com.sysm.devsync.domain.Pageable;
@@ -6,6 +6,7 @@ import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.models.Tag;
 import com.sysm.devsync.infrastructure.PersistenceTest; // Changed to PersistenceTest
+import com.sysm.devsync.infrastructure.repositories.entities.TagJpaEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

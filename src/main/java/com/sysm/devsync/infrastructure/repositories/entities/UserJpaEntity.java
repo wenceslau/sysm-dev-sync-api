@@ -1,4 +1,4 @@
-package com.sysm.devsync.infrastructure.repositories.user;
+package com.sysm.devsync.infrastructure.repositories.entities;
 
 
 import com.sysm.devsync.domain.enums.UserRole;

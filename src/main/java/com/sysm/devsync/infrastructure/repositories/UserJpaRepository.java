@@ -1,6 +1,6 @@
-package com.sysm.devsync.infrastructure.repositories.user;
+package com.sysm.devsync.infrastructure.repositories;
 
-import com.sysm.devsync.infrastructure.repositories.tag.TagJpaEntity;
+import com.sysm.devsync.infrastructure.repositories.entities.UserJpaEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;

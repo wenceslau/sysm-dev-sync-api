@@ -1,7 +1,8 @@
-package com.sysm.devsync.infrastructure.repositories.tag;
+package com.sysm.devsync.infrastructure.repositories;
 
 import com.sysm.devsync.infrastructure.PersistenceTest;
 
+import com.sysm.devsync.infrastructure.repositories.entities.TagJpaEntity;
 import jakarta.persistence.criteria.Predicate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

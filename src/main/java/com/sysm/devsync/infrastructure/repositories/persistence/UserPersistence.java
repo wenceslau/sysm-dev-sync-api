@@ -1,14 +1,13 @@
-package com.sysm.devsync.infrastructure.repositories.user;
+package com.sysm.devsync.infrastructure.repositories.persistence;
 
 import com.sysm.devsync.domain.BusinessException;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.models.User;
 import com.sysm.devsync.domain.persistence.UserPersistencePort;
-import com.sysm.devsync.infrastructure.repositories.tag.TagJpaEntity;
+import com.sysm.devsync.infrastructure.repositories.entities.UserJpaEntity;
+import com.sysm.devsync.infrastructure.repositories.UserJpaRepository;
 import jakarta.persistence.criteria.Predicate;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -79,11 +78,7 @@ public class UserPersistence implements UserPersistencePort {
             return criteriaBuilder.or(predicates.toArray(new Predicate[0]));
         };
 
-        var pageRequest = PageRequest.of(
-                searchQuery.pageable().page(),
-                searchQuery.pageable().perPage(),
-                Sort.by(Sort.Direction.fromString(searchQuery.pageable().direction()), searchQuery.pageable().sort())
-        );
+        var pageRequest = buildPageRequest(searchQuery);
         var page = repository.findAll(spec, pageRequest);
 
         return new Pagination<>(

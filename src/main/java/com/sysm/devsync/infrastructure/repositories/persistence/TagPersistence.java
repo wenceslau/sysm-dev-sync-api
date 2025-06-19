@@ -1,15 +1,13 @@
-package com.sysm.devsync.infrastructure.repositories.tag;
+package com.sysm.devsync.infrastructure.repositories.persistence;
 
 import com.sysm.devsync.domain.BusinessException;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.models.Tag;
 import com.sysm.devsync.domain.persistence.TagPersistencePort;
+import com.sysm.devsync.infrastructure.repositories.entities.TagJpaEntity;
+import com.sysm.devsync.infrastructure.repositories.TagJpaRepository;
 import jakarta.persistence.criteria.Predicate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;

@@ -1,4 +1,4 @@
-package com.sysm.devsync.infrastructure.repositories.user;
+package com.sysm.devsync.infrastructure.repositories.persistence;
 
 import com.sysm.devsync.domain.BusinessException;
 import com.sysm.devsync.domain.Pageable;
@@ -8,7 +8,9 @@ import com.sysm.devsync.domain.enums.UserRole;
 import com.sysm.devsync.domain.models.User;
 import com.sysm.devsync.infrastructure.PersistenceTest;
 // Import your UserJpaEntity if it's in a different package
-// import com.sysm.devsync.infrastructure.repositories.user.UserJpaEntity;
+// import com.sysm.devsync.infrastructure.repositories.entities.UserJpaEntity;
+import com.sysm.devsync.infrastructure.repositories.UserJpaRepository;
+import com.sysm.devsync.infrastructure.repositories.entities.UserJpaEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

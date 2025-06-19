@@ -1,4 +1,4 @@
-package com.sysm.devsync.infrastructure.repositories.tag;
+package com.sysm.devsync.infrastructure.repositories.entities;
 
 
 import com.sysm.devsync.domain.models.Tag;
@@ -6,7 +6,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity(name = "Tag")
