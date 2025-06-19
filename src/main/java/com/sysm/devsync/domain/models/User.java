@@ -3,6 +3,7 @@ package com.sysm.devsync.domain.models;
 import com.sysm.devsync.domain.enums.UserRole;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -16,11 +17,11 @@ public class User extends AbstractModel {
     private String email;
     private String passwordHash;
     private String profilePictureUrl;
-    private UserRole userRole; // ADMIN, MEMBER
+    private UserRole role; // ADMIN, MEMBER
 
     private User(String id, Instant createdAt, Instant updatedAt,
                  String name, String email, String passwordHash,
-                 String profilePictureUrl, UserRole userRole) {
+                 String profilePictureUrl, UserRole role) {
 
         this.id = id;
         this.createdAt = createdAt;
@@ -29,9 +30,9 @@ public class User extends AbstractModel {
         this.email = email;
         this.passwordHash = passwordHash;
         this.profilePictureUrl = profilePictureUrl;
-        this.userRole = userRole;
+        this.role = role;
 
-        validate(name, email, userRole);
+        validate(name, email, role);
     }
 
     public User update(String username, String email, UserRole userRole) {
@@ -40,7 +41,7 @@ public class User extends AbstractModel {
         this.updatedAt = Instant.now();
         this.name = username;
         this.email = email;
-        this.userRole = userRole;
+        this.role = userRole;
         return this;
     }
 
@@ -64,7 +65,7 @@ public class User extends AbstractModel {
         if (userRole == null) {
             throw new IllegalArgumentException("Role cannot be null or empty");
         }
-        this.userRole = userRole;
+        this.role = userRole;
         this.updatedAt = Instant.now();
     }
 
@@ -99,15 +100,21 @@ public class User extends AbstractModel {
     }
 
     public UserRole getRole() {
-        return userRole;
+        return role;
     }
 
     public Instant getCreatedAt() {
-        return createdAt;
+        if (createdAt != null) {
+            return createdAt.truncatedTo(ChronoUnit.MILLIS);
+        }
+        return null;
     }
 
     public Instant getUpdatedAt() {
-        return updatedAt;
+        if (updatedAt != null) {
+            return updatedAt.truncatedTo(ChronoUnit.MILLIS);
+        }
+        return null;
     }
 
     private void validate(String username, String email, UserRole userRole) {

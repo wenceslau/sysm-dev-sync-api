@@ -21,7 +21,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat; // Using AssertJ for fluent assertions
 
 @PersistenceTest // Your custom annotation that includes @DataJpaTest
-public class TagJpaEntityRepositoryTest {
+public class TagJpaRepositoryTest {
 
     @Autowired
     private TestEntityManager entityManager; // Useful for more fine-grained persistence operations
