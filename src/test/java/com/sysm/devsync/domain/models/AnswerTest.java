@@ -1,6 +1,7 @@
 package com.sysm.devsync.domain.models;
 
 import com.sysm.devsync.domain.ModelTest;
+import com.sysm.devsync.infrastructure.Utils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -9,6 +10,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
+import static java.time.temporal.ChronoUnit.MILLIS;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ModelTest
@@ -30,10 +32,9 @@ public class AnswerTest {
     @Test
     @DisplayName("create() should successfully create an answer with valid arguments")
     void create_shouldSucceed_withValidArguments() {
-        Instant beforeCreation = Instant.now();
+        Instant beforeCreation = Utils.iNow();
         Answer answer = Answer.create(validQuestionId, validAuthorId, validContent);
-        Instant afterCreation = Instant.now();
-
+        Instant afterCreation = Utils.iNow();
         assertNotNull(answer.getId(), "ID should be generated and not null");
         try {
             UUID.fromString(answer.getId()); // Validate UUID format
@@ -116,8 +117,8 @@ public class AnswerTest {
     void build_shouldSucceed_withAllArguments() {
         // Given valid arguments
         String id = UUID.randomUUID().toString();
-        Instant createdAt = Instant.now().minus(1, ChronoUnit.DAYS);
-        Instant updatedAt = Instant.now().minus(12, ChronoUnit.HOURS);
+        Instant createdAt = Instant.now().minus(1, ChronoUnit.DAYS).truncatedTo(MILLIS);
+        Instant updatedAt = Instant.now().minus(12, ChronoUnit.HOURS).truncatedTo(MILLIS);
         boolean isAccepted = true;
 
         // When building the answer
@@ -267,8 +268,8 @@ public class AnswerTest {
     @DisplayName("Getters should return correct values after construction via build")
     void getters_shouldReturnCorrectValues() {
         String id = UUID.randomUUID().toString();
-        Instant createdAt = Instant.now().minus(2, ChronoUnit.DAYS);
-        Instant updatedAt = Instant.now().minus(1, ChronoUnit.DAYS);
+        Instant createdAt = Instant.now().minus(2, ChronoUnit.DAYS).truncatedTo(MILLIS);
+        Instant updatedAt = Instant.now().minus(1, ChronoUnit.DAYS).truncatedTo(MILLIS);
         String questionId = UUID.randomUUID().toString();
         String authorId = UUID.randomUUID().toString();
         String content = "Content for getter test.";

@@ -9,6 +9,8 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
+import static com.sysm.devsync.infrastructure.Utils.iNow;
+import static java.time.temporal.ChronoUnit.MILLIS;
 import static org.junit.jupiter.api.Assertions.*;
 
 class CommentTest {
@@ -30,10 +32,9 @@ class CommentTest {
     @Test
     @DisplayName("create() should successfully create a comment with generated ID and current timestamps")
     void create_shouldSucceed_withGeneratedIdAndTimestamps() {
-        Instant beforeCreation = Instant.now();
+        Instant beforeCreation = iNow();
         Comment comment = Comment.create(validTargetType, validTargetId, validAuthorId, validContent);
-        Instant afterCreation = Instant.now();
-
+        Instant afterCreation = iNow();
         assertNotNull(comment.getId(), "ID should be generated and not null");
         try {
             UUID.fromString(comment.getId()); // Validate UUID format
@@ -139,8 +140,8 @@ class CommentTest {
     @DisplayName("build() should successfully create a comment with all provided fields")
     void build_shouldSucceed_withAllFields() {
         String id = UUID.randomUUID().toString();
-        Instant createdAt = Instant.now().minus(1, ChronoUnit.DAYS);
-        Instant updatedAt = Instant.now().minus(12, ChronoUnit.HOURS);
+        Instant createdAt = Instant.now().minus(1, ChronoUnit.DAYS).truncatedTo(MILLIS);
+        Instant updatedAt = Instant.now().minus(12, ChronoUnit.HOURS).truncatedTo(MILLIS);
 
         Comment comment = Comment.build(id, validTargetType, validTargetId, validAuthorId,
                 createdAt, validContent, updatedAt);
@@ -263,8 +264,8 @@ class CommentTest {
         assertEquals(targetType, comment.getTargetType());
         assertEquals(targetId, comment.getTargetId());
         assertEquals(authorId, comment.getAuthorId());
-        assertEquals(createdAt, comment.getCreatedAt());
+        assertEquals(createdAt.truncatedTo(MILLIS), comment.getCreatedAt());
         assertEquals(content, comment.getContent());
-        assertEquals(updatedAt, comment.getUpdatedAt());
+        assertEquals(updatedAt.truncatedTo(MILLIS), comment.getUpdatedAt());
     }
 }

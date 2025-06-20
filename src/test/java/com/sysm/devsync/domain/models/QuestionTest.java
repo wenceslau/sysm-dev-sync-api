@@ -12,6 +12,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import static com.sysm.devsync.infrastructure.Utils.iNow;
+import static java.time.temporal.ChronoUnit.MILLIS;
 import static org.junit.jupiter.api.Assertions.*;
 
 class QuestionTest {
@@ -34,10 +36,9 @@ class QuestionTest {
     @Test
     @DisplayName("create() should successfully create a question with valid arguments")
     void create_shouldSucceed_withValidArguments() {
-        Instant beforeCreation = Instant.now();
+        Instant beforeCreation = iNow();
         Question question = Question.create(validTitle, validDescription, validProjectId, validAuthorId);
-        Instant afterCreation = Instant.now();
-
+        Instant afterCreation = iNow();
         assertNotNull(question.getId(), "ID should be generated and not null");
         try {
             UUID.fromString(question.getId()); // Validate UUID format
@@ -133,8 +134,8 @@ class QuestionTest {
     @DisplayName("build() should successfully create a question with all arguments")
     void build_shouldSucceed_withAllArguments() {
         String id = UUID.randomUUID().toString();
-        Instant createdAt = Instant.now().minus(1, ChronoUnit.DAYS);
-        Instant updatedAt = Instant.now().minus(12, ChronoUnit.HOURS);
+        Instant createdAt = Instant.now().minus(1, ChronoUnit.DAYS).truncatedTo(MILLIS);
+        Instant updatedAt = Instant.now().minus(12, ChronoUnit.HOURS).truncatedTo(MILLIS);
         Set<String> tags = new HashSet<>(Set.of("java", "spring"));
         QuestionStatus questionStatus = QuestionStatus.RESOLVED;
 
@@ -433,8 +434,8 @@ class QuestionTest {
     @DisplayName("Getters should return correct values after construction via build")
     void getters_shouldReturnCorrectValues() {
         String id = UUID.randomUUID().toString();
-        Instant createdAt = Instant.now().minus(2, ChronoUnit.DAYS);
-        Instant updatedAt = Instant.now().minus(1, ChronoUnit.DAYS);
+        Instant createdAt = Instant.now().minus(2, ChronoUnit.DAYS).truncatedTo(MILLIS);
+        Instant updatedAt = Instant.now().minus(1, ChronoUnit.DAYS).truncatedTo(MILLIS);
         String title = "Getter Test Title";
         String description = "Description for getter test.";
         Set<String> tags = new HashSet<>(Set.of("getterTag1", "getterTag2"));

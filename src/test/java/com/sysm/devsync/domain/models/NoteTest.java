@@ -11,6 +11,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import static com.sysm.devsync.infrastructure.Utils.iNow;
+import static java.time.temporal.ChronoUnit.MILLIS;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class NoteTest {
@@ -33,10 +35,9 @@ public class NoteTest {
     @Test
     @DisplayName("create() should successfully create a note with valid arguments")
     void create_shouldSucceed_withValidArguments() {
-        Instant beforeCreation = Instant.now();
+        Instant beforeCreation = iNow();
         Note note = Note.create(validTitle, validContent, validProjectId, validAuthorId);
-        Instant afterCreation = Instant.now();
-
+        Instant afterCreation = iNow();
         assertNotNull(note.getId(), "ID should be generated and not null");
         try {
             UUID.fromString(note.getId()); // Validate UUID format
@@ -132,8 +133,8 @@ public class NoteTest {
     @DisplayName("build() should successfully create a note with all arguments")
     void build_shouldSucceed_withAllArguments() {
         String id = UUID.randomUUID().toString();
-        Instant createdAt = Instant.now().minus(1, ChronoUnit.DAYS);
-        Instant updatedAt = Instant.now().minus(12, ChronoUnit.HOURS);
+        Instant createdAt = Instant.now().minus(1, ChronoUnit.DAYS).truncatedTo(MILLIS);
+        Instant updatedAt = Instant.now().minus(12, ChronoUnit.HOURS).truncatedTo(MILLIS);
         Set<String> tags = new HashSet<>(Set.of("tag1", "tag2"));
         int version = 5;
 
@@ -437,8 +438,8 @@ public class NoteTest {
     @DisplayName("Getters should return correct values after construction via build")
     void getters_shouldReturnCorrectValues() {
         String id = UUID.randomUUID().toString();
-        Instant createdAt = Instant.now().minus(2, ChronoUnit.DAYS);
-        Instant updatedAt = Instant.now().minus(1, ChronoUnit.DAYS);
+        Instant createdAt = Instant.now().minus(2, ChronoUnit.DAYS).truncatedTo(MILLIS);
+        Instant updatedAt = Instant.now().minus(1, ChronoUnit.DAYS).truncatedTo(MILLIS);
         String title = "Getter Test Title";
         String content = "Content for getter test.";
         Set<String> tags = new HashSet<>(Set.of("getterTag1", "getterTag2"));

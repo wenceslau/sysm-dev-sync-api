@@ -1,6 +1,7 @@
 package com.sysm.devsync.domain.models;
 
 import com.sysm.devsync.domain.enums.UserRole;
+import com.sysm.devsync.infrastructure.Utils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,6 +13,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import static com.sysm.devsync.infrastructure.Utils.iNow;
+import static java.time.temporal.ChronoUnit.MILLIS;
 import static org.junit.jupiter.api.Assertions.*;
 
 // Note: The class under test has a typo "Workspacce" instead of "Workspace".
@@ -40,13 +43,11 @@ class WorkspaceTest {
     @Test
     @DisplayName("create should create workspace successfully with valid arguments")
     void create_shouldCreateWorkspace_whenArgumentsAreValid() {
-        Instant beforeCreation = Instant.now();
-
+        Instant beforeCreation = iNow();
         Workspace workspace = Workspace.create(validName, validDescription, false, validOwner);
         workspace.addMember(member1);
 
-        Instant afterCreation = Instant.now();
-
+        Instant afterCreation = iNow();
         assertNotNull(workspace.getId(), "ID should not be null");
         try {
             UUID.fromString(workspace.getId()); // Check if ID is a valid UUID
@@ -148,8 +149,8 @@ class WorkspaceTest {
     @DisplayName("build should create workspace successfully with all arguments")
     void build_shouldCreateWorkspace_whenArgumentsAreValid() {
         String id = UUID.randomUUID().toString();
-        Instant createdAt = Instant.now().minus(1, ChronoUnit.DAYS);
-        Instant updatedAt = Instant.now().minus(12, ChronoUnit.HOURS);
+        Instant createdAt = Instant.now().minus(1, ChronoUnit.DAYS).truncatedTo(MILLIS);
+        Instant updatedAt = Instant.now().minus(12, ChronoUnit.HOURS).truncatedTo(MILLIS);
         Set<String> members = new HashSet<>();
         members.add(member1);
 
@@ -396,8 +397,8 @@ class WorkspaceTest {
     @DisplayName("Getters should return correct values set by build")
     void getters_shouldReturnCorrectValues() {
         String id = UUID.randomUUID().toString();
-        Instant createdAt = Instant.now().minusSeconds(3600);
-        Instant updatedAt = Instant.now().minusSeconds(60);
+        Instant createdAt = Instant.now().minusSeconds(3600).truncatedTo(MILLIS);
+        Instant updatedAt = Instant.now().minusSeconds(60).truncatedTo(MILLIS);
         String name = "Getter Test Name";
         String description = "Getter Test Description";
         boolean isPrivate = true;

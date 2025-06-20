@@ -9,6 +9,8 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
+import static com.sysm.devsync.infrastructure.Utils.iNow;
+import static java.time.temporal.ChronoUnit.MILLIS;
 import static org.junit.jupiter.api.Assertions.*;
 
 class UserTest {
@@ -31,10 +33,9 @@ class UserTest {
     @Test
     @DisplayName("Create should create user successfully with valid arguments")
     void create_shouldCreateUser_whenArgumentsAreValid() {
-        Instant beforeCreation = Instant.now();
-        User user = User.create(validUsername, validEmail,  validUserRole);
-        Instant afterCreation = Instant.now();
-
+        Instant beforeCreation = iNow();
+        User user = User.create(validUsername, validEmail, validUserRole);
+        Instant afterCreation = iNow();
         assertNotNull(user.getId(), "ID should not be null");
         try {
             UUID.fromString(user.getId()); // Check if ID is a valid UUID
@@ -67,7 +68,7 @@ class UserTest {
     @Test
     @DisplayName("Create should allow blank profilePictureUrl")
     void create_shouldAllowBlankProfilePictureUrl() {
-        User user = User.create(validUsername, validEmail,  validUserRole);
+        User user = User.create(validUsername, validEmail, validUserRole);
         user.updateProfilePicture(" "); // This test seems to be testing updateProfilePicture more than create
         // For create, profilePictureUrl is always null initially by design of User.create
         assertEquals(" ", user.getProfilePictureUrl(), "ProfilePictureUrl should be blank if passed as blank");
@@ -404,7 +405,7 @@ class UserTest {
     @Test
     @DisplayName("UpdateProfilePicture method should allow null URL")
     void updateProfilePicture_shouldAllowNullUrl() throws InterruptedException {
-        User user = User.create(validUsername, validEmail,  validUserRole);
+        User user = User.create(validUsername, validEmail, validUserRole);
         user.updateProfilePicture(validProfilePictureUrl); // Set an initial one
         Instant initialUpdatedAt = user.getUpdatedAt();
         Thread.sleep(1); // Ensure time moves forward
@@ -417,7 +418,7 @@ class UserTest {
     @Test
     @DisplayName("UpdateProfilePicture method should allow blank URL")
     void updateProfilePicture_shouldAllowBlankUrl() throws InterruptedException {
-        User user = User.create(validUsername, validEmail,  validUserRole);
+        User user = User.create(validUsername, validEmail, validUserRole);
         user.updateProfilePicture(validProfilePictureUrl); // Set an initial one
         Instant initialUpdatedAt = user.getUpdatedAt();
         Thread.sleep(1); // Ensure time moves forward
@@ -432,8 +433,8 @@ class UserTest {
     @DisplayName("Build method should create user with all fields set correctly")
     void build_shouldCreateUserWithAllFields() {
         String id = UUID.randomUUID().toString();
-        Instant createdAt = Instant.now().minus(1, ChronoUnit.DAYS);
-        Instant updatedAt = Instant.now().minus(1, ChronoUnit.HOURS);
+        Instant createdAt = Instant.now().minus(1, ChronoUnit.DAYS).truncatedTo(MILLIS);
+        Instant updatedAt = Instant.now().minus(1, ChronoUnit.HOURS).truncatedTo(MILLIS);
         String username = "buildUser";
         String email = "build@example.com";
         String passwordHash = "buildPasswordHash";
@@ -456,8 +457,8 @@ class UserTest {
     @DisplayName("Build method should allow null passwordHash and profilePictureUrl")
     void build_shouldAllowNullOptionalFields() {
         String id = UUID.randomUUID().toString();
-        Instant createdAt = Instant.now().minus(1, ChronoUnit.DAYS);
-        Instant updatedAt = Instant.now().minus(1, ChronoUnit.HOURS);
+        Instant createdAt = Instant.now().minus(1, ChronoUnit.DAYS).truncatedTo(MILLIS);
+        Instant updatedAt = Instant.now().minus(1, ChronoUnit.HOURS).truncatedTo(MILLIS);
         String username = "buildUserOptional";
         String email = "buildopt@example.com";
         UserRole userRole = UserRole.MEMBER;
@@ -539,7 +540,7 @@ class UserTest {
     @DisplayName("Getters should return correct values after construction via build")
     void getters_shouldReturnCorrectValues() {
         String id = UUID.randomUUID().toString();
-        Instant createdAt = Instant.now();
+        Instant createdAt = iNow();
         Instant updatedAt = createdAt;
         String username = "getterUser";
         String email = "getter@example.com";

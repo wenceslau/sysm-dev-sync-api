@@ -1,5 +1,6 @@
 package com.sysm.devsync.domain.models;
 
+import com.sysm.devsync.infrastructure.Utils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -8,6 +9,8 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
+import static com.sysm.devsync.infrastructure.Utils.iNow;
+import static java.time.temporal.ChronoUnit.MILLIS;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ProjectTest {
@@ -32,10 +35,9 @@ class ProjectTest {
     @Test
     @DisplayName("create() should successfully create a project with valid arguments")
     void create_shouldSucceed_withValidArguments() {
-        Instant beforeCreation = Instant.now();
+        Instant beforeCreation = iNow();
         Project project = Project.create(validName, validDescription, validWorkspaceId);
-        Instant afterCreation = Instant.now();
-
+        Instant afterCreation = iNow();
         assertNotNull(project.getId(), "ID should be generated and not null");
         try {
             UUID.fromString(project.getId()); // Validate UUID format
@@ -111,8 +113,8 @@ class ProjectTest {
     @DisplayName("build() should successfully create a project with all arguments")
     void build_shouldSucceed_withAllArguments() {
         String id = UUID.randomUUID().toString();
-        Instant createdAt = Instant.now().minus(1, ChronoUnit.DAYS);
-        Instant updatedAt = Instant.now().minus(12, ChronoUnit.HOURS);
+        Instant createdAt = Instant.now().minus(1, ChronoUnit.DAYS).truncatedTo(MILLIS);
+        Instant updatedAt = Instant.now().minus(12, ChronoUnit.HOURS).truncatedTo(MILLIS);
 
         Project project = Project.build(id, validName, validDescription, validWorkspaceId, createdAt, updatedAt);
 
@@ -311,7 +313,7 @@ class ProjectTest {
         assertEquals(name, project.getName());
         assertEquals(description, project.getDescription());
         assertEquals(workspaceId, project.getWorkspaceId());
-        assertEquals(createdAt, project.getCreatedAt());
-        assertEquals(updatedAt, project.getUpdatedAt());
+        assertEquals(createdAt.truncatedTo(MILLIS), project.getCreatedAt());
+        assertEquals(updatedAt.truncatedTo(MILLIS), project.getUpdatedAt());
     }
 }
