@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 
 @Repository
-public class TagPersistence implements TagPersistencePort {
+public class TagPersistence extends AbstractPersistence implements TagPersistencePort {
 
     private static final Set<String> VALID_SEARCHABLE_FIELDS = Set.of(
             "name",

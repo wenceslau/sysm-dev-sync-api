@@ -1,6 +1,7 @@
 package com.sysm.devsync.infrastructure.repositories;
 
 import com.sysm.devsync.infrastructure.PersistenceTest;
+import com.sysm.devsync.infrastructure.Utils;
 import com.sysm.devsync.infrastructure.repositories.entities.UserJpaEntity;
 import com.sysm.devsync.infrastructure.repositories.entities.WorkspaceJpaEntity;
 import com.sysm.devsync.domain.enums.UserRole; // For creating UserJpaEntity
@@ -190,6 +191,8 @@ public class WorkspaceJpaRepositoryTest {
         WorkspaceJpaEntity persistedWorkspace = workspaceJpaRepository.save(workspace1);
         entityManager.flush();
         LocalDateTime originalUpdatedAt = persistedWorkspace.getUpdatedAt();
+
+        Utils.sleep(100);
 
         // Act
         // Fetch, modify, and save

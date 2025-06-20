@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static com.sysm.devsync.infrastructure.Utils.sleep;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @PersistenceTest
@@ -128,6 +129,8 @@ public class UserJpaRepositoryTest {
         UserJpaEntity persistedUser = entityManager.persistAndFlush(user1);
         String updatedEmail = "john.doe.updated@example.com";
         UserRole updatedRole = UserRole.ADMIN;
+
+        sleep(100); // Ensure updatedAt is different
 
         // Act
         Optional<UserJpaEntity> userToUpdateOpt = userJpaRepository.findById(persistedUser.getId());

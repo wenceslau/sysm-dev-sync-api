@@ -17,7 +17,7 @@ import java.util.Optional;
 import java.util.Set;
 
 @Repository
-public class UserPersistence implements UserPersistencePort {
+public class UserPersistence extends AbstractPersistence implements UserPersistencePort {
 
     private static final Set<String> VALID_SEARCHABLE_FIELDS = Set.of(
             "name",

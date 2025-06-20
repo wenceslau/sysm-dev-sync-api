@@ -16,7 +16,7 @@ import java.util.Optional;
 import java.util.Set;
 
 @Repository
-public class WorkspacePersistence implements WorkspacePersistencePort {
+public class WorkspacePersistence extends AbstractPersistence implements WorkspacePersistencePort {
 
     private static final Set<String> VALID_SEARCHABLE_FIELDS = Set.of(
             "name",
