@@ -64,6 +64,7 @@ class WorkspaceServiceTest {
         // Arrange
         ArgumentCaptor<Workspace> workspaceCaptor = ArgumentCaptor.forClass(Workspace.class);
         doNothing().when(workspacePersistence).create(workspaceCaptor.capture());
+        when(userPersistence.existsById(ownerId)).thenReturn(true);
 
         // Act
         CreateResponse response = workspaceService.createWorkspace(validWorkspaceCreateUpdateDto, ownerId);
@@ -87,6 +88,7 @@ class WorkspaceServiceTest {
     void createWorkspace_shouldPropagateException_forInvalidName() {
         // Arrange
         WorkspaceCreateUpdate invalidDto = new WorkspaceCreateUpdate(null, "Desc", false);
+        when(userPersistence.existsById(ownerId)).thenReturn(true);
 
         // Act & Assert
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
