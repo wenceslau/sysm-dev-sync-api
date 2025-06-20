@@ -184,6 +184,52 @@ public class WorkspacePersistenceTest {
                     .isInstanceOf(BusinessException.class)
                     .hasMessage("Workspace model cannot be null");
         }
+
+        @Test
+        @DisplayName("should update workspace with different owner and members")
+        void update_workspaceWithDifferentOwnerAndMembers_shouldUpdateSuccessfully() {
+            // Arrange: First, create the workspace
+            workspacePersistence.create(workspace1Domain);
+            entityManager.flush(); // Ensure it's in DB
+            entityManager.clear(); // Detach to simulate fresh fetch & update
+
+            Instant originalCreatedAt = workspacePersistence.findById(workspace1Domain.getId()).get().getCreatedAt();
+
+            Set<String> updatedMembers = new HashSet<>(Arrays.asList(memberUser1.getId(), memberUser2.getId()));
+            Workspace updatedDomainWorkspace = Workspace.build(
+                    workspace1Domain.getId(),
+                    originalCreatedAt, // createdAt should not change
+                    Instant.now(),    // new updatedAt
+                    "Workspace Alpha Updated",
+                    "Updated Alpha Description",
+                    false, // change privacy
+                    memberUser2.getId(), // change owner to memberUser2
+                    updatedMembers
+            );
+
+            // Act
+            workspacePersistence.update(updatedDomainWorkspace);
+            entityManager.flush();
+            entityManager.clear();
+
+            // Assert
+            Optional<Workspace> foundWorkspaceOpt = workspacePersistence.findById(workspace1Domain.getId());
+            assertThat(foundWorkspaceOpt).isPresent();
+            Workspace foundWorkspace = foundWorkspaceOpt.get();
+
+            assertThat(foundWorkspace.getName()).isEqualTo("Workspace Alpha Updated");
+            assertThat(foundWorkspace.getDescription()).isEqualTo("Updated Alpha Description");
+            assertThat(foundWorkspace.isPrivate()).isFalse();
+            assertThat(foundWorkspace.getOwnerId()).isEqualTo(memberUser2.getId());
+            assertThat(foundWorkspace.getMembersId()).isEqualTo(updatedMembers);
+            assertThat(foundWorkspace.getCreatedAt().truncatedTo(ChronoUnit.MILLIS))
+                    .isEqualTo(originalCreatedAt.truncatedTo(ChronoUnit.MILLIS));
+
+            // This assertion might fail due to the bug in WorkspaceJpaEntity.@PreUpdate
+            // A correct @PreUpdate should always update the updatedAt timestamp.
+            // The current @PreUpdate only updates if updatedAt is null.
+            assertThat(foundWorkspace.getUpdatedAt()).isAfter(originalCreatedAt);
+        }
     }
 
     @Nested

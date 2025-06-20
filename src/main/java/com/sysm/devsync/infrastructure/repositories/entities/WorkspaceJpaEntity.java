@@ -145,20 +145,14 @@ public class WorkspaceJpaEntity {
     @PrePersist
     protected void onCreate() {
         System.out.println("Creating WorkspaceJpaEntity: " + this);
-        if (updatedAt == null) {
-            updatedAt = LocalDateTime.now(ZoneOffset.UTC);
-        }
-        if (createdAt == null) {
-            createdAt = LocalDateTime.now(ZoneOffset.UTC);
-        }
+        createdAt = updatedAt = LocalDateTime.now(ZoneOffset.UTC);
+
     }
 
     @PreUpdate
     protected void onUpdate() {
         System.out.println("Updating WorkspaceJpaEntity: " + this);
-        if (updatedAt == null) {
-            updatedAt = LocalDateTime.now(ZoneOffset.UTC);
-        }
+        updatedAt = LocalDateTime.now(ZoneOffset.UTC);
     }
 
     public static WorkspaceJpaEntity fromModel(Workspace workspace) {

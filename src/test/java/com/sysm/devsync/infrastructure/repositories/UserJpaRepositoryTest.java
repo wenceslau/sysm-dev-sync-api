@@ -2,6 +2,7 @@ package com.sysm.devsync.infrastructure.repositories;
 
 import com.sysm.devsync.domain.enums.UserRole;
 import com.sysm.devsync.infrastructure.PersistenceTest;
+import com.sysm.devsync.infrastructure.Utils;
 import com.sysm.devsync.infrastructure.repositories.entities.UserJpaEntity;
 import jakarta.persistence.criteria.Predicate;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static com.sysm.devsync.infrastructure.Utils.ldtNow;
 import static com.sysm.devsync.infrastructure.Utils.sleep;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -130,8 +132,6 @@ public class UserJpaRepositoryTest {
         String updatedEmail = "john.doe.updated@example.com";
         UserRole updatedRole = UserRole.ADMIN;
 
-        sleep(100); // Ensure updatedAt is different
-
         // Act
         Optional<UserJpaEntity> userToUpdateOpt = userJpaRepository.findById(persistedUser.getId());
         assertThat(userToUpdateOpt).isPresent();
@@ -139,10 +139,12 @@ public class UserJpaRepositoryTest {
         UserJpaEntity userToUpdate = userToUpdateOpt.get();
         userToUpdate.setEmail(updatedEmail);
         userToUpdate.setRole(updatedRole);
-        userToUpdate.setUpdatedAt(LocalDateTime.now());
+        userToUpdate.setUpdatedAt(ldtNow().plusDays(1));
         userJpaRepository.save(userToUpdate);
         entityManager.flush();
         entityManager.clear();
+
+        sleep(100); // Ensure updatedAt is different
 
         // Assert
         Optional<UserJpaEntity> updatedUserOpt = userJpaRepository.findById(persistedUser.getId());

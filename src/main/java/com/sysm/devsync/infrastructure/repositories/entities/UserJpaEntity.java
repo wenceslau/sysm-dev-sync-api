@@ -8,6 +8,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
 @Entity(name = "User")
@@ -81,7 +82,10 @@ public class UserJpaEntity {
     }
 
     public LocalDateTime getCreatedAt() {
-        return createdAt;
+        if (createdAt != null) {
+            return createdAt.truncatedTo(ChronoUnit.MILLIS);
+        }
+        return null;
     }
 
     public void setCreatedAt(LocalDateTime createdAt) {
@@ -89,7 +93,10 @@ public class UserJpaEntity {
     }
 
     public LocalDateTime getUpdatedAt() {
-        return updatedAt;
+        if (updatedAt != null) {
+            return updatedAt.truncatedTo(ChronoUnit.MILLIS);
+        }
+        return null;
     }
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
