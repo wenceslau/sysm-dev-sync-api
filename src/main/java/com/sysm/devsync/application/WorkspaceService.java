@@ -1,5 +1,6 @@
 package com.sysm.devsync.application;
 
+import com.sysm.devsync.domain.NotFoundException;
 import com.sysm.devsync.infrastructure.controller.dto.CreateResponse;
 import com.sysm.devsync.infrastructure.controller.dto.request.WorkspaceCreateUpdate;
 import com.sysm.devsync.domain.Pagination;
@@ -19,6 +20,11 @@ public class WorkspaceService {
     }
 
     public CreateResponse createWorkspace(WorkspaceCreateUpdate workspaceCreateUpdate, String ownerId) {
+
+        var userExists = userPersistence.existsById(ownerId);
+        if (!userExists) {
+            throw new NotFoundException("User not found", ownerId);
+        }
         Workspace workspace = Workspace.create(
                 workspaceCreateUpdate.name(),
                 workspaceCreateUpdate.description(),
