@@ -1,7 +1,7 @@
 package com.sysm.devsync.infrastructure.repositories.persistence;
 
 import com.sysm.devsync.domain.BusinessException;
-import com.sysm.devsync.domain.Pageable;
+import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.enums.UserRole;
@@ -20,7 +20,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
-import org.springframework.dao.DataIntegrityViolationException;
 
 import java.time.Instant;
 import java.util.List;
@@ -325,7 +324,7 @@ public class ProjectPersistenceTest {
         @Test
         @DisplayName("should return all projects when no search terms provided")
         void findAll_noTerms_shouldReturnAllProjects() {
-            SearchQuery query = new SearchQuery(Pageable.of(0, 10), "");
+            SearchQuery query = new SearchQuery(Page.of(0, 10), "");
             Pagination<Project> result = projectPersistence.findAll(query);
 
             assertThat(result.items()).hasSize(3);
@@ -335,7 +334,7 @@ public class ProjectPersistenceTest {
         @Test
         @DisplayName("should filter by project name")
         void findAll_filterByName_shouldReturnMatching() {
-            SearchQuery query = new SearchQuery(Pageable.of(0, 10), "name=Alpha");
+            SearchQuery query = new SearchQuery(Page.of(0, 10), "name=Alpha");
             Pagination<Project> result = projectPersistence.findAll(query);
 
             assertThat(result.items()).hasSize(1);
@@ -345,7 +344,7 @@ public class ProjectPersistenceTest {
         @Test
         @DisplayName("should filter by project description")
         void findAll_filterByDescription_shouldReturnMatching() {
-            SearchQuery query = new SearchQuery(Pageable.of(0, 10), "description=Beta");
+            SearchQuery query = new SearchQuery(Page.of(0, 10), "description=Beta");
             Pagination<Project> result = projectPersistence.findAll(query);
 
             assertThat(result.items()).hasSize(1);
@@ -355,7 +354,7 @@ public class ProjectPersistenceTest {
         @Test
         @DisplayName("should filter by workspaceId")
         void findAll_filterByWorkspaceId_shouldReturnMatching() {
-            SearchQuery query = new SearchQuery(Pageable.of(0, 10), "workspaceId=" + workspace1Jpa.getId());
+            SearchQuery query = new SearchQuery(Page.of(0, 10), "workspaceId=" + workspace1Jpa.getId());
             Pagination<Project> result = projectPersistence.findAll(query);
 
             assertThat(result.items()).hasSize(2);
@@ -366,7 +365,7 @@ public class ProjectPersistenceTest {
         @Test
         @DisplayName("should throw BusinessException for an invalid search field (not in VALID_SEARCHABLE_FIELDS)")
         void findAll_invalidSearchField_shouldThrowBusinessException() {
-            SearchQuery query = new SearchQuery(Pageable.of(0, 10), "invalidField=test");
+            SearchQuery query = new SearchQuery(Page.of(0, 10), "invalidField=test");
 
             assertThatThrownBy(() -> projectPersistence.findAll(query))
                     .isInstanceOf(BusinessException.class)
@@ -396,7 +395,7 @@ public class ProjectPersistenceTest {
         @Test
         @DisplayName("should handle terms with no matches")
         void findAll_termWithNoMatches_shouldReturnEmptyPage() {
-            SearchQuery query = new SearchQuery(Pageable.of(0, 10), "name=NonExistentProject");
+            SearchQuery query = new SearchQuery(Page.of(0, 10), "name=NonExistentProject");
             Pagination<Project> result = projectPersistence.findAll(query);
 
             assertThat(result.items()).isEmpty();
@@ -406,7 +405,7 @@ public class ProjectPersistenceTest {
         @Test
         @DisplayName("should respect pagination parameters")
         void findAll_withPagination_shouldReturnCorrectPage() {
-            SearchQuery queryPage1 = new SearchQuery(Pageable.of(0, 2, "name", "asc"), "");
+            SearchQuery queryPage1 = new SearchQuery(Page.of(0, 2, "name", "asc"), "");
             Pagination<Project> result1 = projectPersistence.findAll(queryPage1);
 
             assertThat(result1.items()).hasSize(2);
@@ -414,7 +413,7 @@ public class ProjectPersistenceTest {
             assertThat(result1.perPage()).isEqualTo(2);
             assertThat(result1.total()).isEqualTo(3);
 
-            SearchQuery queryPage2 = new SearchQuery(Pageable.of(1, 2, "name", "asc"), "");
+            SearchQuery queryPage2 = new SearchQuery(Page.of(1, 2, "name", "asc"), "");
             Pagination<Project> result2 = projectPersistence.findAll(queryPage2);
             assertThat(result2.items()).hasSize(1);
         }

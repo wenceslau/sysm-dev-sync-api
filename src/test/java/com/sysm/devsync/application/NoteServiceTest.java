@@ -3,7 +3,7 @@ package com.sysm.devsync.application;
 import com.sysm.devsync.infrastructure.controller.dto.CreateResponse;
 import com.sysm.devsync.infrastructure.controller.dto.request.NoteCreateUpdate;
 import com.sysm.devsync.domain.Pagination;
-import com.sysm.devsync.domain.Pageable;
+import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.models.Note;
 import com.sysm.devsync.domain.persistence.NotePersistencePort;
@@ -339,7 +339,7 @@ class NoteServiceTest {
     @DisplayName("getAllNotes with SearchQuery should return page from persistence")
     void getAllNotes_withSearchQuery_shouldReturnPageFromPersistence() {
         // Arrange
-        SearchQuery query = new SearchQuery(new Pageable(0, 10, "createdAt", "DESC"),"search term");
+        SearchQuery query = new SearchQuery(new Page(0, 10, "createdAt", "DESC"),"search term");
         Pagination<Note> expectedPagination = new Pagination<>(0, 10, 0L, Collections.emptyList());
         when(notePersistence.findAll(query)).thenReturn(expectedPagination);
 
@@ -367,33 +367,33 @@ class NoteServiceTest {
     @DisplayName("getAllNotes with Pageable and projectId should return page when project exists")
     void getAllNotes_withPageableAndProjectId_shouldReturnPage_whenProjectExists() {
         // Arrange
-        Pageable pageable =  new Pageable(0, 10, "createdAt", "asc");
+        Page page =  new Page(0, 10, "createdAt", "asc");
         Pagination<Note> expectedPagination = new Pagination<>(0, 10, 0L, Collections.emptyList());
         when(projectPersistence.existsById(projectId)).thenReturn(true);
-        when(notePersistence.findAllByProjectId(pageable, projectId)).thenReturn(expectedPagination);
+        when(notePersistence.findAllByProjectId(page, projectId)).thenReturn(expectedPagination);
 
         // Act
-        Pagination<Note> actualPagination = noteService.getAllNotes(pageable, projectId);
+        Pagination<Note> actualPagination = noteService.getAllNotes(page, projectId);
 
         // Assert
         assertNotNull(actualPagination);
         assertSame(expectedPagination, actualPagination);
         verify(projectPersistence).existsById(projectId);
-        verify(notePersistence).findAllByProjectId(pageable, projectId);
+        verify(notePersistence).findAllByProjectId(page, projectId);
     }
 
     @Test
     @DisplayName("getAllNotes with Pageable and projectId should throw IllegalArgumentException when project not found")
     void getAllNotes_withPageableAndProjectId_shouldThrowException_whenProjectNotFound() {
         // Arrange
-        Pageable pageable = new Pageable(0, 10, "createdAt", "asc");
+        Page page = new Page(0, 10, "createdAt", "asc");
         when(projectPersistence.existsById(projectId)).thenReturn(false);
 
         // Act & Assert
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            noteService.getAllNotes(pageable, projectId);
+            noteService.getAllNotes(page, projectId);
         });
         assertEquals("Project not found", exception.getMessage());
-        verify(notePersistence, never()).findAllByProjectId(any(Pageable.class), anyString());
+        verify(notePersistence, never()).findAllByProjectId(any(Page.class), anyString());
     }
 }

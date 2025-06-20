@@ -4,7 +4,7 @@ import com.sysm.devsync.infrastructure.controller.dto.CreateResponse;
 import com.sysm.devsync.infrastructure.controller.dto.request.CommentCreateUpdate;
 import com.sysm.devsync.domain.NotFoundException;
 import com.sysm.devsync.domain.Pagination;
-import com.sysm.devsync.domain.Pageable;
+import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.enums.TargetType;
 import com.sysm.devsync.domain.models.Comment;
@@ -69,9 +69,9 @@ public class CommentService {
                 .orElseThrow(() -> new NotFoundException("Comment not found", commentId));
     }
 
-    public Pagination<Comment> getAllComments(Pageable pageable, String targetId, TargetType targetType) {
+    public Pagination<Comment> getAllComments(Page page, String targetId, TargetType targetType) {
         validateTargetExistence(targetId, targetType);
-        return commentPersistence.findAllByTargetId(pageable, targetType, targetId);
+        return commentPersistence.findAllByTargetId(page, targetType, targetId);
 
     }
 

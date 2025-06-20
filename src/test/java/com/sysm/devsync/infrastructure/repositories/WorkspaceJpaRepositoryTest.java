@@ -16,7 +16,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -56,8 +58,8 @@ public class WorkspaceJpaRepositoryTest {
         ownerUser1.setName("Owner One");
         ownerUser1.setEmail("owner1@example.com");
         ownerUser1.setRole(UserRole.ADMIN);
-        ownerUser1.setCreatedAt(LocalDateTime.now().minusHours(2)); // Set explicitly for clarity
-        ownerUser1.setUpdatedAt(LocalDateTime.now().minusHours(1));
+        ownerUser1.setCreatedAt(LocalDateTime.now().minusHours(2).toInstant(ZoneOffset.UTC)); // Set explicitly for clarity
+        ownerUser1.setUpdatedAt(LocalDateTime.now().minusHours(1).toInstant(ZoneOffset.UTC));
         entityManager.persist(ownerUser1);
 
         memberUser1 = new UserJpaEntity();
@@ -65,8 +67,8 @@ public class WorkspaceJpaRepositoryTest {
         memberUser1.setName("Member One");
         memberUser1.setEmail("member1@example.com");
         memberUser1.setRole(UserRole.MEMBER);
-        memberUser1.setCreatedAt(LocalDateTime.now().minusHours(2));
-        memberUser1.setUpdatedAt(LocalDateTime.now().minusHours(1));
+        memberUser1.setCreatedAt(LocalDateTime.now().minusHours(2).toInstant(ZoneOffset.UTC));
+        memberUser1.setUpdatedAt(LocalDateTime.now().minusHours(1).toInstant(ZoneOffset.UTC));
         entityManager.persist(memberUser1);
 
         memberUser2 = new UserJpaEntity();
@@ -74,8 +76,8 @@ public class WorkspaceJpaRepositoryTest {
         memberUser2.setName("Member Two");
         memberUser2.setEmail("member2@example.com");
         memberUser2.setRole(UserRole.MEMBER);
-        memberUser2.setCreatedAt(LocalDateTime.now().minusHours(2));
-        memberUser2.setUpdatedAt(LocalDateTime.now().minusHours(1));
+        memberUser2.setCreatedAt(LocalDateTime.now().minusHours(2).toInstant(ZoneOffset.UTC));
+        memberUser2.setUpdatedAt(LocalDateTime.now().minusHours(1).toInstant(ZoneOffset.UTC));
         entityManager.persist(memberUser2);
 
         entityManager.flush(); // Ensure users are in DB before workspaces reference them
@@ -190,7 +192,7 @@ public class WorkspaceJpaRepositoryTest {
         // Arrange
         WorkspaceJpaEntity persistedWorkspace = workspaceJpaRepository.save(workspace1);
         entityManager.flush();
-        LocalDateTime originalUpdatedAt = persistedWorkspace.getUpdatedAt();
+        Instant originalUpdatedAt = persistedWorkspace.getUpdatedAt();
 
         Utils.sleep(100);
 

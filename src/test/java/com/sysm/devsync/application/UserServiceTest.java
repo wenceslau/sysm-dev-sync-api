@@ -1,7 +1,7 @@
 package com.sysm.devsync.application;
 
 import com.sysm.devsync.domain.Pagination;
-import com.sysm.devsync.domain.Pageable;
+import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.enums.UserRole;
 import com.sysm.devsync.domain.models.User;
@@ -412,7 +412,7 @@ class UserServiceTest {
     @DisplayName("getAllUsers should return pagination result from repository")
     void getAllUsers_shouldReturnPaginationResult_fromRepository() {
         // Arrange
-        SearchQuery query = new SearchQuery(new Pageable(1, 10,  "asc", "search"), "name");
+        SearchQuery query = new SearchQuery(new Page(1, 10,  "asc", "search"), "name");
         Pagination<User> expectedPagination = new Pagination<>(1, 10, 0L, Collections.emptyList()); // Ensure totalElements is Long
         when(userPersistence.findAll(query)).thenReturn(expectedPagination);
 

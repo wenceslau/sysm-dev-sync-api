@@ -1,6 +1,7 @@
 package com.sysm.devsync.infrastructure.repositories.persistence;
 
 import com.sysm.devsync.domain.BusinessException;
+import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.SearchQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Predicate;
@@ -43,8 +44,23 @@ public abstract class AbstractPersistence<T> {
         return mapTerms;
     }
 
+    protected PageRequest buildPageRequest(Page page) {
+        if (page == null) {
+            return PageRequest.of(
+                    0,
+                    10
+            );
+        }
+
+        return PageRequest.of(
+                page.pageNumber(),
+                page.pageSize()
+        );
+    }
+
+
     protected PageRequest buildPageRequest(SearchQuery searchQuery) {
-        if (searchQuery == null || searchQuery.pageable() == null) {
+        if (searchQuery == null || searchQuery.page() == null) {
             return PageRequest.of(
                     0,
                     10
@@ -52,27 +68,27 @@ public abstract class AbstractPersistence<T> {
         }
 
         // Ensure that the pageable object has a valid direction field
-        if (!StringUtils.hasText(searchQuery.pageable().direction())) {
-            return  PageRequest.of(
-                    searchQuery.pageable().page(),
-                    searchQuery.pageable().perPage()
+        if (!StringUtils.hasText(searchQuery.page().direction())) {
+            return PageRequest.of(
+                    searchQuery.page().pageNumber(),
+                    searchQuery.page().pageSize()
             );
         }
 
         // Ensure a sort field is also present if a direction is provided
-        if (!StringUtils.hasText(searchQuery.pageable().sort())) {
-            return  PageRequest.of(
-                    searchQuery.pageable().page(),
-                    searchQuery.pageable().perPage()
+        if (!StringUtils.hasText(searchQuery.page().sort())) {
+            return PageRequest.of(
+                    searchQuery.page().pageNumber(),
+                    searchQuery.page().pageSize()
             );
         }
 
         return PageRequest.of(
-                searchQuery.pageable().page(),
-                searchQuery.pageable().perPage(),
+                searchQuery.page().pageNumber(),
+                searchQuery.page().pageSize(),
                 Sort.by(
-                        Sort.Direction.fromString(searchQuery.pageable().direction()),
-                        searchQuery.pageable().sort()
+                        Sort.Direction.fromString(searchQuery.page().direction()),
+                        searchQuery.page().sort()
                 )
         );
     }
@@ -145,24 +161,24 @@ public abstract class AbstractPersistence<T> {
                 // NOTE: For ManyToMany joins, you might need query.distinct(true) in the main buildSpecification method
                 return crBuilder.like(crBuilder.lower(root.join("members").get("name")), like(value));
 
-             case "localDateTimeField":
-                 try {
-                     // Example: Search for the exact date /time
-                     LocalDateTime dateTime = LocalDateTime.parse(value); // Use the appropriate parser and format
-                     return crBuilder.equal(root.get(key), dateTime);
-                     // Example: Search for dates after a certain point
-                     // return criteriaBuilder.greaterThanOrEqualTo(root.get(key), dateTime);
-                 } catch (DateTimeParseException e) {
-                     throw new BusinessException("Invalid date format for field '" + key + "': '" + value + "'");
-                 }
-             case "numberField":
-                 try {
-                     Integer number = Integer.parseInt(value);
-                     return crBuilder.equal(root.get(key), number);
-                     // return criteriaBuilder.greaterThan(root.get(key), number);
-                 } catch (NumberFormatException e) {
-                     throw new BusinessException("Invalid number format for field '" + key + "': '" + value + "'");
-                 }
+            case "localDateTimeField":
+                try {
+                    // Example: Search for the exact date /time
+                    LocalDateTime dateTime = LocalDateTime.parse(value); // Use the appropriate parser and format
+                    return crBuilder.equal(root.get(key), dateTime);
+                    // Example: Search for dates after a certain point
+                    // return criteriaBuilder.greaterThanOrEqualTo(root.get(key), dateTime);
+                } catch (DateTimeParseException e) {
+                    throw new BusinessException("Invalid date format for field '" + key + "': '" + value + "'");
+                }
+            case "numberField":
+                try {
+                    Integer number = Integer.parseInt(value);
+                    return crBuilder.equal(root.get(key), number);
+                    // return criteriaBuilder.greaterThan(root.get(key), number);
+                } catch (NumberFormatException e) {
+                    throw new BusinessException("Invalid number format for field '" + key + "': '" + value + "'");
+                }
 
             default:
                 throw new BusinessException("Unsupported search logic for field: '" + key + "'");

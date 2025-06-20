@@ -4,6 +4,7 @@ package com.sysm.devsync.infrastructure.repositories.entities;
 import com.sysm.devsync.domain.models.Workspace;
 import jakarta.persistence.*;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -40,11 +41,11 @@ public class WorkspaceJpaEntity {
     @Column(name = "is_private") // Good practice to explicitly name boolean columns
     private boolean isPrivate;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "DATETIME(6)")
+    private Instant createdAt;
 
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
+    @Column(name = "updated_at", nullable = false, columnDefinition = "DATETIME(6)")
+    private Instant updatedAt;
 
     public WorkspaceJpaEntity(String id) {
         this.id = id;
@@ -102,19 +103,19 @@ public class WorkspaceJpaEntity {
         isPrivate = aPrivate;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public Instant getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
+    public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
     }
 
-    public LocalDateTime getUpdatedAt() {
+    public Instant getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(LocalDateTime updatedAt) {
+    public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
     }
 
@@ -145,14 +146,11 @@ public class WorkspaceJpaEntity {
     @PrePersist
     protected void onCreate() {
         System.out.println("Creating WorkspaceJpaEntity: " + this);
-        createdAt = updatedAt = LocalDateTime.now(ZoneOffset.UTC);
-
     }
 
     @PreUpdate
     protected void onUpdate() {
         System.out.println("Updating WorkspaceJpaEntity: " + this);
-        updatedAt = LocalDateTime.now(ZoneOffset.UTC);
     }
 
     public static WorkspaceJpaEntity fromModel(Workspace workspace) {
@@ -170,8 +168,8 @@ public class WorkspaceJpaEntity {
                         .collect(Collectors.toSet())
         );
         workspaceJpaEntity.setPrivate(workspace.isPrivate());
-        workspaceJpaEntity.setCreatedAt(LocalDateTime.ofInstant(workspace.getCreatedAt(), ZoneId.systemDefault()));
-        workspaceJpaEntity.setUpdatedAt(LocalDateTime.ofInstant(workspace.getUpdatedAt(), ZoneId.systemDefault()));
+        workspaceJpaEntity.setCreatedAt(workspace.getCreatedAt());
+        workspaceJpaEntity.setUpdatedAt(workspace.getUpdatedAt());
 
         return workspaceJpaEntity;
     }
@@ -182,8 +180,8 @@ public class WorkspaceJpaEntity {
         }
         return Workspace.build(
                 workspaceJpaEntity.getId(),
-                workspaceJpaEntity.getCreatedAt().toInstant(ZoneOffset.UTC),
-                workspaceJpaEntity.getUpdatedAt().toInstant(ZoneOffset.UTC),
+                workspaceJpaEntity.getCreatedAt(),
+                workspaceJpaEntity.getUpdatedAt(),
                 workspaceJpaEntity.getName(),
                 workspaceJpaEntity.getDescription(),
                 workspaceJpaEntity.isPrivate(),

@@ -1,7 +1,7 @@
 package com.sysm.devsync.infrastructure.repositories.persistence;
 
 import com.sysm.devsync.domain.BusinessException;
-import com.sysm.devsync.domain.Pageable; // Assuming you have this domain Pageable
+import com.sysm.devsync.domain.Page; // Assuming you have this domain Pageable
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.enums.UserRole;
@@ -64,8 +64,8 @@ public class WorkspacePersistenceTest {
         ownerUser.setName("Owner User");
         ownerUser.setEmail("owner@example.com");
         ownerUser.setRole(UserRole.ADMIN);
-        ownerUser.setCreatedAt(LocalDateTime.now(ZoneOffset.UTC).minusDays(1));
-        ownerUser.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC).minusDays(1));
+        ownerUser.setCreatedAt(LocalDateTime.now().minusDays(1).toInstant(ZoneOffset.UTC));
+        ownerUser.setUpdatedAt(LocalDateTime.now().minusDays(1).toInstant(ZoneOffset.UTC));
         entityManager.persistAndFlush(ownerUser);
 
         memberUser1 = new UserJpaEntity();
@@ -73,8 +73,8 @@ public class WorkspacePersistenceTest {
         memberUser1.setName("Member One");
         memberUser1.setEmail("member1@example.com");
         memberUser1.setRole(UserRole.MEMBER);
-        memberUser1.setCreatedAt(LocalDateTime.now(ZoneOffset.UTC).minusDays(1));
-        memberUser1.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC).minusDays(1));
+        memberUser1.setCreatedAt(LocalDateTime.now().minusDays(1).toInstant(ZoneOffset.UTC));
+        memberUser1.setUpdatedAt(LocalDateTime.now().minusDays(1).toInstant(ZoneOffset.UTC));
         entityManager.persistAndFlush(memberUser1);
 
         memberUser2 = new UserJpaEntity();
@@ -82,8 +82,8 @@ public class WorkspacePersistenceTest {
         memberUser2.setName("Member Two");
         memberUser2.setEmail("member2@example.com");
         memberUser2.setRole(UserRole.MEMBER);
-        memberUser2.setCreatedAt(LocalDateTime.now(ZoneOffset.UTC).minusDays(1));
-        memberUser2.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC).minusDays(1));
+        memberUser2.setCreatedAt(LocalDateTime.now().minusDays(1).toInstant(ZoneOffset.UTC));
+        memberUser2.setUpdatedAt(LocalDateTime.now().minusDays(1).toInstant(ZoneOffset.UTC));
         entityManager.persistAndFlush(memberUser2);
 
         workspace1Domain = Workspace.create("Workspace Alpha", "Alpha description", false, ownerUser.getId());
@@ -337,7 +337,7 @@ public class WorkspacePersistenceTest {
         @Test
         @DisplayName("should return all workspaces when no search terms provided")
         void findAll_noTerms_shouldReturnAllWorkspaces() {
-            SearchQuery query = new SearchQuery(Pageable.of(0, 10), "");
+            SearchQuery query = new SearchQuery(Page.of(0, 10), "");
             Pagination<Workspace> result = workspacePersistence.findAll(query); // Use original for this test
 
             assertThat(result.items()).hasSize(3);
@@ -347,7 +347,7 @@ public class WorkspacePersistenceTest {
         @Test
         @DisplayName("should filter by a single valid term (name)")
         void findAll_singleValidTermName_shouldReturnMatchingWorkspaces() {
-            SearchQuery query = new SearchQuery(Pageable.of(0, 10), "name=Alpha");
+            SearchQuery query = new SearchQuery(Page.of(0, 10), "name=Alpha");
             Pagination<Workspace> result = workspacePersistence.findAll(query);
 
             assertThat(result.items()).hasSize(1);
@@ -358,7 +358,7 @@ public class WorkspacePersistenceTest {
         @Test
         @DisplayName("should filter by a single valid term (description)")
         void findAll_singleValidTermDescription_shouldReturnMatchingWorkspaces() {
-            SearchQuery query = new SearchQuery(Pageable.of(0, 10), "description=Beta");
+            SearchQuery query = new SearchQuery(Page.of(0, 10), "description=Beta");
             Pagination<Workspace> result = workspacePersistence.findAll(query);
 
             assertThat(result.items()).hasSize(1);
@@ -373,7 +373,7 @@ public class WorkspacePersistenceTest {
             // This part of WorkspacePersistence.findAll is likely flawed for boolean fields
             // as `criteriaBuilder.lower(root.get("isPrivate"))` will probably fail.
             // If it fails, the test correctly identifies an issue in WorkspacePersistence.
-            SearchQuery queryTrue = new SearchQuery(Pageable.of(0, 10), "isPrivate=true");
+            SearchQuery queryTrue = new SearchQuery(Page.of(0, 10), "isPrivate=true");
 
             // This test is expected to fail or behave unpredictably due to the issue mentioned above.
             // A robust implementation would parse "true"/"false" to boolean and use criteriaBuilder.equal().
@@ -388,7 +388,7 @@ public class WorkspacePersistenceTest {
                 assertThat(e).isInstanceOf(Exception.class); // Or more specific JPA/Hibernate exception
             }
 
-            SearchQuery queryFalse = new SearchQuery(Pageable.of(0, 10), "isPrivate=false");
+            SearchQuery queryFalse = new SearchQuery(Page.of(0, 10), "isPrivate=false");
             try {
                 Pagination<Workspace> resultFalse = workspacePersistence.findAll(queryFalse);
                 assertThat(resultFalse.items()).hasSize(2);
@@ -403,7 +403,7 @@ public class WorkspacePersistenceTest {
         @Test
         @DisplayName("should filter by multiple valid terms (OR logic)")
         void findAll_multipleValidTerms_OR_Logic_shouldReturnMatchingWorkspaces() {
-            SearchQuery query = new SearchQuery(Pageable.of(0, 10), "name=Alpha#description=Gamma");
+            SearchQuery query = new SearchQuery(Page.of(0, 10), "name=Alpha#description=Gamma");
             Pagination<Workspace> result = workspacePersistence.findAll(query);
 
             assertThat(result.items()).hasSize(2);
@@ -414,7 +414,7 @@ public class WorkspacePersistenceTest {
         @Test
         @DisplayName("should throw BusinessException for an invalid search field")
         void findAll_invalidSearchField_shouldThrowBusinessException() {
-            SearchQuery query = new SearchQuery(Pageable.of(0, 10), "invalidField=test");
+            SearchQuery query = new SearchQuery(Page.of(0, 10), "invalidField=test");
 
             assertThatThrownBy(() -> workspacePersistence.findAll(query))
                     .isInstanceOf(BusinessException.class)
@@ -424,7 +424,7 @@ public class WorkspacePersistenceTest {
         @Test
         @DisplayName("should handle terms with no matches")
         void findAll_termWithNoMatches_shouldReturnEmptyPage() {
-            SearchQuery query = new SearchQuery(Pageable.of(0, 10), "name=NonExistent");
+            SearchQuery query = new SearchQuery(Page.of(0, 10), "name=NonExistent");
             Pagination<Workspace> result = workspacePersistence.findAll(query);
 
             assertThat(result.items()).isEmpty();
@@ -434,7 +434,7 @@ public class WorkspacePersistenceTest {
         @Test
         @DisplayName("should respect pagination parameters")
         void findAll_withPagination_shouldReturnCorrectPage() {
-            SearchQuery queryPage1 = new SearchQuery(Pageable.of(0, 2), "");
+            SearchQuery queryPage1 = new SearchQuery(Page.of(0, 2), "");
             Pagination<Workspace> result1 = workspacePersistence.findAll(queryPage1);
 
             assertThat(result1.items()).hasSize(2);
@@ -442,7 +442,7 @@ public class WorkspacePersistenceTest {
             assertThat(result1.perPage()).isEqualTo(2);
             assertThat(result1.total()).isEqualTo(3);
 
-            SearchQuery queryPage2 = new SearchQuery(Pageable.of(1, 2), "");
+            SearchQuery queryPage2 = new SearchQuery(Page.of(1, 2), "");
             Pagination<Workspace> result2 = workspacePersistence.findAll(queryPage2);
             assertThat(result2.items()).hasSize(1);
         }

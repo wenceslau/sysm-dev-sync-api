@@ -16,6 +16,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -196,7 +197,7 @@ public class ProjectJpaRepositoryTest {
         // Arrange
         ProjectJpaEntity persistedProject = projectJpaRepository.save(project1);
         entityManager.flush();
-        LocalDateTime originalUpdatedAt = persistedProject.getUpdatedAt(); // Capture before update
+        Instant originalUpdatedAt = persistedProject.getUpdatedAt(); // Capture before update
 
         // Act
         // Fetch, modify, and save

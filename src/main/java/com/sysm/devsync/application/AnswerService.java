@@ -4,7 +4,7 @@ import com.sysm.devsync.infrastructure.controller.dto.CreateResponse;
 import com.sysm.devsync.infrastructure.controller.dto.request.AnswerCreateUpdate;
 import com.sysm.devsync.domain.NotFoundException;
 import com.sysm.devsync.domain.Pagination;
-import com.sysm.devsync.domain.Pageable;
+import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.models.Answer;
 import com.sysm.devsync.domain.persistence.AnswerPersistencePort;
@@ -85,13 +85,13 @@ public class AnswerService {
                 .orElseThrow(() -> new NotFoundException("Answer not found", answerId));
     }
 
-    public Pagination<Answer> getAllAnswers(Pageable pageable, String questionId) {
+    public Pagination<Answer> getAllAnswers(Page page, String questionId) {
         var questionExist = questionPersistence.existsById(questionId);
         if (!questionExist) {
             throw new NotFoundException("Question not found", questionId);
         }
 
-        return answerPersistence.findAllByQuestionId(pageable, questionId);
+        return answerPersistence.findAllByQuestionId(page, questionId);
     }
 
     public Pagination<Answer> getAllAnswers(SearchQuery query) {

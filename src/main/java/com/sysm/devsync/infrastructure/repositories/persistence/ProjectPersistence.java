@@ -79,13 +79,13 @@ public class ProjectPersistence extends AbstractPersistence<ProjectJpaEntity> im
         Specification<ProjectJpaEntity> spec = buildSpecification(searchQuery);
 
         var pageRequest = buildPageRequest(searchQuery);
-        var page = repository.findAll(spec, pageRequest);
+        var pageProject = repository.findAll(spec, pageRequest);
 
         return new Pagination<>(
-                page.getNumber(),
-                page.getSize(),
-                page.getTotalElements(),
-                page.map(ProjectJpaEntity::toModel).toList()
+                pageProject.getNumber(),
+                pageProject.getSize(),
+                pageProject.getTotalElements(),
+                pageProject.map(ProjectJpaEntity::toModel).toList()
         );
     }
 

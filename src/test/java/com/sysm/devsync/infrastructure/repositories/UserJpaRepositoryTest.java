@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -49,8 +50,8 @@ public class UserJpaRepositoryTest {
         user1.setEmail("john.doe@example.com");
         user1.setPasswordHash("hashedpassword1");
         user1.setRole(UserRole.MEMBER);
-        user1.setCreatedAt(LocalDateTime.now().minusDays(2));
-        user1.setUpdatedAt(LocalDateTime.now().minusDays(1));
+        user1.setCreatedAt(LocalDateTime.now().minusDays(2).toInstant(ZoneOffset.UTC));
+        user1.setUpdatedAt(LocalDateTime.now().minusDays(1).toInstant(ZoneOffset.UTC));
 
         user2 = new UserJpaEntity();
         user2.setId(UUID.randomUUID().toString());
@@ -58,8 +59,8 @@ public class UserJpaRepositoryTest {
         user2.setEmail("alice.smith@example.com");
         user2.setPasswordHash("hashedpassword2");
         user2.setRole(UserRole.ADMIN);
-        user2.setCreatedAt(LocalDateTime.now().minusDays(3));
-        user2.setUpdatedAt(LocalDateTime.now().minusDays(2));
+        user2.setCreatedAt(LocalDateTime.now().minusDays(3).toInstant(ZoneOffset.UTC));
+        user2.setUpdatedAt(LocalDateTime.now().minusDays(2).toInstant(ZoneOffset.UTC));
 
         user3 = new UserJpaEntity();
         user3.setId(UUID.randomUUID().toString());
@@ -67,8 +68,8 @@ public class UserJpaRepositoryTest {
         user3.setEmail("bob.johnson@example.com");
         user3.setPasswordHash("hashedpassword3");
         user3.setRole(UserRole.MEMBER);
-        user3.setCreatedAt(LocalDateTime.now().minusDays(1));
-        user3.setUpdatedAt(LocalDateTime.now());
+        user3.setCreatedAt(LocalDateTime.now().minusDays(1).toInstant(ZoneOffset.UTC));
+        user3.setUpdatedAt(LocalDateTime.now().toInstant(ZoneOffset.UTC));
     }
 
     @Test
@@ -138,7 +139,7 @@ public class UserJpaRepositoryTest {
         UserJpaEntity userToUpdate = userToUpdateOpt.get();
         userToUpdate.setEmail(updatedEmail);
         userToUpdate.setRole(updatedRole);
-        userToUpdate.setUpdatedAt(ldtNow().plusDays(1));
+        userToUpdate.setUpdatedAt(ldtNow().plusDays(1).toInstant(ZoneOffset.UTC));
         userJpaRepository.save(userToUpdate);
         entityManager.flush();
         entityManager.clear();

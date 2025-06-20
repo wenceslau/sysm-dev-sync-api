@@ -29,13 +29,13 @@ public class Question extends AbstractModel {
     private String title;
     private String description;
 
-    private QuestionStatus questionStatus; // OPEN, CLOSED, RESOLVED
+    private QuestionStatus status; // OPEN, CLOSED, RESOLVED
     private Instant updatedAt;
 
 
     private Question(String id, Instant createdAt, String projectId,
                      String authorId, Set<String> tagsId, String title,
-                     String description, QuestionStatus questionStatus, Instant updatedAt) {
+                     String description, QuestionStatus status, Instant updatedAt) {
         this.id = id;
         this.createdAt = createdAt;
         this.projectId = projectId;
@@ -43,7 +43,7 @@ public class Question extends AbstractModel {
         this.tagsId = tagsId;
         this.title = title;
         this.description = description;
-        this.questionStatus = questionStatus;
+        this.status = status;
         this.updatedAt = updatedAt;
         validate();
     }
@@ -86,7 +86,7 @@ public class Question extends AbstractModel {
         }
 
         this.updatedAt = Instant.now();
-        this.questionStatus = questionStatus;
+        this.status = questionStatus;
     }
 
     public void addTag(String tag) {
@@ -128,7 +128,7 @@ public class Question extends AbstractModel {
     }
 
     public QuestionStatus getStatus() {
-        return questionStatus;
+        return status;
     }
 
     public Instant getCreatedAt() {

@@ -4,6 +4,7 @@ package com.sysm.devsync.infrastructure.repositories.entities;
 import com.sysm.devsync.domain.models.Project;
 import jakarta.persistence.*;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -26,11 +27,11 @@ public class ProjectJpaEntity {
     @JoinColumn(name = "workspace_id", nullable = false) // Foreign key column in the 'workspaces' table
     private WorkspaceJpaEntity workspace;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "DATETIME(6)")
+    private Instant createdAt;
 
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
+    @Column(name = "updated_at", nullable = false, columnDefinition = "DATETIME(6)")
+    private Instant updatedAt;
 
     public ProjectJpaEntity(String id) {
         this.id = id;
@@ -72,19 +73,19 @@ public class ProjectJpaEntity {
         this.workspace = workspace;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public Instant getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
+    public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
     }
 
-    public LocalDateTime getUpdatedAt() {
+    public Instant getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(LocalDateTime updatedAt) {
+    public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
     }
 
@@ -112,13 +113,11 @@ public class ProjectJpaEntity {
     @PrePersist
     protected void onCreate() {
         System.out.println("Creating ProejctJpaEntity: " + this);
-        createdAt = updatedAt = LocalDateTime.now(ZoneOffset.UTC);
     }
 
     @PreUpdate
     protected void onUpdate() {
         System.out.println("Updating ProejctJpaEntity: " + this);
-        updatedAt = LocalDateTime.now(ZoneOffset.UTC);
     }
 
     public static ProjectJpaEntity fromModel(final Project project) {
@@ -126,8 +125,8 @@ public class ProjectJpaEntity {
         entity.setId(project.getId());
         entity.setName(project.getName());
         entity.setDescription(project.getDescription());
-        entity.setCreatedAt(LocalDateTime.ofInstant(project.getCreatedAt(), ZoneId.systemDefault()));
-        entity.setUpdatedAt(LocalDateTime.ofInstant(project.getUpdatedAt(), ZoneId.systemDefault()));
+        entity.setCreatedAt(project.getCreatedAt());
+        entity.setUpdatedAt(project.getUpdatedAt());
 
         if (project.getWorkspaceId() != null) {
             entity.setWorkspace(new WorkspaceJpaEntity(project.getWorkspaceId()));
@@ -144,8 +143,8 @@ public class ProjectJpaEntity {
                 entity.getName(),
                 entity.getDescription(),
                 entity.getWorkspace() != null ? entity.getWorkspace().getId() : null,
-                entity.getCreatedAt().toInstant(ZoneOffset.UTC),
-                entity.getUpdatedAt().toInstant(ZoneOffset.UTC)
+                entity.getCreatedAt(),
+                entity.getUpdatedAt()
         );
     }
 }

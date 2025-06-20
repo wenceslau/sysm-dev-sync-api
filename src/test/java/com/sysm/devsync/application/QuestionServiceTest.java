@@ -4,7 +4,7 @@ import com.sysm.devsync.infrastructure.controller.dto.CreateResponse;
 import com.sysm.devsync.infrastructure.controller.dto.request.QuestionCreateUpdate;
 import com.sysm.devsync.domain.NotFoundException;
 import com.sysm.devsync.domain.Pagination;
-import com.sysm.devsync.domain.Pageable;
+import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.enums.QuestionStatus;
 import com.sysm.devsync.domain.models.Question;
@@ -346,41 +346,41 @@ class QuestionServiceTest {
     @DisplayName("getAllQuestions with Pageable and projectId should return page when project exists")
     void getAllQuestions_withPageableAndProjectId_shouldReturnPage_whenProjectExists() {
         // Arrange
-        Pageable pageable = new Pageable(0, 10, "createdAt", "desc"); // Assuming a static factory method for Pageable
+        Page page = new Page(0, 10, "createdAt", "desc"); // Assuming a static factory method for Pageable
         Pagination<Question> expectedPagination = new Pagination<>(0, 10, 0L, Collections.emptyList());
         when(projectPersistence.existsById(projectId)).thenReturn(true);
-        when(questionPersistence.findAllByProjectId(pageable, projectId)).thenReturn(expectedPagination);
+        when(questionPersistence.findAllByProjectId(page, projectId)).thenReturn(expectedPagination);
 
         // Act
-        Pagination<Question> actualPagination = questionService.getAllQuestions(pageable, projectId);
+        Pagination<Question> actualPagination = questionService.getAllQuestions(page, projectId);
 
         // Assert
         assertNotNull(actualPagination);
         assertSame(expectedPagination, actualPagination);
         verify(projectPersistence).existsById(projectId);
-        verify(questionPersistence).findAllByProjectId(pageable, projectId);
+        verify(questionPersistence).findAllByProjectId(page, projectId);
     }
 
     @Test
     @DisplayName("getAllQuestions with Pageable and projectId should throw NotFoundException when project not found")
     void getAllQuestions_withPageableAndProjectId_shouldThrowNotFoundException_whenProjectNotFound() {
         // Arrange
-        Pageable pageable = new Pageable(0, 10, "createdAt", "desc"); // Assuming a static factory method for Pageable
+        Page page = new Page(0, 10, "createdAt", "desc"); // Assuming a static factory method for Pageable
         when(projectPersistence.existsById(projectId)).thenReturn(false);
 
         // Act & Assert
         NotFoundException exception = assertThrows(NotFoundException.class, () -> {
-            questionService.getAllQuestions(pageable, projectId);
+            questionService.getAllQuestions(page, projectId);
         });
         assertEquals("Project not found", exception.getMessage());
-        verify(questionPersistence, never()).findAllByProjectId(any(Pageable.class), anyString());
+        verify(questionPersistence, never()).findAllByProjectId(any(Page.class), anyString());
     }
 
     @Test
     @DisplayName("getAllQuestions with SearchQuery should return page from persistence")
     void getAllQuestions_withSearchQuery_shouldReturnPageFromPersistence() {
         // Arrange
-        SearchQuery query = new SearchQuery(new Pageable(0, 10, "createdAt", "desc"), "title");
+        SearchQuery query = new SearchQuery(new Page(0, 10, "createdAt", "desc"), "title");
         Pagination<Question> expectedPagination = new Pagination<>(0, 10, 0L, Collections.emptyList());
         when(questionPersistence.findAll(query)).thenReturn(expectedPagination);
 

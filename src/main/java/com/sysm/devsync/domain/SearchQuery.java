@@ -1,16 +1,16 @@
 package com.sysm.devsync.domain;
 
 public record SearchQuery(
-        Pageable pageable,
+        Page page,
         String terms
 ) {
 
-    public static SearchQuery of(Pageable pageable) {
-        return new SearchQuery(pageable, null);
+    public static SearchQuery of(Page page) {
+        return new SearchQuery(page, null);
     }
 
-    public static SearchQuery of(Pageable pageable, String terms) {
-        return new SearchQuery(pageable, terms);
+    public static SearchQuery of(Page page, String terms) {
+        return new SearchQuery(page, terms);
     }
 
 }

@@ -5,6 +5,7 @@ import com.sysm.devsync.domain.enums.UserRole;
 import com.sysm.devsync.domain.models.User;
 import jakarta.persistence.*;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -23,8 +24,8 @@ public class UserJpaEntity {
     private String profilePictureUrl;
     @Enumerated(EnumType.STRING)
     private UserRole role;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private Instant createdAt;
+    private Instant updatedAt;
 
     public UserJpaEntity() {
     }
@@ -81,25 +82,25 @@ public class UserJpaEntity {
         this.role = userRole;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public Instant getCreatedAt() {
         if (createdAt != null) {
             return createdAt.truncatedTo(ChronoUnit.MILLIS);
         }
         return null;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
+    public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
     }
 
-    public LocalDateTime getUpdatedAt() {
+    public Instant getUpdatedAt() {
         if (updatedAt != null) {
             return updatedAt.truncatedTo(ChronoUnit.MILLIS);
         }
         return null;
     }
 
-    public void setUpdatedAt(LocalDateTime updatedAt) {
+    public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
     }
 
@@ -121,16 +122,16 @@ public class UserJpaEntity {
         userJpaEntity.setPasswordHash(user.getPasswordHash());
         userJpaEntity.setProfilePictureUrl(user.getProfilePictureUrl());
         userJpaEntity.setRole(user.getRole());
-        userJpaEntity.setCreatedAt(LocalDateTime.ofInstant(user.getCreatedAt(), ZoneId.of("UTC")));
-        userJpaEntity.setUpdatedAt(LocalDateTime.ofInstant(user.getUpdatedAt(), ZoneId.of("UTC")));
+        userJpaEntity.setCreatedAt(user.getCreatedAt());
+        userJpaEntity.setUpdatedAt(user.getUpdatedAt());
         return userJpaEntity;
     }
 
     public static User toModel(UserJpaEntity userJpaEntity) {
         return User.build(
                 userJpaEntity.getId(),
-                userJpaEntity.getCreatedAt().toInstant(ZoneOffset.UTC), // Corrected
-                userJpaEntity.getUpdatedAt().toInstant(ZoneOffset.UTC), // Corrected
+                userJpaEntity.getCreatedAt(),
+                userJpaEntity.getUpdatedAt(),
                 userJpaEntity.getName(),
                 userJpaEntity.getEmail(),
                 userJpaEntity.getPasswordHash(),

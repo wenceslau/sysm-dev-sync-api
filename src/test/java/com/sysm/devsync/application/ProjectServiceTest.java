@@ -3,7 +3,7 @@ package com.sysm.devsync.application;
 import com.sysm.devsync.infrastructure.controller.dto.CreateResponse;
 import com.sysm.devsync.infrastructure.controller.dto.request.ProjectCreateUpdate;
 import com.sysm.devsync.domain.Pagination;
-import com.sysm.devsync.domain.Pageable;
+import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.models.Project;
 import com.sysm.devsync.domain.persistence.ProjectPersistencePort;
@@ -252,7 +252,7 @@ class ProjectServiceTest {
     @DisplayName("getAllProjects should return pagination result from persistence port")
     void getAllProjects_shouldReturnPaginationResult_fromPersistence() {
         // Arrange
-        SearchQuery query = new SearchQuery(new Pageable(1,10,  "asc", "search"), "name");
+        SearchQuery query = new SearchQuery(new Page(1,10,  "asc", "search"), "name");
         Pagination<Project> expectedPagination = new Pagination<>(1, 10, 0, Collections.emptyList());
         when(projectPersistencePort.findAll(query)).thenReturn(expectedPagination);
 

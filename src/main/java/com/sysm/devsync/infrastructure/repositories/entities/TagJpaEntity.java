@@ -20,6 +20,18 @@ public class TagJpaEntity {
     private String category;
     private int countUsage;
 
+    public TagJpaEntity() {
+    }
+
+    public TagJpaEntity(String id) {
+        this.id = id;
+    }
+
+    public TagJpaEntity(String id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
     public String getId() {
         return id;
     }

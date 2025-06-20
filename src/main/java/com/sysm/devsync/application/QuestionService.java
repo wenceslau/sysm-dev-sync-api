@@ -4,7 +4,7 @@ import com.sysm.devsync.infrastructure.controller.dto.CreateResponse;
 import com.sysm.devsync.infrastructure.controller.dto.request.QuestionCreateUpdate;
 import com.sysm.devsync.domain.NotFoundException;
 import com.sysm.devsync.domain.Pagination;
-import com.sysm.devsync.domain.Pageable;
+import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.enums.QuestionStatus;
 import com.sysm.devsync.domain.models.Question;
@@ -111,13 +111,13 @@ public class QuestionService {
                 .orElseThrow(() -> new NotFoundException("Question not found", questionId));
     }
 
-    public Pagination<Question> getAllQuestions(Pageable pageable, String projectId) {
+    public Pagination<Question> getAllQuestions(Page page, String projectId) {
         var projectExist = projectPersistence.existsById(projectId);
         if (!projectExist) {
             throw new NotFoundException("Project not found", projectId);
         }
 
-        return questionPersistence.findAllByProjectId(pageable, projectId);
+        return questionPersistence.findAllByProjectId(page, projectId);
     }
 
     public Pagination<Question> getAllQuestions(SearchQuery query) {

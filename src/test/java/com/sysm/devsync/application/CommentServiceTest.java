@@ -4,7 +4,7 @@ import com.sysm.devsync.infrastructure.controller.dto.CreateResponse;
 import com.sysm.devsync.infrastructure.controller.dto.request.CommentCreateUpdate;
 import com.sysm.devsync.domain.NotFoundException;
 import com.sysm.devsync.domain.Pagination;
-import com.sysm.devsync.domain.Pageable;
+import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.enums.TargetType;
 import com.sysm.devsync.domain.models.Comment;
@@ -297,11 +297,11 @@ class CommentServiceTest {
     @Nested
     @DisplayName("getAllComments (by target) Tests")
     class GetAllCommentsByTargetTests {
-        private Pageable pageable;
+        private Page page;
 
         @BeforeEach
         void PagedSetup() {
-            pageable = new Pageable(1, 10, "id", "desc");
+            page = new Page(1, 10, "id", "desc");
         }
 
         @Test
@@ -310,16 +310,16 @@ class CommentServiceTest {
             // Arrange
             Pagination<Comment> expectedPagination = new Pagination<>(0, 10, 0L, Collections.emptyList());
             when(notePersistence.existsById(targetId)).thenReturn(true);
-            when(commentPersistence.findAllByTargetId(pageable, TargetType.NOTE, targetId)).thenReturn(expectedPagination);
+            when(commentPersistence.findAllByTargetId(page, TargetType.NOTE, targetId)).thenReturn(expectedPagination);
 
             // Act
-            Pagination<Comment> actualPagination = commentService.getAllComments(pageable, targetId, TargetType.NOTE);
+            Pagination<Comment> actualPagination = commentService.getAllComments(page, targetId, TargetType.NOTE);
 
             // Assert
             assertNotNull(actualPagination);
             assertSame(expectedPagination, actualPagination);
             verify(notePersistence).existsById(targetId);
-            verify(commentPersistence).findAllByTargetId(pageable, TargetType.NOTE, targetId);
+            verify(commentPersistence).findAllByTargetId(page, TargetType.NOTE, targetId);
         }
 
         @Test
@@ -330,7 +330,7 @@ class CommentServiceTest {
 
             // Act & Assert
             NotFoundException exception = assertThrows(NotFoundException.class, () -> {
-                commentService.getAllComments(pageable, targetId, TargetType.NOTE);
+                commentService.getAllComments(page, targetId, TargetType.NOTE);
             });
             assertEquals("Note not found", exception.getMessage());
             assertEquals(targetId, exception.getId());
@@ -343,7 +343,7 @@ class CommentServiceTest {
         void getAllComments_questionTargetNotFound() {
             when(questionPersistence.existsById(targetId)).thenReturn(false);
             NotFoundException exception = assertThrows(NotFoundException.class, () -> {
-                commentService.getAllComments(pageable, targetId, TargetType.QUESTION);
+                commentService.getAllComments(page, targetId, TargetType.QUESTION);
             });
             assertEquals("Question not found", exception.getMessage());
             assertEquals(targetId, exception.getId());
@@ -354,7 +354,7 @@ class CommentServiceTest {
         void getAllComments_answerTargetNotFound() {
             when(answerPersistence.existsById(targetId)).thenReturn(false);
             NotFoundException exception = assertThrows(NotFoundException.class, () -> {
-                commentService.getAllComments(pageable, targetId, TargetType.ANSWER);
+                commentService.getAllComments(page, targetId, TargetType.ANSWER);
             });
             assertEquals("Answer not found", exception.getMessage());
             assertEquals(targetId, exception.getId());
@@ -366,7 +366,7 @@ class CommentServiceTest {
         void getAllComments_targetIdNull() {
             // Act & Assert
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-                commentService.getAllComments(pageable, null, TargetType.NOTE);
+                commentService.getAllComments(page, null, TargetType.NOTE);
             });
             assertEquals("Target ID cannot be null or empty.", exception.getMessage());
         }
@@ -376,7 +376,7 @@ class CommentServiceTest {
         void getAllComments_targetTypeNull() {
             // Act & Assert
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-                commentService.getAllComments(pageable, targetId, null);
+                commentService.getAllComments(page, targetId, null);
             });
             assertEquals("Target type cannot be null.", exception.getMessage());
         }
@@ -389,7 +389,7 @@ class CommentServiceTest {
         @DisplayName("should return page from persistence")
         void getAllComments_withSearchQuery_success() {
             // Arrange
-            SearchQuery query = new SearchQuery(new Pageable(1, 10, "id", "desc"), "content");
+            SearchQuery query = new SearchQuery(new Page(1, 10, "id", "desc"), "content");
             Pagination<Comment> expectedPagination = new Pagination<>(0, 10, 0L, Collections.emptyList());
             when(commentPersistence.findAll(query)).thenReturn(expectedPagination);
 

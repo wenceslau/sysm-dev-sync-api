@@ -1,7 +1,7 @@
 package com.sysm.devsync.infrastructure.repositories.persistence;
 
 import com.sysm.devsync.domain.BusinessException;
-import com.sysm.devsync.domain.Pageable;
+import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.enums.UserRole;
@@ -233,7 +233,7 @@ public class UserPersistenceTest {
         @Test
         @DisplayName("should return all users when no search terms provided")
         void findAll_noTerms_shouldReturnAllUsers() {
-            SearchQuery query = new SearchQuery(Pageable.of(0, 10), "");
+            SearchQuery query = new SearchQuery(Page.of(0, 10), "");
 
             Pagination<User> result = userPersistence.findAll(query);
 
@@ -245,7 +245,7 @@ public class UserPersistenceTest {
         @DisplayName("should filter by a single valid term (name as username)")
         void findAll_singleValidTermName_shouldReturnMatchingUsers() {
             // Assuming "username" in VALID_SEARCHABLE_FIELDS maps to User's "name" field
-            SearchQuery query = new SearchQuery(Pageable.of(0, 10), "name=John Doe");
+            SearchQuery query = new SearchQuery(Page.of(0, 10), "name=John Doe");
 
             Pagination<User> result = userPersistence.findAll(query);
 
@@ -257,7 +257,7 @@ public class UserPersistenceTest {
         @Test
         @DisplayName("should filter by a single valid term (email) case-insensitive")
         void findAll_singleValidTermEmail_shouldReturnMatchingUsers() {
-            SearchQuery query = new SearchQuery(Pageable.of(0, 10), "email=ALICE.SMITH@EXAMPLE.COM"); // Mixed case
+            SearchQuery query = new SearchQuery(Page.of(0, 10), "email=ALICE.SMITH@EXAMPLE.COM"); // Mixed case
 
             Pagination<User> result = userPersistence.findAll(query);
 
@@ -269,7 +269,7 @@ public class UserPersistenceTest {
         @DisplayName("should filter by a single valid term (role)")
         void findAll_singleValidTermRole_shouldReturnMatchingUsers() {
             // Assuming "role" in VALID_SEARCHABLE_FIELDS maps to User's "userRole" field
-            SearchQuery query = new SearchQuery(Pageable.of(0, 10), "role=ADMIN");
+            SearchQuery query = new SearchQuery(Page.of(0, 10), "role=ADMIN");
 
             Pagination<User> result = userPersistence.findAll(query);
 
@@ -283,7 +283,7 @@ public class UserPersistenceTest {
         @DisplayName("should filter by multiple valid terms (OR logic)")
         void findAll_multipleValidTerms_OR_Logic_shouldReturnMatchingUsers() {
             // Assuming "username" (maps to name) and "email" are valid searchable fields
-            SearchQuery query = new SearchQuery(Pageable.of(0, 10), "name=John Doe#email=alice.smith@example.com");
+            SearchQuery query = new SearchQuery(Page.of(0, 10), "name=John Doe#email=alice.smith@example.com");
 
             Pagination<User> result = userPersistence.findAll(query);
 
@@ -294,7 +294,7 @@ public class UserPersistenceTest {
         @Test
         @DisplayName("should throw BusinessException for an invalid search field")
         void findAll_invalidSearchField_shouldThrowBusinessException() {
-            SearchQuery query = new SearchQuery(Pageable.of(0, 10), "nonExistentField=testValue");
+            SearchQuery query = new SearchQuery(Page.of(0, 10), "nonExistentField=testValue");
 
             assertThatThrownBy(() -> userPersistence.findAll(query))
                     .isInstanceOf(BusinessException.class)
@@ -304,7 +304,7 @@ public class UserPersistenceTest {
         @Test
         @DisplayName("should handle terms with no matches")
         void findAll_termWithNoMatches_shouldReturnEmptyPage() {
-            SearchQuery query = new SearchQuery(Pageable.of(0, 10), "name=NoOneLikeThis");
+            SearchQuery query = new SearchQuery(Page.of(0, 10), "name=NoOneLikeThis");
 
             Pagination<User> result = userPersistence.findAll(query);
 
@@ -315,7 +315,7 @@ public class UserPersistenceTest {
         @Test
         @DisplayName("should respect pagination parameters")
         void findAll_withPagination_shouldReturnCorrectPage() {
-            SearchQuery query = new SearchQuery(Pageable.of(0, 2, "name", "asc"), ""); // Sort by name (maps to username)
+            SearchQuery query = new SearchQuery(Page.of(0, 2, "name", "asc"), ""); // Sort by name (maps to username)
 
             Pagination<User> result = userPersistence.findAll(query);
 
@@ -324,7 +324,7 @@ public class UserPersistenceTest {
             assertThat(result.perPage()).isEqualTo(2);
             assertThat(result.total()).isEqualTo(3);
 
-            SearchQuery queryPage2 = new SearchQuery(Pageable.of(1, 2, "name", "asc"), "");
+            SearchQuery queryPage2 = new SearchQuery(Page.of(1, 2, "name", "asc"), "");
             Pagination<User> result2 = userPersistence.findAll(queryPage2);
             assertThat(result2.items()).hasSize(1);
         }
@@ -335,7 +335,7 @@ public class UserPersistenceTest {
             User extraUserDomain = User.create("Aaron Aardvark", "aaron@example.com", UserRole.MEMBER);
             persistUser(UserJpaEntity.fromModel(extraUserDomain));
 
-            SearchQuery query = new SearchQuery(Pageable.of(0, 10, "name", "asc"), ""); // Sort by name
+            SearchQuery query = new SearchQuery(Page.of(0, 10, "name", "asc"), ""); // Sort by name
             Pagination<User> result = userPersistence.findAll(query);
 
             List<String> names = result.items().stream().map(User::getName).toList();

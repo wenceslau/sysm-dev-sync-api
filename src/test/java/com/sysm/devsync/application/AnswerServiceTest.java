@@ -4,7 +4,7 @@ import com.sysm.devsync.infrastructure.controller.dto.CreateResponse;
 import com.sysm.devsync.infrastructure.controller.dto.request.AnswerCreateUpdate;
 import com.sysm.devsync.domain.NotFoundException;
 import com.sysm.devsync.domain.Pagination;
-import com.sysm.devsync.domain.Pageable;
+import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.models.Answer;
 import com.sysm.devsync.domain.persistence.AnswerPersistencePort;
@@ -266,41 +266,41 @@ class AnswerServiceTest {
     @DisplayName("getAllAnswers with Pageable and questionId should return page when question exists")
     void getAllAnswers_withPageableAndQuestionId_shouldReturnPage_whenQuestionExists() {
         // Arrange
-        Pageable pageable = new Pageable(0, 0, "createdAt", "desc");
+        Page page = new Page(0, 0, "createdAt", "desc");
         Pagination<Answer> expectedPagination = new Pagination<>(1, 10, 0L, Collections.emptyList());
         when(questionPersistence.existsById(questionId)).thenReturn(true);
-        when(answerPersistence.findAllByQuestionId(pageable, questionId)).thenReturn(expectedPagination);
+        when(answerPersistence.findAllByQuestionId(page, questionId)).thenReturn(expectedPagination);
 
         // Act
-        Pagination<Answer> actualPagination = answerService.getAllAnswers(pageable, questionId);
+        Pagination<Answer> actualPagination = answerService.getAllAnswers(page, questionId);
 
         // Assert
         assertNotNull(actualPagination);
         assertSame(expectedPagination, actualPagination);
         verify(questionPersistence).existsById(questionId);
-        verify(answerPersistence).findAllByQuestionId(pageable, questionId);
+        verify(answerPersistence).findAllByQuestionId(page, questionId);
     }
 
     @Test
     @DisplayName("getAllAnswers with Pageable and questionId should throw NotFoundException when question not found")
     void getAllAnswers_withPageableAndQuestionId_shouldThrowNotFoundException_whenQuestionNotFound() {
         // Arrange
-        Pageable pageable = new Pageable(0, 0, "createdAt", "desc");
+        Page page = new Page(0, 0, "createdAt", "desc");
         when(questionPersistence.existsById(questionId)).thenReturn(false);
 
         // Act & Assert
         NotFoundException exception = assertThrows(NotFoundException.class, () -> {
-            answerService.getAllAnswers(pageable, questionId);
+            answerService.getAllAnswers(page, questionId);
         });
         assertEquals("Question not found", exception.getMessage());
-        verify(answerPersistence, never()).findAllByQuestionId(any(Pageable.class), anyString());
+        verify(answerPersistence, never()).findAllByQuestionId(any(Page.class), anyString());
     }
 
     @Test
     @DisplayName("getAllAnswers with SearchQuery should return page from persistence")
     void getAllAnswers_withSearchQuery_shouldReturnPageFromPersistence() {
         // Arrange
-        SearchQuery query = new SearchQuery(new Pageable(0, 0, "createdAt", "desc"), "content");
+        SearchQuery query = new SearchQuery(new Page(0, 0, "createdAt", "desc"), "content");
         Pagination<Answer> expectedPagination = new Pagination<>(1, 10, 0L, Collections.emptyList());
         when(answerPersistence.findAll(query)).thenReturn(expectedPagination);
 

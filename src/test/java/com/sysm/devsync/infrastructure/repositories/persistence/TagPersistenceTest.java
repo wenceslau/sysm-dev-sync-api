@@ -1,7 +1,7 @@
 package com.sysm.devsync.infrastructure.repositories.persistence;
 
 import com.sysm.devsync.domain.BusinessException;
-import com.sysm.devsync.domain.Pageable;
+import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.models.Tag;
@@ -224,7 +224,7 @@ public class TagPersistenceTest {
         @Test
         @DisplayName("should return all tags when no search terms provided")
         void findAll_noTerms_shouldReturnAllTags() {
-            SearchQuery query = new SearchQuery(Pageable.of(0, 10), ""); // Empty terms
+            SearchQuery query = new SearchQuery(Page.of(0, 10), ""); // Empty terms
 
             Pagination<Tag> result = tagPersistence.findAll(query);
 
@@ -235,7 +235,7 @@ public class TagPersistenceTest {
         @Test
         @DisplayName("should filter by a single valid term (name)")
         void findAll_singleValidTermName_shouldReturnMatchingTags() {
-            SearchQuery query = new SearchQuery(Pageable.of(0, 10), "name=Java");
+            SearchQuery query = new SearchQuery(Page.of(0, 10), "name=Java");
 
             Pagination<Tag> result = tagPersistence.findAll(query);
 
@@ -247,7 +247,7 @@ public class TagPersistenceTest {
         @Test
         @DisplayName("should filter by a single valid term (category) case-insensitive")
         void findAll_singleValidTermCategory_shouldReturnMatchingTags() {
-            SearchQuery query = new SearchQuery(Pageable.of(0, 10), "category=programming"); // lowercase
+            SearchQuery query = new SearchQuery(Page.of(0, 10), "category=programming"); // lowercase
 
             Pagination<Tag> result = tagPersistence.findAll(query);
 
@@ -258,7 +258,7 @@ public class TagPersistenceTest {
         @Test
         @DisplayName("should filter by multiple valid terms (OR logic)")
         void findAll_multipleValidTerms_OR_Logic_shouldReturnMatchingTags() {
-            SearchQuery query = new SearchQuery(Pageable.of(0, 10), "name=Java#color=Green");
+            SearchQuery query = new SearchQuery(Page.of(0, 10), "name=Java#color=Green");
 
             Pagination<Tag> result = tagPersistence.findAll(query);
 
@@ -269,7 +269,7 @@ public class TagPersistenceTest {
         @Test
         @DisplayName("should throw BusinessException for an invalid search field")
         void findAll_invalidSearchField_shouldThrowBusinessException() {
-            SearchQuery query = new SearchQuery(Pageable.of(0, 10), "invalidField=test");
+            SearchQuery query = new SearchQuery(Page.of(0, 10), "invalidField=test");
 
             assertThatThrownBy(() -> tagPersistence.findAll(query))
                     .isInstanceOf(BusinessException.class)
@@ -279,7 +279,7 @@ public class TagPersistenceTest {
         @Test
         @DisplayName("should handle terms with no matches")
         void findAll_termWithNoMatches_shouldReturnEmptyPage() {
-            SearchQuery query = new SearchQuery(Pageable.of(0, 10), "name=NonExistent");
+            SearchQuery query = new SearchQuery(Page.of(0, 10), "name=NonExistent");
 
             Pagination<Tag> result = tagPersistence.findAll(query);
 
@@ -290,7 +290,7 @@ public class TagPersistenceTest {
         @Test
         @DisplayName("should respect pagination parameters")
         void findAll_withPagination_shouldReturnCorrectPage() {
-            SearchQuery query = new SearchQuery(Pageable.of(0, 2, "name", "asc"), "");
+            SearchQuery query = new SearchQuery(Page.of(0, 2, "name", "asc"), "");
 
             Pagination<Tag> result = tagPersistence.findAll(query);
 
@@ -299,7 +299,7 @@ public class TagPersistenceTest {
             assertThat(result.perPage()).isEqualTo(2);
             assertThat(result.total()).isEqualTo(3);
 
-            SearchQuery queryPage2 = new SearchQuery(Pageable.of(1, 2, "name", "asc"), "");
+            SearchQuery queryPage2 = new SearchQuery(Page.of(1, 2, "name", "asc"), "");
             Pagination<Tag> result2 = tagPersistence.findAll(queryPage2);
             assertThat(result2.items()).hasSize(1);
         }
@@ -312,7 +312,7 @@ public class TagPersistenceTest {
             persistTag(appleTagJpa); // Persisted "Apple"
 
             // Now we have "Java", "Spring", "Testing", "Apple"
-            SearchQuery query = new SearchQuery(Pageable.of(0, 10, "name", "asc"), "");
+            SearchQuery query = new SearchQuery(Page.of(0, 10, "name", "asc"), "");
             Pagination<Tag> result = tagPersistence.findAll(query);
 
             List<String> names = result.items().stream().map(Tag::getName).toList();
