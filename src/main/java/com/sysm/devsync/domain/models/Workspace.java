@@ -1,6 +1,7 @@
 package com.sysm.devsync.domain.models;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
@@ -91,11 +92,17 @@ public class Workspace extends AbstractModel {
     }
 
     public Instant getCreatedAt() {
-        return createdAt;
+        if (createdAt != null) {
+            return createdAt.truncatedTo(ChronoUnit.MILLIS);
+        }
+        return null;
     }
 
     public Instant getUpdatedAt() {
-        return updatedAt;
+        if (updatedAt != null) {
+            return updatedAt.truncatedTo(ChronoUnit.MILLIS);
+        }
+        return null;
     }
 
     public String getName() {

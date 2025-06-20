@@ -32,34 +32,52 @@ public class UserPersistence implements UserPersistencePort {
 
     @Transactional
     public void create(User model) {
+        if (model == null) {
+            throw new BusinessException("User model cannot be null");
+        }
         var userJpaEntity = UserJpaEntity.fromModel(model);
         repository.save(userJpaEntity);
     }
 
     @Transactional
     public void update(User model) {
+        if (model == null) {
+            throw new BusinessException("User model cannot be null");
+        }
         var userJpaEntity = UserJpaEntity.fromModel(model);
         repository.save(userJpaEntity);
     }
 
     @Transactional
     public void deleteById(String id) {
+        if (id == null || id.isBlank()) {
+            throw new BusinessException("User ID cannot be null or blank");
+        }
         repository.deleteById(id);
     }
 
     @Transactional(readOnly = true)
     public Optional<User> findById(String id) {
+        if (id == null || id.isBlank()) {
+            throw new BusinessException("User ID cannot be null or blank");
+        }
         return repository.findById(id)
                 .map(UserJpaEntity::toModel);
     }
 
     @Transactional(readOnly = true)
     public boolean existsById(String id) {
+        if (id == null || id.isBlank()) {
+            throw new BusinessException("User ID cannot be null or blank");
+        }
         return repository.existsById(id);
     }
 
     @Transactional(readOnly = true)
     public Pagination<User> findAll(SearchQuery searchQuery) {
+        if (searchQuery == null) {
+            throw new BusinessException("Search query cannot be null");
+        }
 
         Specification<UserJpaEntity> spec = (root, query, criteriaBuilder) -> {
             var predicates = new ArrayList<Predicate>();

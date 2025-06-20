@@ -25,6 +25,13 @@ public class UserJpaEntity {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    public UserJpaEntity() {
+    }
+
+    public UserJpaEntity(String id) {
+        this.id = id;
+    }
+
     public String getId() {
         return id;
     }

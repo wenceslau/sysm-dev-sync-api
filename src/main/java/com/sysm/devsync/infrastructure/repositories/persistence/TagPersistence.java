@@ -31,32 +31,50 @@ public class TagPersistence implements TagPersistencePort {
 
     @Transactional
     public void create(Tag model) {
+        if (model == null) {
+            throw new BusinessException("Tag model cannot be null");
+        }
         tagRepository.save(TagJpaEntity.fromModel(model));
     }
 
     @Transactional
     public void update(Tag model) {
+        if (model == null) {
+            throw new BusinessException("Tag model cannot be null");
+        }
         tagRepository.save(TagJpaEntity.fromModel(model));
     }
 
     @Transactional
     public void deleteById(String id) {
+        if (id == null || id.isBlank()) {
+            throw new BusinessException("Tag ID cannot be null or blank");
+        }
         tagRepository.deleteById(id);
     }
 
     @Transactional(readOnly = true)
     public Optional<Tag> findById(String id) {
+        if (id == null || id.isBlank()) {
+            throw new BusinessException("Tag ID cannot be null or blank");
+        }
         return tagRepository.findById(id)
                 .map(TagJpaEntity::toModel);
     }
 
     @Transactional(readOnly = true)
     public boolean existsById(String id) {
+        if (id == null || id.isBlank()) {
+            throw new BusinessException("Tag ID cannot be null or blank");
+        }
         return tagRepository.existsById(id);
     }
 
     @Transactional(readOnly = true)
     public Pagination<Tag> findAll(SearchQuery searchQuery) {
+        if (searchQuery == null) {
+            throw new BusinessException("Search query cannot be null");
+        }
 
         Specification<TagJpaEntity> spec = (root, query, criteriaBuilder) -> {
             var predicates = new ArrayList<Predicate>();
