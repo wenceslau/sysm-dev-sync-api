@@ -3,6 +3,7 @@ package com.sysm.devsync.domain.models;
 import com.sysm.devsync.domain.enums.QuestionStatus;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -106,10 +107,6 @@ public class Question extends AbstractModel {
         return id;
     }
 
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
     public String getProjectId() {
         return projectId;
     }
@@ -134,8 +131,18 @@ public class Question extends AbstractModel {
         return questionStatus;
     }
 
+    public Instant getCreatedAt() {
+        if (createdAt != null) {
+            return createdAt.truncatedTo(ChronoUnit.MILLIS);
+        }
+        return null;
+    }
+
     public Instant getUpdatedAt() {
-        return updatedAt;
+        if (updatedAt != null) {
+            return updatedAt.truncatedTo(ChronoUnit.MILLIS);
+        }
+        return null;
     }
 
     public static Question create(String title, String description, String projectId, String authorId) {

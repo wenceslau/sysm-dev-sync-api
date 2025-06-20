@@ -1,6 +1,7 @@
 package com.sysm.devsync.domain.models;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 public class Project extends AbstractModel {
 
@@ -47,13 +48,18 @@ public class Project extends AbstractModel {
     }
 
     public Instant getCreatedAt() {
-        return createdAt;
+        if (createdAt != null) {
+            return createdAt.truncatedTo(ChronoUnit.MILLIS);
+        }
+        return null;
     }
 
     public Instant getUpdatedAt() {
-        return updatedAt;
+        if (updatedAt != null) {
+            return updatedAt.truncatedTo(ChronoUnit.MILLIS);
+        }
+        return null;
     }
-
     public Project update(String name, String description) {
         validate(name, description);
         this.name = name;

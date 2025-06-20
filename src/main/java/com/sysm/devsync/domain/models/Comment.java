@@ -3,6 +3,7 @@ package com.sysm.devsync.domain.models;
 import com.sysm.devsync.domain.enums.TargetType;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 public class Comment extends AbstractModel {
 
@@ -77,16 +78,22 @@ public class Comment extends AbstractModel {
         return authorId;
     }
 
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
     public String getContent() {
         return content;
     }
 
+    public Instant getCreatedAt() {
+        if (createdAt != null) {
+            return createdAt.truncatedTo(ChronoUnit.MILLIS);
+        }
+        return null;
+    }
+
     public Instant getUpdatedAt() {
-        return updatedAt;
+        if (updatedAt != null) {
+            return updatedAt.truncatedTo(ChronoUnit.MILLIS);
+        }
+        return null;
     }
 
     public static Comment create(TargetType targetType, String targetId, String authorId, String content) {

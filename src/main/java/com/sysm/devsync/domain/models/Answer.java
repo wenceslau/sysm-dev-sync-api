@@ -1,6 +1,7 @@
 package com.sysm.devsync.domain.models;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 public class Answer extends AbstractModel {
 
@@ -80,10 +81,6 @@ public class Answer extends AbstractModel {
         return authorId;
     }
 
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
     public String getContent() {
         return content;
     }
@@ -92,8 +89,18 @@ public class Answer extends AbstractModel {
         return isAccepted;
     }
 
+    public Instant getCreatedAt() {
+        if (createdAt != null) {
+            return createdAt.truncatedTo(ChronoUnit.MILLIS);
+        }
+        return null;
+    }
+
     public Instant getUpdatedAt() {
-        return updatedAt;
+        if (updatedAt != null) {
+            return updatedAt.truncatedTo(ChronoUnit.MILLIS);
+        }
+        return null;
     }
 
     public static Answer create(String questionId, String authorId, String content) {
