@@ -7,33 +7,27 @@ import com.sysm.devsync.domain.models.Workspace;
 import com.sysm.devsync.domain.persistence.WorkspacePersistencePort;
 import com.sysm.devsync.infrastructure.repositories.WorkspaceJpaRepository;
 import com.sysm.devsync.infrastructure.repositories.entities.WorkspaceJpaEntity;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.Optional;
-import java.util.Set;
+
+import static com.sysm.devsync.infrastructure.Utils.like;
 
 @Repository
-public class WorkspacePersistence extends AbstractPersistence implements WorkspacePersistencePort {
+public class WorkspacePersistence extends AbstractPersistence<WorkspaceJpaEntity> implements WorkspacePersistencePort {
 
-    private static final Set<String> VALID_SEARCHABLE_FIELDS = Set.of(
-            "name",
-            "description",
-            "isPrivate"
-    );
     private final WorkspaceJpaRepository repository;
 
     public WorkspacePersistence(WorkspaceJpaRepository repository) {
         this.repository = repository;
     }
 
-    private static boolean isValidSearchableField(String key) {
-        return VALID_SEARCHABLE_FIELDS.contains(key);
-    }
-
-    @Override
+    @Transactional
     public void create(Workspace model) {
         if (model == null) {
             throw new BusinessException("Workspace model cannot be null");
@@ -42,7 +36,7 @@ public class WorkspacePersistence extends AbstractPersistence implements Workspa
         repository.save(workspaceJpaEntity);
     }
 
-    @Override
+    @Transactional
     public void update(Workspace model) {
         if (model == null) {
             throw new BusinessException("Workspace model cannot be null");
@@ -51,7 +45,7 @@ public class WorkspacePersistence extends AbstractPersistence implements Workspa
         repository.save(workspaceJpaEntity);
     }
 
-    @Override
+    @Transactional
     public void deleteById(String id) {
         if (id == null || id.isBlank()) {
             throw new BusinessException("Workspace ID cannot be null or blank");
@@ -59,7 +53,7 @@ public class WorkspacePersistence extends AbstractPersistence implements Workspa
         repository.deleteById(id);
     }
 
-    @Override
+    @Transactional(readOnly = true)
     public Optional<Workspace> findById(String id) {
         if (id == null || id.isBlank()) {
             throw new BusinessException("Workspace ID cannot be null or blank");
@@ -68,7 +62,7 @@ public class WorkspacePersistence extends AbstractPersistence implements Workspa
                 .map(WorkspaceJpaEntity::toModel);
     }
 
-    @Override
+    @Transactional(readOnly = true)
     public boolean existsById(String id) {
         if (id == null || id.isBlank()) {
             throw new BusinessException("Workspace ID cannot be null or blank");
@@ -76,28 +70,13 @@ public class WorkspacePersistence extends AbstractPersistence implements Workspa
         return repository.existsById(id);
     }
 
-    @Override
+    @Transactional(readOnly = true)
     public Pagination<Workspace> findAll(SearchQuery searchQuery) {
         if (searchQuery == null) {
             throw new BusinessException("Search query cannot be null");
         }
 
-        Specification<WorkspaceJpaEntity> spec = (root, query, criteriaBuilder) -> {
-            var predicates = new ArrayList<Predicate>();
-            var mapTerms = buildTerms(searchQuery.terms());
-
-            mapTerms.forEach((key, value) -> {
-                if (!isValidSearchableField(key)) { // Validate the field name
-                    throw new BusinessException("Invalid search field provided: '" + key + "'");
-                }
-                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get(key)), "%" + value.toLowerCase() + "%"));
-            });
-
-            if (predicates.isEmpty()) {
-                return criteriaBuilder.conjunction();  // Represents a TRUE predicate (matches all)
-            }
-            return criteriaBuilder.or(predicates.toArray(new Predicate[0]));
-        };
+        Specification<WorkspaceJpaEntity> spec = buildSpecification(searchQuery);
 
         var pageRequest = buildPageRequest(searchQuery);
         var page = repository.findAll(spec, pageRequest);
@@ -108,5 +87,32 @@ public class WorkspacePersistence extends AbstractPersistence implements Workspa
                 page.getTotalElements(),
                 page.map(WorkspaceJpaEntity::toModel).toList()
         );
+    }
+
+    protected Predicate createPredicateForField(Root<WorkspaceJpaEntity> root, CriteriaBuilder crBuilder, String key, String value) {
+
+        return switch (key) {
+            case "name", "description" -> crBuilder.like(crBuilder.lower(root.get(key)), like(value));
+
+            case "isPrivate" -> {
+                if ("true".equalsIgnoreCase(value)) {
+                    yield crBuilder.isTrue(root.get("isPrivate"));
+                } else if ("false".equalsIgnoreCase(value)) {
+                    yield crBuilder.isFalse(root.get("isPrivate"));
+                } else {
+                    throw new BusinessException("Invalid value for boolean field '" + key + "': '" + value + "'. Expected 'true' or 'false'.");
+                }
+            }
+
+            case "ownerId" -> crBuilder.equal(root.get("owner").get("id"), value);
+
+            case "ownerName" -> crBuilder.like(crBuilder.lower(root.join("owner").get("name")), like(value));
+
+            case "memberId" -> crBuilder.equal(root.join("members").get("id"), value);
+
+            case "memberName" -> crBuilder.like(crBuilder.lower(root.join("members").get("name")), like(value));
+
+            default -> throw new BusinessException("Invalid search field provided: '" + key + "'");
+        };
     }
 }

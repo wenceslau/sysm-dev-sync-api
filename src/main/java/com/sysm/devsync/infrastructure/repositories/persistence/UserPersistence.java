@@ -7,23 +7,20 @@ import com.sysm.devsync.domain.models.User;
 import com.sysm.devsync.domain.persistence.UserPersistencePort;
 import com.sysm.devsync.infrastructure.repositories.entities.UserJpaEntity;
 import com.sysm.devsync.infrastructure.repositories.UserJpaRepository;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.Optional;
-import java.util.Set;
+
+import static com.sysm.devsync.infrastructure.Utils.like;
 
 @Repository
-public class UserPersistence extends AbstractPersistence implements UserPersistencePort {
+public class UserPersistence extends AbstractPersistence<UserJpaEntity> implements UserPersistencePort {
 
-    private static final Set<String> VALID_SEARCHABLE_FIELDS = Set.of(
-            "name",
-            "email",
-            "role"
-    );
     private final UserJpaRepository repository;
 
     public UserPersistence(UserJpaRepository repository) {
@@ -79,24 +76,9 @@ public class UserPersistence extends AbstractPersistence implements UserPersiste
             throw new BusinessException("Search query cannot be null");
         }
 
-        Specification<UserJpaEntity> spec = (root, query, criteriaBuilder) -> {
-            var predicates = new ArrayList<Predicate>();
-            var mapTerms = buildTerms(searchQuery.terms());
-
-            mapTerms.forEach((key, value) -> {
-                if (!isValidSearchableField(key)) { // Validate the field name
-                    throw new BusinessException("Invalid search field provided: '" + key + "'");
-                }
-                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get(key)), "%" + value.toLowerCase() + "%"));
-            });
-
-            if (predicates.isEmpty()) {
-                return criteriaBuilder.conjunction();  // Represents a TRUE predicate (matches all)
-            }
-            return criteriaBuilder.or(predicates.toArray(new Predicate[0]));
-        };
-
+        Specification<UserJpaEntity> spec = buildSpecification(searchQuery);
         var pageRequest = buildPageRequest(searchQuery);
+
         var page = repository.findAll(spec, pageRequest);
 
         return new Pagination<>(
@@ -108,7 +90,14 @@ public class UserPersistence extends AbstractPersistence implements UserPersiste
 
     }
 
-    private static boolean isValidSearchableField(String key) {
-        return VALID_SEARCHABLE_FIELDS.contains(key);
+    protected Predicate createPredicateForField(Root<UserJpaEntity> root, CriteriaBuilder crBuilder, String key, String value) {
+        return switch (key) {
+            case "name", "email" -> crBuilder.like(crBuilder.lower(root.get(key)), like(value));
+
+            case "role" -> crBuilder.equal(crBuilder.lower(root.get(key)), value.toLowerCase());
+
+            default -> throw new BusinessException("Invalid search field provided: '" + key + "'");
+        };
     }
+
 }

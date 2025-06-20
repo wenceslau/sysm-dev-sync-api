@@ -7,22 +7,20 @@ import com.sysm.devsync.domain.models.Tag;
 import com.sysm.devsync.domain.persistence.TagPersistencePort;
 import com.sysm.devsync.infrastructure.repositories.entities.TagJpaEntity;
 import com.sysm.devsync.infrastructure.repositories.TagJpaRepository;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
-@Repository
-public class TagPersistence extends AbstractPersistence implements TagPersistencePort {
+import static com.sysm.devsync.infrastructure.Utils.like;
 
-    private static final Set<String> VALID_SEARCHABLE_FIELDS = Set.of(
-            "name",
-            "color",
-            "description",
-            "category"
-    );
+@Repository
+public class TagPersistence extends AbstractPersistence<TagJpaEntity> implements TagPersistencePort {
+
     private final TagJpaRepository tagRepository;
 
     public TagPersistence(TagJpaRepository tagRepository) {
@@ -76,23 +74,7 @@ public class TagPersistence extends AbstractPersistence implements TagPersistenc
             throw new BusinessException("Search query cannot be null");
         }
 
-        Specification<TagJpaEntity> spec = (root, query, criteriaBuilder) -> {
-            var predicates = new ArrayList<Predicate>();
-            var mapTerms = buildTerms(searchQuery.terms());
-
-            mapTerms.forEach((key, value) -> {
-                if (!isValidSearchableField(key)) { // Validate the field name
-                    throw new BusinessException("Invalid search field provided: '" + key + "'. This field will be ignored.");
-                }
-                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get(key)), "%" + value.toLowerCase() + "%"));
-            });
-
-            // Only apply 'or' if there are predicates
-            if (predicates.isEmpty()) {
-                return criteriaBuilder.conjunction();  // Represents a TRUE predicate (matches all)
-            }
-            return criteriaBuilder.or(predicates.toArray(new Predicate[0]));
-        };
+        Specification<TagJpaEntity> spec = buildSpecification(searchQuery);
 
         var pageRequest = buildPageRequest(searchQuery);
 
@@ -106,7 +88,14 @@ public class TagPersistence extends AbstractPersistence implements TagPersistenc
         );
     }
 
-    private static boolean isValidSearchableField(String fieldName) {
-        return VALID_SEARCHABLE_FIELDS.contains(fieldName);
+    protected Predicate createPredicateForField(Root<TagJpaEntity> root, CriteriaBuilder crBuilder, String key, String value) {
+        return switch (key) {
+            case "name",
+                 "color",
+                 "description",
+                 "category"  -> crBuilder.like(crBuilder.lower(root.get(key)), like(value));
+
+            default -> throw new BusinessException("Invalid search field provided: '" + key + "'");
+        };
     }
 }
