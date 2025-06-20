@@ -1,7 +1,6 @@
 package com.sysm.devsync.domain.models;
 
 import com.sysm.devsync.domain.enums.UserRole;
-import com.sysm.devsync.infrastructure.Utils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
