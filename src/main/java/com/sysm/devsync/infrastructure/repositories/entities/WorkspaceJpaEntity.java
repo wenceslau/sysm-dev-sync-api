@@ -1,8 +1,6 @@
 package com.sysm.devsync.infrastructure.repositories.entities;
 
 
-import com.sysm.devsync.domain.enums.UserRole;
-import com.sysm.devsync.domain.models.User;
 import com.sysm.devsync.domain.models.Workspace;
 import jakarta.persistence.*;
 

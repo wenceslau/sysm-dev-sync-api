@@ -3,18 +3,13 @@ package com.sysm.devsync.infrastructure.repositories.persistence;
 import com.sysm.devsync.domain.BusinessException;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
-import com.sysm.devsync.domain.models.User;
 import com.sysm.devsync.domain.models.Workspace;
-import com.sysm.devsync.domain.persistence.UserPersistencePort;
 import com.sysm.devsync.domain.persistence.WorkspacePersistencePort;
-import com.sysm.devsync.infrastructure.repositories.UserJpaRepository;
 import com.sysm.devsync.infrastructure.repositories.WorkspaceJpaRepository;
-import com.sysm.devsync.infrastructure.repositories.entities.UserJpaEntity;
 import com.sysm.devsync.infrastructure.repositories.entities.WorkspaceJpaEntity;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Optional;
