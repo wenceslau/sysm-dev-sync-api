@@ -32,9 +32,9 @@ public class AnswerTest {
     @Test
     @DisplayName("create() should successfully create an answer with valid arguments")
     void create_shouldSucceed_withValidArguments() {
-        Instant beforeCreation = Utils.iNow();
+        Instant beforeCreation = Utils.iTruncatedNow();
         Answer answer = Answer.create(validQuestionId, validAuthorId, validContent);
-        Instant afterCreation = Utils.iNow();
+        Instant afterCreation = Utils.iTruncatedNow();
         assertNotNull(answer.getId(), "ID should be generated and not null");
         try {
             UUID.fromString(answer.getId()); // Validate UUID format

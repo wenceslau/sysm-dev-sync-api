@@ -58,7 +58,6 @@ public abstract class AbstractPersistence<T> {
         );
     }
 
-
     protected PageRequest buildPageRequest(SearchQuery searchQuery) {
         if (searchQuery == null || searchQuery.page() == null) {
             return PageRequest.of(
@@ -123,66 +122,39 @@ public abstract class AbstractPersistence<T> {
      * This method can be overridden by subclasses to provide custom logic.
      */
     private Predicate samplePredicateTypes(Root<T> root, CriteriaBuilder crBuilder, String key, String value) {
-        switch (key) {
-            case "string":
-                // Handle String fields with case-insensitive partial match (LIKE)
-                return crBuilder.like(crBuilder.lower(root.get(key)), like(value));
-
-            case "boolean":
-                // Handle Boolean field with an exact match (EQUAL)
+        return switch (key) {
+            case "string" -> crBuilder.like(crBuilder.lower(root.get(key)), like(value));
+            case "boolean" -> {
                 if ("true".equalsIgnoreCase(value)) {
-                    return crBuilder.isTrue(root.get(key));
+                    yield crBuilder.isTrue(root.get("isPrivate"));
                 } else if ("false".equalsIgnoreCase(value)) {
-                    return crBuilder.isFalse(root.get(key));
+                    yield crBuilder.isFalse(root.get("isPrivate"));
                 } else {
-                    // Handle invalid input for boolean
                     throw new BusinessException("Invalid value for boolean field '" + key + "': '" + value + "'. Expected 'true' or 'false'.");
                 }
-
-            case "manyToOneId":
-                // Handle relationship field (ManyToOne) by ID with exact match (EQUAL)
-                // Assumes an owner is a ManyToOne relationship named "owner" in WorkspaceJpaEntity
-                return crBuilder.equal(root.get("owner").get("id"), value);
-
-            case "manyToOneName":
-                // Handle relationship field (ManyToOne) by name with case-insensitive partial match (LIKE)
-                // Assumes an owner is a ManyToOne relationship named "owner" in WorkspaceJpaEntity
-                return crBuilder.like(crBuilder.lower(root.join("owner").get("name")), like(value));
-
-            case "manyToManyId":
-                // Handle relationship field (ManyToMany) by ID with exact match (EQUAL)
-                // Assumes members is a ManyToMany relationship named "members" in WorkspaceJpaEntity
-                // NOTE: For ManyToMany joins, you might need query.distinct(true) in the main buildSpecification method
-                return crBuilder.equal(root.join("members").get("id"), value);
-
-            case "manyToManyName":
-                // Handle relationship field (ManyToMany) by name with case-insensitive partial match (LIKE)
-                // Assumes members is a ManyToMany relationship named "members" in WorkspaceJpaEntity
-                // NOTE: For ManyToMany joins, you might need query.distinct(true) in the main buildSpecification method
-                return crBuilder.like(crBuilder.lower(root.join("members").get("name")), like(value));
-
-            case "localDateTimeField":
+            }
+            case "manyToOneId" -> crBuilder.equal(root.get("owner").get("id"), value);
+            case "manyToOneName" -> crBuilder.like(crBuilder.lower(root.join("owner").get("name")), like(value));
+            case "manyToManyId" -> crBuilder.equal(root.join("members").get("id"), value);
+            case "manyToManyName" -> crBuilder.like(crBuilder.lower(root.join("members").get("name")), like(value));
+            case "localDateTimeField" -> {
                 try {
-                    // Example: Search for the exact date /time
-                    LocalDateTime dateTime = LocalDateTime.parse(value); // Use the appropriate parser and format
-                    return crBuilder.equal(root.get(key), dateTime);
-                    // Example: Search for dates after a certain point
-                    // return criteriaBuilder.greaterThanOrEqualTo(root.get(key), dateTime);
+                    yield crBuilder.equal(root.get(key), LocalDateTime.parse(value)); // Use the appropriate parser and format
+                    // crBuilder.greaterThanOrEqualTo(root.get(key), LocalDateTime.parse(value));
                 } catch (DateTimeParseException e) {
                     throw new BusinessException("Invalid date format for field '" + key + "': '" + value + "'");
                 }
-            case "numberField":
+            }
+            case "numberField" -> {
                 try {
-                    Integer number = Integer.parseInt(value);
-                    return crBuilder.equal(root.get(key), number);
-                    // return criteriaBuilder.greaterThan(root.get(key), number);
+                    yield  crBuilder.equal(root.get(key), Integer.parseInt(value));
+                    //crBuilder.greaterThan(root.get(key), Integer.parseInt(value));
                 } catch (NumberFormatException e) {
                     throw new BusinessException("Invalid number format for field '" + key + "': '" + value + "'");
                 }
-
-            default:
-                throw new BusinessException("Unsupported search logic for field: '" + key + "'");
-        }
+            }
+            default -> throw new BusinessException("Unsupported search logic for field: '" + key + "'");
+        };
     }
 
 }

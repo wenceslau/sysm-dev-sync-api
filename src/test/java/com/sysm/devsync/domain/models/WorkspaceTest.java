@@ -12,7 +12,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-import static com.sysm.devsync.infrastructure.Utils.iNow;
+import static com.sysm.devsync.infrastructure.Utils.iTruncatedNow;
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -42,11 +42,11 @@ class WorkspaceTest {
     @Test
     @DisplayName("create should create workspace successfully with valid arguments")
     void create_shouldCreateWorkspace_whenArgumentsAreValid() {
-        Instant beforeCreation = iNow();
+        Instant beforeCreation = iTruncatedNow();
         Workspace workspace = Workspace.create(validName, validDescription, false, validOwner);
         workspace.addMember(member1);
 
-        Instant afterCreation = iNow();
+        Instant afterCreation = iTruncatedNow();
         assertNotNull(workspace.getId(), "ID should not be null");
         try {
             UUID.fromString(workspace.getId()); // Check if ID is a valid UUID

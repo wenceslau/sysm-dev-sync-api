@@ -8,7 +8,12 @@ import com.sysm.devsync.domain.enums.UserRole;
 import com.sysm.devsync.domain.models.Project;
 import com.sysm.devsync.domain.models.User; // For workspace owner setup
 import com.sysm.devsync.domain.models.Workspace; // For project workspace setup
+import com.sysm.devsync.infrastructure.AbstractRepositoryTest;
 import com.sysm.devsync.infrastructure.PersistenceTest;
+import com.sysm.devsync.infrastructure.repositories.ProjectJpaRepository;
+import com.sysm.devsync.infrastructure.repositories.TagJpaRepository;
+import com.sysm.devsync.infrastructure.repositories.UserJpaRepository;
+import com.sysm.devsync.infrastructure.repositories.WorkspaceJpaRepository;
 import com.sysm.devsync.infrastructure.repositories.entities.ProjectJpaEntity;
 import com.sysm.devsync.infrastructure.repositories.entities.UserJpaEntity;
 import com.sysm.devsync.infrastructure.repositories.entities.WorkspaceJpaEntity;
@@ -30,18 +35,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-@PersistenceTest
 @Import(ProjectPersistence.class) // Import the class under test
-public class ProjectPersistenceTest {
-
-    @Autowired
-    private TestEntityManager entityManager;
+public class ProjectPersistenceTest extends AbstractRepositoryTest {
 
     @Autowired
     private ProjectPersistence projectPersistence; // The class under test
 
-    // Dependent entities for setup
-    private UserJpaEntity ownerUserJpa;
     private WorkspaceJpaEntity workspace1Jpa;
     private WorkspaceJpaEntity workspace2Jpa;
 
@@ -50,19 +49,14 @@ public class ProjectPersistenceTest {
     private Project project2Domain;
     private Project project3Domain;
 
-
     @BeforeEach
     void setUp() {
-        // Clean up in reverse order of dependency or let @DataJpaTest handle rollback
-        entityManager.getEntityManager().createQuery("DELETE FROM Project").executeUpdate();
-       // entityManager.getEntityManager().createQuery("DELETE FROM WorkspaceMember").executeUpdate(); // If workspace_members table exists
-        entityManager.getEntityManager().createQuery("DELETE FROM Workspace").executeUpdate();
-        entityManager.getEntityManager().createQuery("DELETE FROM User").executeUpdate();
-        entityManager.flush();
+        clearRepositories();
 
         // 1. Create Owner User
         User ownerDomain = User.create("Owner User", "owner@example.com", UserRole.ADMIN);
-        ownerUserJpa = UserJpaEntity.fromModel(ownerDomain);
+        // Dependent entities for setup
+        UserJpaEntity ownerUserJpa = UserJpaEntity.fromModel(ownerDomain);
         entityManager.persist(ownerUserJpa);
 
         // 2. Create Workspaces
@@ -73,7 +67,8 @@ public class ProjectPersistenceTest {
         workspace1Jpa.setDescription(ws1Domain.getDescription());
         workspace1Jpa.setPrivate(ws1Domain.isPrivate());
         workspace1Jpa.setOwner(ownerUserJpa); // Set managed owner
-        // Timestamps will be set by @PrePersist
+        workspace1Jpa.setCreatedAt(Instant.now());
+        workspace1Jpa.setUpdatedAt(Instant.now());
         entityManager.persist(workspace1Jpa);
 
         Workspace ws2Domain = Workspace.create("Workspace Two", "Second test workspace", true, ownerUserJpa.getId());
@@ -83,6 +78,8 @@ public class ProjectPersistenceTest {
         workspace2Jpa.setDescription(ws2Domain.getDescription());
         workspace2Jpa.setPrivate(ws2Domain.isPrivate());
         workspace2Jpa.setOwner(ownerUserJpa);
+        workspace2Jpa.setCreatedAt(Instant.now());
+        workspace2Jpa.setUpdatedAt(Instant.now());
         entityManager.persist(workspace2Jpa);
 
         entityManager.flush(); // Ensure users and workspaces are in DB
@@ -127,10 +124,6 @@ public class ProjectPersistenceTest {
         @DisplayName("should fail to create project with non-existent workspace ID due to FK constraint")
         void create_nonExistentWorkspaceId_shouldFail() {
             Project projectWithInvalidWorkspace = Project.create("Invalid WS Project", "Desc", UUID.randomUUID().toString());
-            // This test relies on the database foreign key constraint.
-            // The ProjectJpaEntity.fromModel will create a transient WorkspaceJpaEntity(id).
-            // When saving ProjectJpaEntity, if the workspace_id doesn't exist in the workspaces table,
-            // the DB will throw a constraint violation.
             assertThatThrownBy(() -> {
                 projectPersistence.create(projectWithInvalidWorkspace);
                 entityManager.flush(); // Force DB interaction
@@ -185,13 +178,15 @@ public class ProjectPersistenceTest {
         @Test
         @DisplayName("update should effectively insert if ID does not exist (current behavior)")
         void update_nonExistentId_shouldInsert() {
-            // Current `update` method behavior: if ID doesn't exist, `repository.save()` will insert.
+            // Arrange: Create a new project to update
             Project newProjectToUpdate = Project.create("New Project via Update", "Desc", workspace1Jpa.getId());
 
+            // Act: Attempt to update (which should insert since it doesn't exist)
             assertDoesNotThrow(() -> projectPersistence.update(newProjectToUpdate));
             entityManager.flush();
             entityManager.clear();
 
+            // Assert: Check if the project was created
             Optional<Project> foundProject = projectPersistence.findById(newProjectToUpdate.getId());
             assertThat(foundProject).isPresent();
             assertThat(foundProject.get().getName()).isEqualTo("New Project via Update");
@@ -371,26 +366,6 @@ public class ProjectPersistenceTest {
                     .isInstanceOf(BusinessException.class)
                     .hasMessageContaining("Invalid search field provided: 'invalidField'");
         }
-
-        @Test
-        @DisplayName("should throw BusinessException for an unsupported search field (not in createPredicateForField switch)")
-        void findAll_unsupportedSearchField_shouldThrowBusinessException() {
-            // Assuming "category" is in VALID_SEARCHABLE_FIELDS but not in createPredicateForField switch
-            // For this test, let's assume "category" was mistakenly added to VALID_SEARCHABLE_FIELDS
-            // but not handled in createPredicateForField.
-            // To test this properly, you'd need to adjust VALID_SEARCHABLE_FIELDS in ProjectPersistence
-            // or ensure the default case in createPredicateForField is hit.
-            // Given the current setup (category removed from createPredicateForField and not in VALID_SEARCHABLE_FIELDS),
-            // this test is similar to the one above.
-            // If "category" was valid but had no predicate logic:
-            // SearchQuery query = new SearchQuery(Pageable.of(0, 10), "category=test");
-            // assertThatThrownBy(() -> projectPersistence.findAll(query))
-            //        .isInstanceOf(BusinessException.class)
-            //        .hasMessageContaining("Unsupported search logic for field: 'category'");
-            // This test is a bit tricky without modifying ProjectPersistence for the test's sake.
-            // The `invalidSearchField_shouldThrowBusinessException` covers the primary case.
-        }
-
 
         @Test
         @DisplayName("should handle terms with no matches")

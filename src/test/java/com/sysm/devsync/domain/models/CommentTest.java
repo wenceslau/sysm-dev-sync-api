@@ -9,7 +9,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
-import static com.sysm.devsync.infrastructure.Utils.iNow;
+import static com.sysm.devsync.infrastructure.Utils.iTruncatedNow;
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -32,9 +32,9 @@ class CommentTest {
     @Test
     @DisplayName("create() should successfully create a comment with generated ID and current timestamps")
     void create_shouldSucceed_withGeneratedIdAndTimestamps() {
-        Instant beforeCreation = iNow();
+        Instant beforeCreation = iTruncatedNow();
         Comment comment = Comment.create(validTargetType, validTargetId, validAuthorId, validContent);
-        Instant afterCreation = iNow();
+        Instant afterCreation = iTruncatedNow();
         assertNotNull(comment.getId(), "ID should be generated and not null");
         try {
             UUID.fromString(comment.getId()); // Validate UUID format

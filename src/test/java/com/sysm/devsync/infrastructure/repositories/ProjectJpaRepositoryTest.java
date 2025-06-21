@@ -1,10 +1,10 @@
 package com.sysm.devsync.infrastructure.repositories;
 
-import com.sysm.devsync.infrastructure.PersistenceTest; // Your custom test slice
+import com.sysm.devsync.domain.enums.UserRole;
+import com.sysm.devsync.infrastructure.AbstractRepositoryTest;
 import com.sysm.devsync.infrastructure.repositories.entities.ProjectJpaEntity;
 import com.sysm.devsync.infrastructure.repositories.entities.UserJpaEntity;
 import com.sysm.devsync.infrastructure.repositories.entities.WorkspaceJpaEntity;
-import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,25 +17,18 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static com.sysm.devsync.infrastructure.Utils.sleep;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@PersistenceTest
-public class ProjectJpaRepositoryTest {
+public class ProjectJpaRepositoryTest extends AbstractRepositoryTest {
 
     @Autowired
     private TestEntityManager entityManager;
-
-    @Autowired
-    private ProjectJpaRepository projectJpaRepository;
-
-    @Autowired
-    private WorkspaceJpaRepository workspaceJpaRepository; // To manage workspace test data
 
     private WorkspaceJpaEntity workspace1;
     private WorkspaceJpaEntity workspace2;
@@ -46,12 +39,7 @@ public class ProjectJpaRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        // Clean up entities: dependent entities (projects) first, then workspaces.
-        projectJpaRepository.deleteAllInBatch();
-        // If UserJpaEntities were involved in Workspace setup and not cleaned by cascade, clean them too.
-        // userJpaRepository.deleteAllInBatch(); // Example if users were directly persisted here
-        workspaceJpaRepository.deleteAllInBatch();
-
+        clearRepositories();
 
         // Create and persist Workspaces first
         workspace1 = new WorkspaceJpaEntity();
@@ -61,8 +49,14 @@ public class ProjectJpaRepositoryTest {
         UserJpaEntity owner = new UserJpaEntity(UUID.randomUUID().toString());
         owner.setName("Default Owner");
         owner.setEmail("owner@example.com");
+        owner.setRole(UserRole.ADMIN);
+        owner.setCreatedAt(Instant.now());
+        owner.setUpdatedAt(Instant.now());
+
         entityManager.persist(owner);
         workspace1.setOwner(owner);
+        workspace1.setCreatedAt(Instant.now());
+        workspace1.setUpdatedAt(Instant.now());
         entityManager.persist(workspace1);
 
         workspace2 = new WorkspaceJpaEntity();
@@ -70,6 +64,8 @@ public class ProjectJpaRepositoryTest {
         workspace2.setName("Test Workspace 2");
         workspace2.setDescription("Another workspace for testing");
         workspace2.setOwner(owner); // if owner is required
+        workspace2.setCreatedAt(Instant.now());
+        workspace2.setUpdatedAt(Instant.now());
         entityManager.persist(workspace2);
 
         entityManager.flush(); // Ensure workspaces are in DB
@@ -81,18 +77,24 @@ public class ProjectJpaRepositoryTest {
         project1.setName("Project Alpha");
         project1.setDescription("First test project");
         project1.setWorkspace(workspace1); // Link to persisted workspace1
+        project1.setCreatedAt(Instant.now());
+        project1.setUpdatedAt(Instant.now());
 
         project2 = new ProjectJpaEntity();
         project2.setId(UUID.randomUUID().toString());
         project2.setName("Project Beta");
         project2.setDescription("Second test project, different workspace");
         project2.setWorkspace(workspace2); // Link to persisted workspace2
+        project2.setCreatedAt(Instant.now());
+        project2.setUpdatedAt(Instant.now());
 
         project3 = new ProjectJpaEntity();
         project3.setId(UUID.randomUUID().toString());
         project3.setName("Project Gamma");
         project3.setDescription("Third test project, same workspace as Alpha");
         project3.setWorkspace(workspace1); // Link to persisted workspace1
+        project3.setCreatedAt(Instant.now());
+        project3.setUpdatedAt(Instant.now());
     }
 
     @Test
@@ -134,7 +136,6 @@ public class ProjectJpaRepositoryTest {
         }).isInstanceOf(DataIntegrityViolationException.class); // Or potentially ConstraintViolationException
     }
 
-
     @Test
     @DisplayName("should fail to save project with duplicate name due to unique constraint")
     void save_withDuplicateName_shouldFail() {
@@ -152,7 +153,7 @@ public class ProjectJpaRepositoryTest {
         assertThatThrownBy(() -> {
             projectJpaRepository.save(duplicateNameProject);
             entityManager.flush(); // This will trigger the constraint violation
-        }).isInstanceOf(ConstraintViolationException.class);
+        }).isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test
@@ -198,6 +199,8 @@ public class ProjectJpaRepositoryTest {
         ProjectJpaEntity persistedProject = projectJpaRepository.save(project1);
         entityManager.flush();
         Instant originalUpdatedAt = persistedProject.getUpdatedAt(); // Capture before update
+
+        sleep(1000); // Ensure a noticeable time difference for updatedAt
 
         // Act
         // Fetch, modify, and save

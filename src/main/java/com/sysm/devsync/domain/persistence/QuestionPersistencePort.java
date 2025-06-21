@@ -9,5 +9,4 @@ public interface QuestionPersistencePort extends PersistencePort<Question> {
 
     Pagination<Question> findAllByProjectId(Page page, String projectId);
 
-
 }

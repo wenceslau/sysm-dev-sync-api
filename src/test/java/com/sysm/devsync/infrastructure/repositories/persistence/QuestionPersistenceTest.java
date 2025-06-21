@@ -11,6 +11,7 @@ import com.sysm.devsync.domain.models.User;
 import com.sysm.devsync.domain.models.Workspace;
 import com.sysm.devsync.domain.models.Project;
 import com.sysm.devsync.domain.models.Tag;
+import com.sysm.devsync.infrastructure.AbstractRepositoryTest;
 import com.sysm.devsync.infrastructure.PersistenceTest; // Your custom test slice
 import com.sysm.devsync.infrastructure.repositories.*; // Import all repositories
 import com.sysm.devsync.infrastructure.repositories.entities.*; // Import all entities
@@ -43,30 +44,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-@PersistenceTest
 @Import(QuestionPersistence.class) // Import the class under test
-public class QuestionPersistenceTest {
-
-    @Autowired
-    private TestEntityManager entityManager;
+public class QuestionPersistenceTest extends AbstractRepositoryTest {
 
     @Autowired
     private QuestionPersistence questionPersistence; // The class under test
 
-    // Autowire other repositories needed for setup and verification
-    @Autowired
-    private UserJpaRepository userJpaRepository;
-    @Autowired
-    private WorkspaceJpaRepository workspaceJpaRepository;
-    @Autowired
-    private ProjectJpaRepository projectJpaRepository;
-    @Autowired
-    private TagJpaRepository tagJpaRepository;
-
     // Prerequisite JPA entities (persisted before tests)
     private UserJpaEntity authorUserJpa;
-    private UserJpaEntity workspaceOwnerJpa; // Needed for Workspace setup
-    private WorkspaceJpaEntity workspaceJpa;
     private ProjectJpaEntity project1Jpa;
     private ProjectJpaEntity project2Jpa;
     private TagJpaEntity tag1Jpa;
@@ -80,20 +65,17 @@ public class QuestionPersistenceTest {
 
     @BeforeEach
     void setUp() {
-        // Clean up in reverse order of dependency or let @DataJpaTest handle rollback
-        // Using executeUpdate on queries is often more reliable than deleteAllInBatch for complex relationships
-        entityManager.getEntityManager().createQuery("DELETE FROM Question").executeUpdate();
-        entityManager.getEntityManager().createQuery("DELETE FROM Tag").executeUpdate(); // Clean tags table
-        entityManager.getEntityManager().createQuery("DELETE FROM Project").executeUpdate();
-//        entityManager.getEntityManager().createQuery("DELETE FROM WorkspaceMember").executeUpdate(); // If workspace_members table exists
-        entityManager.getEntityManager().createQuery("DELETE FROM Workspace").executeUpdate();
-        entityManager.getEntityManager().createQuery("DELETE FROM User").executeUpdate();
-        entityManager.flush(); // Ensure cleanup is done before creating new entities
+        questionJpaRepository.deleteAllInBatch();
+        projectJpaRepository.deleteAllInBatch();
+        workspaceJpaRepository.deleteAllInBatch();
+        userJpaRepository.deleteAllInBatch();
+        tagJpaRepository.deleteAllInBatch();
 
         // 1. Create and Persist Prerequisite Entities
         // Create Owner User for Workspace
         User workspaceOwnerDomain = User.create("Workspace Owner", "ws.owner@example.com",  UserRole.ADMIN);
-        workspaceOwnerJpa = UserJpaEntity.fromModel(workspaceOwnerDomain); // Assuming fromModel works for User
+        // Needed for Workspace setup
+        UserJpaEntity workspaceOwnerJpa = UserJpaEntity.fromModel(workspaceOwnerDomain); // Assuming fromModel works for User
         entityManager.persist(workspaceOwnerJpa);
 
         // Create Author User for Questions
@@ -104,7 +86,7 @@ public class QuestionPersistenceTest {
         // Create Workspace (requires owner)
         Workspace wsDomain = Workspace.create("Test Workspace for Questions", "Workspace description", false, workspaceOwnerJpa.getId());
         // Manually map or use a correct fromModel that fetches owner if needed
-        workspaceJpa = new WorkspaceJpaEntity();
+        WorkspaceJpaEntity workspaceJpa = new WorkspaceJpaEntity();
         workspaceJpa.setId(wsDomain.getId());
         workspaceJpa.setName(wsDomain.getName());
         workspaceJpa.setDescription(wsDomain.getDescription());
@@ -675,6 +657,9 @@ public class QuestionPersistenceTest {
             UserJpaEntity anotherAuthor = new UserJpaEntity(UUID.randomUUID().toString());
             anotherAuthor.setName("Another Author");
             anotherAuthor.setEmail("another.author@example.com");
+            anotherAuthor.setCreatedAt(Instant.now());
+            anotherAuthor.setUpdatedAt(Instant.now());
+            anotherAuthor.setRole(UserRole.MEMBER);
             entityManager.persist(anotherAuthor);
 
             Question questionByAnotherAuthor = Question.create(

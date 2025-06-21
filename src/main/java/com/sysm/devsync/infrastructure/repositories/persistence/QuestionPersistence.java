@@ -28,26 +28,6 @@ public class QuestionPersistence extends AbstractPersistence<QuestionJpaEntity> 
     }
 
     @Override
-    public Pagination<Question> findAllByProjectId(Page page, String projectId) {
-        if (page == null) {
-            page = Page.of(0, 10); // Default to first page with 10 items
-        }
-        if (projectId == null || projectId.isEmpty()) {
-            throw new IllegalArgumentException("Project ID must not be null or empty");
-        }
-
-        var pageableRequest = buildPageRequest(page);
-        var questionPage = repository.findAllByProject_Id(projectId, pageableRequest);
-
-        return new Pagination<>(
-                questionPage.getNumber(),
-                questionPage.getSize(),
-                questionPage.getTotalElements(),
-                questionPage.map(QuestionJpaEntity::toModel).toList()
-        );
-    }
-
-    @Override
     public void create(Question model) {
         if (model == null) {
             throw new IllegalArgumentException("Question model must not be null");
@@ -96,6 +76,26 @@ public class QuestionPersistence extends AbstractPersistence<QuestionJpaEntity> 
         var specification = buildSpecification(query);
 
         var questionPage = repository.findAll(specification, pageableRequest);
+
+        return new Pagination<>(
+                questionPage.getNumber(),
+                questionPage.getSize(),
+                questionPage.getTotalElements(),
+                questionPage.map(QuestionJpaEntity::toModel).toList()
+        );
+    }
+
+    @Override
+    public Pagination<Question> findAllByProjectId(Page page, String projectId) {
+        if (page == null) {
+            page = Page.of(0, 10); // Default to first page with 10 items
+        }
+        if (projectId == null || projectId.isEmpty()) {
+            throw new IllegalArgumentException("Project ID must not be null or empty");
+        }
+
+        var pageableRequest = buildPageRequest(page);
+        var questionPage = repository.findAllByProject_Id(projectId, pageableRequest);
 
         return new Pagination<>(
                 questionPage.getNumber(),

@@ -9,17 +9,6 @@ import java.util.Set;
 
 public class Question extends AbstractModel {
 
-    /*
-        id: UUID
-        title
-        description: Markdown or HTML
-        tags: [String]
-        projectId: Project reference
-        authorId: User reference
-        status: OPEN / CLOSED / RESOLVED
-        createdAt, updatedAt
-    */
-
     private final String id;
     private final Instant createdAt;
     private final String projectId;

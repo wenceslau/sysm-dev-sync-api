@@ -30,7 +30,7 @@ public class UserPersistence extends AbstractPersistence<UserJpaEntity> implemen
     @Transactional
     public void create(User model) {
         if (model == null) {
-            throw new BusinessException("User model cannot be null");
+            throw new IllegalArgumentException("User model cannot be null");
         }
         var userJpaEntity = UserJpaEntity.fromModel(model);
         repository.save(userJpaEntity);
@@ -39,7 +39,7 @@ public class UserPersistence extends AbstractPersistence<UserJpaEntity> implemen
     @Transactional
     public void update(User model) {
         if (model == null) {
-            throw new BusinessException("User model cannot be null");
+            throw new IllegalArgumentException("User model cannot be null");
         }
         var userJpaEntity = UserJpaEntity.fromModel(model);
         repository.save(userJpaEntity);
@@ -48,7 +48,7 @@ public class UserPersistence extends AbstractPersistence<UserJpaEntity> implemen
     @Transactional
     public void deleteById(String id) {
         if (id == null || id.isBlank()) {
-            throw new BusinessException("User ID cannot be null or blank");
+            throw new IllegalArgumentException("User ID cannot be null or blank");
         }
         repository.deleteById(id);
     }
@@ -56,7 +56,7 @@ public class UserPersistence extends AbstractPersistence<UserJpaEntity> implemen
     @Transactional(readOnly = true)
     public Optional<User> findById(String id) {
         if (id == null || id.isBlank()) {
-            throw new BusinessException("User ID cannot be null or blank");
+            throw new IllegalArgumentException("User ID cannot be null or blank");
         }
         return repository.findById(id)
                 .map(UserJpaEntity::toModel);
@@ -65,17 +65,13 @@ public class UserPersistence extends AbstractPersistence<UserJpaEntity> implemen
     @Transactional(readOnly = true)
     public boolean existsById(String id) {
         if (id == null || id.isBlank()) {
-            throw new BusinessException("User ID cannot be null or blank");
+            throw new IllegalArgumentException("User ID cannot be null or blank");
         }
         return repository.existsById(id);
     }
 
     @Transactional(readOnly = true)
     public Pagination<User> findAll(SearchQuery searchQuery) {
-        if (searchQuery == null) {
-            throw new BusinessException("Search query cannot be null");
-        }
-
         Specification<UserJpaEntity> spec = buildSpecification(searchQuery);
         var pageRequest = buildPageRequest(searchQuery);
 

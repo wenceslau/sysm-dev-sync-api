@@ -7,6 +7,7 @@ import com.sysm.devsync.domain.enums.TargetType;
 import com.sysm.devsync.domain.models.Comment;
 
 public interface CommentPersistencePort extends PersistencePort<Comment> {
+
     Pagination<Comment> findAllByTargetId(Page page, TargetType targetType, String targetId);
 
 }

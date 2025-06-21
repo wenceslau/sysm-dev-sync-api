@@ -30,7 +30,7 @@ public class WorkspacePersistence extends AbstractPersistence<WorkspaceJpaEntity
     @Transactional
     public void create(Workspace model) {
         if (model == null) {
-            throw new BusinessException("Workspace model cannot be null");
+            throw new IllegalArgumentException("Workspace model cannot be null");
         }
         var workspaceJpaEntity = WorkspaceJpaEntity.fromModel(model);
         repository.save(workspaceJpaEntity);
@@ -39,7 +39,7 @@ public class WorkspacePersistence extends AbstractPersistence<WorkspaceJpaEntity
     @Transactional
     public void update(Workspace model) {
         if (model == null) {
-            throw new BusinessException("Workspace model cannot be null");
+            throw new IllegalArgumentException("Workspace model cannot be null");
         }
         var workspaceJpaEntity = WorkspaceJpaEntity.fromModel(model);
         repository.save(workspaceJpaEntity);
@@ -48,7 +48,7 @@ public class WorkspacePersistence extends AbstractPersistence<WorkspaceJpaEntity
     @Transactional
     public void deleteById(String id) {
         if (id == null || id.isBlank()) {
-            throw new BusinessException("Workspace ID cannot be null or blank");
+            throw new IllegalArgumentException("Workspace ID cannot be null or blank");
         }
         repository.deleteById(id);
     }
@@ -56,7 +56,7 @@ public class WorkspacePersistence extends AbstractPersistence<WorkspaceJpaEntity
     @Transactional(readOnly = true)
     public Optional<Workspace> findById(String id) {
         if (id == null || id.isBlank()) {
-            throw new BusinessException("Workspace ID cannot be null or blank");
+            throw new IllegalArgumentException("Workspace ID cannot be null or blank");
         }
         return repository.findById(id)
                 .map(WorkspaceJpaEntity::toModel);
@@ -65,17 +65,13 @@ public class WorkspacePersistence extends AbstractPersistence<WorkspaceJpaEntity
     @Transactional(readOnly = true)
     public boolean existsById(String id) {
         if (id == null || id.isBlank()) {
-            throw new BusinessException("Workspace ID cannot be null or blank");
+            throw new IllegalArgumentException("Workspace ID cannot be null or blank");
         }
         return repository.existsById(id);
     }
 
     @Transactional(readOnly = true)
     public Pagination<Workspace> findAll(SearchQuery searchQuery) {
-        if (searchQuery == null) {
-            throw new BusinessException("Search query cannot be null");
-        }
-
         Specification<WorkspaceJpaEntity> spec = buildSpecification(searchQuery);
 
         var pageRequest = buildPageRequest(searchQuery);

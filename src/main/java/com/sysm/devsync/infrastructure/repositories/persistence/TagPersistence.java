@@ -30,7 +30,7 @@ public class TagPersistence extends AbstractPersistence<TagJpaEntity> implements
     @Transactional
     public void create(Tag model) {
         if (model == null) {
-            throw new BusinessException("Tag model cannot be null");
+            throw new IllegalArgumentException("Tag model cannot be null");
         }
         tagRepository.save(TagJpaEntity.fromModel(model));
     }
@@ -38,7 +38,7 @@ public class TagPersistence extends AbstractPersistence<TagJpaEntity> implements
     @Transactional
     public void update(Tag model) {
         if (model == null) {
-            throw new BusinessException("Tag model cannot be null");
+            throw new IllegalArgumentException("Tag model cannot be null");
         }
         tagRepository.save(TagJpaEntity.fromModel(model));
     }
@@ -46,7 +46,7 @@ public class TagPersistence extends AbstractPersistence<TagJpaEntity> implements
     @Transactional
     public void deleteById(String id) {
         if (id == null || id.isBlank()) {
-            throw new BusinessException("Tag ID cannot be null or blank");
+            throw new IllegalArgumentException("Tag ID cannot be null or blank");
         }
         tagRepository.deleteById(id);
     }
@@ -54,7 +54,7 @@ public class TagPersistence extends AbstractPersistence<TagJpaEntity> implements
     @Transactional(readOnly = true)
     public Optional<Tag> findById(String id) {
         if (id == null || id.isBlank()) {
-            throw new BusinessException("Tag ID cannot be null or blank");
+            throw new IllegalArgumentException("Tag ID cannot be null or blank");
         }
         return tagRepository.findById(id)
                 .map(TagJpaEntity::toModel);
@@ -63,17 +63,13 @@ public class TagPersistence extends AbstractPersistence<TagJpaEntity> implements
     @Transactional(readOnly = true)
     public boolean existsById(String id) {
         if (id == null || id.isBlank()) {
-            throw new BusinessException("Tag ID cannot be null or blank");
+            throw new IllegalArgumentException("Tag ID cannot be null or blank");
         }
         return tagRepository.existsById(id);
     }
 
     @Transactional(readOnly = true)
     public Pagination<Tag> findAll(SearchQuery searchQuery) {
-        if (searchQuery == null) {
-            throw new BusinessException("Search query cannot be null");
-        }
-
         Specification<TagJpaEntity> spec = buildSpecification(searchQuery);
 
         var pageRequest = buildPageRequest(searchQuery);

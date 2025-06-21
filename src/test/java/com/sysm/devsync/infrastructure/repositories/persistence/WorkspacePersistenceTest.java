@@ -6,6 +6,7 @@ import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.enums.UserRole;
 import com.sysm.devsync.domain.models.Workspace; // Domain Workspace
+import com.sysm.devsync.infrastructure.AbstractRepositoryTest;
 import com.sysm.devsync.infrastructure.PersistenceTest; // Your test slice annotation
 import com.sysm.devsync.infrastructure.repositories.UserJpaRepository;
 import com.sysm.devsync.infrastructure.repositories.WorkspaceJpaRepository;
@@ -30,23 +31,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-@PersistenceTest
 @Import(WorkspacePersistence.class)
-public class WorkspacePersistenceTest {
-
-    @Autowired
-    private TestEntityManager entityManager;
+public class WorkspacePersistenceTest extends AbstractRepositoryTest {
 
     @Autowired
     private WorkspacePersistence workspacePersistence;
 
-    @Autowired
-    private WorkspaceJpaRepository workspaceJpaRepository;
-
-    @Autowired
-    private UserJpaRepository userJpaRepository;
-
-    private UserJpaEntity ownerUser;
     private UserJpaEntity memberUser1;
     private UserJpaEntity memberUser2;
 
@@ -59,7 +49,7 @@ public class WorkspacePersistenceTest {
         workspaceJpaRepository.deleteAllInBatch();
         userJpaRepository.deleteAllInBatch();
 
-        ownerUser = new UserJpaEntity();
+        UserJpaEntity ownerUser = new UserJpaEntity();
         ownerUser.setId(UUID.randomUUID().toString());
         ownerUser.setName("Owner User");
         ownerUser.setEmail("owner@example.com");
@@ -123,7 +113,7 @@ public class WorkspacePersistenceTest {
         @DisplayName("should throw BusinessException when creating with null model")
         void create_nullModel_shouldThrowException() {
             assertThatThrownBy(() -> workspacePersistence.create(null))
-                    .isInstanceOf(BusinessException.class)
+                    .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("Workspace model cannot be null");
         }
     }
@@ -139,7 +129,10 @@ public class WorkspacePersistenceTest {
             entityManager.flush(); // Ensure it's in DB
             entityManager.clear(); // Detach to simulate fresh fetch & update
 
-            Instant originalCreatedAt = workspacePersistence.findById(workspace1Domain.getId()).get().getCreatedAt();
+            var workspace = workspacePersistence.findById(workspace1Domain.getId());
+            assertThat(workspace).isPresent();
+
+            Instant originalCreatedAt = workspace.get().getCreatedAt();
 
             Set<String> updatedMembers = new HashSet<>(Collections.singletonList(memberUser2.getId()));
             Workspace updatedDomainWorkspace = Workspace.build(
@@ -181,7 +174,7 @@ public class WorkspacePersistenceTest {
         @DisplayName("should throw BusinessException when updating with null model")
         void update_nullModel_shouldThrowException() {
             assertThatThrownBy(() -> workspacePersistence.update(null))
-                    .isInstanceOf(BusinessException.class)
+                    .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("Workspace model cannot be null");
         }
 
@@ -193,7 +186,10 @@ public class WorkspacePersistenceTest {
             entityManager.flush(); // Ensure it's in DB
             entityManager.clear(); // Detach to simulate fresh fetch & update
 
-            Instant originalCreatedAt = workspacePersistence.findById(workspace1Domain.getId()).get().getCreatedAt();
+            var workspace = workspacePersistence.findById(workspace1Domain.getId());
+            assertThat(workspace).isPresent();
+
+            Instant originalCreatedAt = workspace.get().getCreatedAt();
 
             Set<String> updatedMembers = new HashSet<>(Arrays.asList(memberUser1.getId(), memberUser2.getId()));
             Workspace updatedDomainWorkspace = Workspace.build(
@@ -257,7 +253,7 @@ public class WorkspacePersistenceTest {
         @DisplayName("should throw BusinessException when deleting with null ID")
         void deleteById_nullId_shouldThrowException() {
             assertThatThrownBy(() -> workspacePersistence.deleteById(null))
-                    .isInstanceOf(BusinessException.class)
+                    .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("Workspace ID cannot be null or blank");
         }
     }

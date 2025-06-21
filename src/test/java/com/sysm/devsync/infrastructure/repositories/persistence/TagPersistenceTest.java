@@ -5,7 +5,9 @@ import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.models.Tag;
+import com.sysm.devsync.infrastructure.AbstractRepositoryTest;
 import com.sysm.devsync.infrastructure.PersistenceTest; // Changed to PersistenceTest
+import com.sysm.devsync.infrastructure.repositories.TagJpaRepository;
 import com.sysm.devsync.infrastructure.repositories.entities.TagJpaEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -23,19 +25,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-@PersistenceTest
 @Import(TagPersistence.class)
-public class TagPersistenceTest {
-
-    @Autowired
-    private TestEntityManager entityManager; // Use TestEntityManager for data setup
+public class TagPersistenceTest extends AbstractRepositoryTest {
 
     @Autowired
     private TagPersistence tagPersistence; // The class under test
 
     private Tag tag1Domain;
-    private Tag tag2Domain;
-    private Tag tag3Domain;
 
     // JPA entities are useful for setup with TestEntityManager
     private TagJpaEntity tag1Jpa;
@@ -44,18 +40,13 @@ public class TagPersistenceTest {
 
     @BeforeEach
     void setUp() {
-        // No need for tagJpaRepository.deleteAll() here when using @DataJpaTest,
-        // as each test method will be rolled back.
-
-        entityManager.getEntityManager()
-                .createQuery("DELETE FROM Tag")
-                .executeUpdate();
+        clearRepositories();
 
         entityManager.flush();
 
         tag1Domain = Tag.build(UUID.randomUUID().toString(), "Java", "Blue", "Java Programming Language", "Programming", 0);
-        tag2Domain = Tag.build(UUID.randomUUID().toString(), "Spring", "Green", "Spring Framework", "Framework", 0);
-        tag3Domain = Tag.build(UUID.randomUUID().toString(), "Testing", "Red", "Software Testing", "Programming", 0);
+        Tag tag2Domain = Tag.build(UUID.randomUUID().toString(), "Spring", "Green", "Spring Framework", "Framework", 0);
+        Tag tag3Domain = Tag.build(UUID.randomUUID().toString(), "Testing", "Red", "Software Testing", "Programming", 0);
 
         tag1Jpa = TagJpaEntity.fromModel(tag1Domain);
         tag2Jpa = TagJpaEntity.fromModel(tag2Domain);

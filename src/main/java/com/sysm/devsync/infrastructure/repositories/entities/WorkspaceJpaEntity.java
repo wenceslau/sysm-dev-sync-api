@@ -8,6 +8,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -20,10 +21,10 @@ public class WorkspaceJpaEntity {
     @Id
     private String id;
 
-    @Column(nullable = false, unique = true) // Ensure workspace names are unique
+    @Column(nullable = false, unique = true)
     private String name;
 
-    @Column(length = 500) // Optional: Limit the length of the description
+    @Column(length = 500)
     private String description;
 
     @ManyToOne(fetch = FetchType.LAZY) // A workspace has one owner
@@ -36,15 +37,15 @@ public class WorkspaceJpaEntity {
             joinColumns = @JoinColumn(name = "workspace_id"), // Foreign key for Workspace in the join table
             inverseJoinColumns = @JoinColumn(name = "user_id") // Foreign key for User in the join table
     )
-    private Set<UserJpaEntity> members = new HashSet<>(); // Initialize to avoid NullPointerExceptions
+    private Set<UserJpaEntity> members = new HashSet<>();
 
-    @Column(name = "is_private") // Good practice to explicitly name boolean columns
+    @Column(name = "is_private")
     private boolean isPrivate;
 
-    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "DATETIME(6)")
+    @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
-    @Column(name = "updated_at", nullable = false, columnDefinition = "DATETIME(6)")
+    @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
     public WorkspaceJpaEntity(String id) {
@@ -142,15 +143,12 @@ public class WorkspaceJpaEntity {
                '}';
     }
 
-    // Lifecycle Callbacks for createdAt and updatedAt (Optional but common)
     @PrePersist
     protected void onCreate() {
-        System.out.println("Creating WorkspaceJpaEntity: " + this);
     }
 
     @PreUpdate
     protected void onUpdate() {
-        System.out.println("Updating WorkspaceJpaEntity: " + this);
     }
 
     public static WorkspaceJpaEntity fromModel(Workspace workspace) {

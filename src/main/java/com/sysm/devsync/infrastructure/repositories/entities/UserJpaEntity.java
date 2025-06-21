@@ -18,13 +18,26 @@ public class UserJpaEntity {
 
     @Id
     private String id;
+
+    @Column(nullable = false)
     private String name;
+
+    @Column(nullable = false, unique = true)
     private String email;
+
     private String passwordHash;
+
+    @Column(name = "profile_picture_url")
     private String profilePictureUrl;
+
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private UserRole role;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
+
+    @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
     public UserJpaEntity() {
@@ -83,10 +96,7 @@ public class UserJpaEntity {
     }
 
     public Instant getCreatedAt() {
-        if (createdAt != null) {
-            return createdAt.truncatedTo(ChronoUnit.MILLIS);
-        }
-        return null;
+        return createdAt;
     }
 
     public void setCreatedAt(Instant createdAt) {
@@ -94,10 +104,7 @@ public class UserJpaEntity {
     }
 
     public Instant getUpdatedAt() {
-        if (updatedAt != null) {
-            return updatedAt.truncatedTo(ChronoUnit.MILLIS);
-        }
-        return null;
+        return updatedAt;
     }
 
     public void setUpdatedAt(Instant updatedAt) {
@@ -112,6 +119,27 @@ public class UserJpaEntity {
 
     public final int hashCode() {
         return Objects.hashCode(id);
+    }
+
+    public final String toString() {
+        return "UserJpaEntity{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", email='" + email + '\'' +
+                ", passwordHash='" + passwordHash + '\'' +
+                ", profilePictureUrl='" + profilePictureUrl + '\'' +
+                ", role=" + role +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                '}';
+    }
+
+    @PrePersist
+    protected void onCreate() {
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
     }
 
     public static UserJpaEntity fromModel(User user) {

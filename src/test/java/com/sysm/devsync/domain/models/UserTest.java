@@ -9,7 +9,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
-import static com.sysm.devsync.infrastructure.Utils.iNow;
+import static com.sysm.devsync.infrastructure.Utils.iTruncatedNow;
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -33,9 +33,9 @@ class UserTest {
     @Test
     @DisplayName("Create should create user successfully with valid arguments")
     void create_shouldCreateUser_whenArgumentsAreValid() {
-        Instant beforeCreation = iNow();
+        Instant beforeCreation = iTruncatedNow();
         User user = User.create(validUsername, validEmail, validUserRole);
-        Instant afterCreation = iNow();
+        Instant afterCreation = iTruncatedNow();
         assertNotNull(user.getId(), "ID should not be null");
         try {
             UUID.fromString(user.getId()); // Check if ID is a valid UUID
@@ -540,7 +540,7 @@ class UserTest {
     @DisplayName("Getters should return correct values after construction via build")
     void getters_shouldReturnCorrectValues() {
         String id = UUID.randomUUID().toString();
-        Instant createdAt = iNow();
+        Instant createdAt = iTruncatedNow();
         Instant updatedAt = createdAt;
         String username = "getterUser";
         String email = "getter@example.com";

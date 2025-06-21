@@ -8,7 +8,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
-import static com.sysm.devsync.infrastructure.Utils.iNow;
+import static com.sysm.devsync.infrastructure.Utils.iTruncatedNow;
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -18,7 +18,6 @@ class ProjectTest {
     private String validDescription;
     private String validWorkspaceId;
 
-    // --- Setup ---
     @BeforeEach
     void setUp() {
         validName = "Test Project Alpha";
@@ -26,17 +25,14 @@ class ProjectTest {
         validWorkspaceId = UUID.randomUUID().toString();
     }
 
-    // --- Private Constructor (tested via static factory methods) ---
-    // No direct tests for private constructor, its logic is covered by create() and build()
-
     // --- Static Factory Method: create() ---
 
     @Test
     @DisplayName("create() should successfully create a project with valid arguments")
     void create_shouldSucceed_withValidArguments() {
-        Instant beforeCreation = iNow();
+        Instant beforeCreation = iTruncatedNow();
         Project project = Project.create(validName, validDescription, validWorkspaceId);
-        Instant afterCreation = iNow();
+        Instant afterCreation = iTruncatedNow();
         assertNotNull(project.getId(), "ID should be generated and not null");
         try {
             UUID.fromString(project.getId()); // Validate UUID format

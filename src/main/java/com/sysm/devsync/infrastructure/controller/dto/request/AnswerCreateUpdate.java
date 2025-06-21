@@ -4,5 +4,6 @@ import com.sysm.devsync.domain.enums.QuestionStatus;
 
 public record AnswerCreateUpdate(
         String title,
-        String content) {
+        String content
+) {
 }

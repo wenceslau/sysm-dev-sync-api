@@ -2,16 +2,13 @@ package com.sysm.devsync.infrastructure.repositories.entities;
 
 import com.sysm.devsync.domain.enums.QuestionStatus;
 import com.sysm.devsync.domain.models.Question;
-import com.sysm.devsync.domain.models.Tag;
 import jakarta.persistence.*;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import static com.sysm.devsync.infrastructure.Utils.iNow;
 
 @Entity(name = "Question")
 @Table(name = "questions")
@@ -136,14 +133,6 @@ public class QuestionJpaEntity {
         this.updatedAt = updatedAt;
     }
 
-    @PrePersist
-    protected void onCreate() {
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-    }
-
     public final boolean equals(Object o) {
         if (!(o instanceof QuestionJpaEntity that)) return false;
 
@@ -164,6 +153,14 @@ public class QuestionJpaEntity {
                ", createdAt=" + createdAt +
                ", updatedAt=" + updatedAt +
                '}';
+    }
+
+    @PrePersist
+    protected void onCreate() {
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
     }
 
     public static QuestionJpaEntity fromModel(Question question) {
@@ -193,10 +190,10 @@ public class QuestionJpaEntity {
         }
 
         Set<String> tagIds = entity.getTags() != null ?
-            entity.getTags().stream()
-                    .map(TagJpaEntity::getId)
-                    .collect(Collectors.toSet()) :
-            Set.of();
+                entity.getTags().stream()
+                        .map(TagJpaEntity::getId)
+                        .collect(Collectors.toSet()) :
+                Set.of();
 
         return Question.build(
                 entity.getId(),

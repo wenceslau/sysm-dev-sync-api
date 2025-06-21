@@ -6,6 +6,7 @@ import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.enums.UserRole;
 import com.sysm.devsync.domain.models.User;
+import com.sysm.devsync.infrastructure.AbstractRepositoryTest;
 import com.sysm.devsync.infrastructure.PersistenceTest;
 // Import your UserJpaEntity if it's in a different package
 // import com.sysm.devsync.infrastructure.repositories.entities.UserJpaEntity;
@@ -28,22 +29,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-@PersistenceTest
 @Import(UserPersistence.class)
-public class UserPersistenceTest {
-
-    @Autowired
-    private TestEntityManager entityManager;
+public class UserPersistenceTest extends AbstractRepositoryTest {
 
     @Autowired
     private UserPersistence userPersistence;
 
-    @Autowired
-    private UserJpaRepository userJpaRepository;
-
     private User user1Domain;
-    private User user2Domain;
-    private User user3Domain;
 
     private UserJpaEntity user1Jpa;
     private UserJpaEntity user2Jpa;
@@ -55,8 +47,8 @@ public class UserPersistenceTest {
 
         // Using User.create for initial setup, password and profile picture are null
         user1Domain = User.create("John Doe", "john.doe@example.com", UserRole.MEMBER);
-        user2Domain = User.create("Alice Smith", "alice.smith@example.com", UserRole.ADMIN);
-        user3Domain = User.create("Bob Johnson", "bob.johnson@example.com", UserRole.MEMBER);
+        User user2Domain = User.create("Alice Smith", "alice.smith@example.com", UserRole.ADMIN);
+        User user3Domain = User.create("Bob Johnson", "bob.johnson@example.com", UserRole.MEMBER);
 
         // Manually set IDs if User.create doesn't return the created user with ID immediately
         // or if we need predictable IDs for testing (though UUIDs are fine for most cases)

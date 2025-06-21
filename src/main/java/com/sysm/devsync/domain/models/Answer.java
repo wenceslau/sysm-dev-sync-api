@@ -5,15 +5,6 @@ import java.time.temporal.ChronoUnit;
 
 public class Answer extends AbstractModel {
 
-    /*
-        id: UUID
-        questionId: Question reference
-        authorId: User reference
-        content: Markdown or HTML
-        isAccepted: boolean
-        createdAt, updatedAt
-     */
-
     private final String id;
     private final String questionId;
     private final String authorId;

@@ -2,6 +2,7 @@ package com.sysm.devsync.infrastructure.repositories.entities;
 
 
 import com.sysm.devsync.domain.models.Tag;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -14,10 +15,20 @@ public class TagJpaEntity {
 
     @Id
     private String id;
+
+    @Column(nullable = false, unique = true)
     private String name;
+
+    @Column(nullable = false)
     private String color;
+
+    @Column(length = 500)
     private String description;
+
+    @Column(length = 100)
     private String category;
+
+    @Column(name = "count_usage", nullable = false)
     private int countUsage;
 
     public TagJpaEntity() {
@@ -88,6 +99,17 @@ public class TagJpaEntity {
 
     public final int hashCode() {
         return Objects.hashCode(id);
+    }
+
+    public final String toString() {
+        return "TagJpaEntity{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", color='" + color + '\'' +
+                ", description='" + description + '\'' +
+                ", category='" + category + '\'' +
+                ", countUsage=" + countUsage +
+                '}';
     }
 
     public static TagJpaEntity fromModel(Tag tag) {

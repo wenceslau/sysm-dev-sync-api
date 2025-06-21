@@ -72,10 +72,6 @@ public class ProjectPersistence extends AbstractPersistence<ProjectJpaEntity> im
 
     @Transactional(readOnly = true)
     public Pagination<Project> findAll(SearchQuery searchQuery) {
-        if (searchQuery == null) {
-            throw new BusinessException("Search query cannot be null");
-        }
-
         Specification<ProjectJpaEntity> spec = buildSpecification(searchQuery);
 
         var pageRequest = buildPageRequest(searchQuery);

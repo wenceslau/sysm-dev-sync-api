@@ -12,7 +12,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-import static com.sysm.devsync.infrastructure.Utils.iNow;
+import static com.sysm.devsync.infrastructure.Utils.iTruncatedNow;
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -36,9 +36,9 @@ class QuestionTest {
     @Test
     @DisplayName("create() should successfully create a question with valid arguments")
     void create_shouldSucceed_withValidArguments() {
-        Instant beforeCreation = iNow();
+        Instant beforeCreation = iTruncatedNow();
         Question question = Question.create(validTitle, validDescription, validProjectId, validAuthorId);
-        Instant afterCreation = iNow();
+        Instant afterCreation = iTruncatedNow();
         assertNotNull(question.getId(), "ID should be generated and not null");
         try {
             UUID.fromString(question.getId()); // Validate UUID format
@@ -90,7 +90,6 @@ class QuestionTest {
         });
         assertEquals("Description cannot be null", exception.getMessage());
     }
-    // Note: Description can be empty, so no test for empty description throwing exception for create()
 
     @Test
     @DisplayName("create() should throw IllegalArgumentException for null projectId")
@@ -199,8 +198,6 @@ class QuestionTest {
         });
         assertEquals("ID cannot be null or empty", exception.getMessage());
     }
-    // Other validation tests for build() (title, description, projectId, authorId) are implicitly covered
-    // as the constructor calls validate() after field assignment.
 
     // --- Instance Method: update() ---
 

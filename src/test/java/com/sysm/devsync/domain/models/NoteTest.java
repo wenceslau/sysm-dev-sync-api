@@ -11,7 +11,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-import static com.sysm.devsync.infrastructure.Utils.iNow;
+import static com.sysm.devsync.infrastructure.Utils.iTruncatedNow;
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -35,9 +35,9 @@ public class NoteTest {
     @Test
     @DisplayName("create() should successfully create a note with valid arguments")
     void create_shouldSucceed_withValidArguments() {
-        Instant beforeCreation = iNow();
+        Instant beforeCreation = iTruncatedNow();
         Note note = Note.create(validTitle, validContent, validProjectId, validAuthorId);
-        Instant afterCreation = iNow();
+        Instant afterCreation = iTruncatedNow();
         assertNotNull(note.getId(), "ID should be generated and not null");
         try {
             UUID.fromString(note.getId()); // Validate UUID format

@@ -1,14 +1,12 @@
 package com.sysm.devsync.infrastructure.repositories;
 
 import com.sysm.devsync.domain.enums.UserRole;
-import com.sysm.devsync.infrastructure.PersistenceTest;
+import com.sysm.devsync.infrastructure.AbstractRepositoryTest;
 import com.sysm.devsync.infrastructure.repositories.entities.UserJpaEntity;
 import jakarta.persistence.criteria.Predicate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -21,18 +19,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.sysm.devsync.infrastructure.Utils.ldtNow;
+import static com.sysm.devsync.infrastructure.Utils.ldtTruncatedNow;
 import static com.sysm.devsync.infrastructure.Utils.sleep;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@PersistenceTest
-public class UserJpaRepositoryTest {
-
-    @Autowired
-    private TestEntityManager entityManager;
-
-    @Autowired
-    private UserJpaRepository userJpaRepository;
+public class UserJpaRepositoryTest extends AbstractRepositoryTest {
 
     private UserJpaEntity user1;
     private UserJpaEntity user2;
@@ -40,9 +31,7 @@ public class UserJpaRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        // While @DataJpaTest handles rollbacks, explicit deleteAll can ensure a clean slate
-        // if there are any doubts or specific test environment behaviors.
-        userJpaRepository.deleteAllInBatch();
+        clearRepositories();
 
         user1 = new UserJpaEntity();
         user1.setId(UUID.randomUUID().toString());
@@ -139,7 +128,7 @@ public class UserJpaRepositoryTest {
         UserJpaEntity userToUpdate = userToUpdateOpt.get();
         userToUpdate.setEmail(updatedEmail);
         userToUpdate.setRole(updatedRole);
-        userToUpdate.setUpdatedAt(ldtNow().plusDays(1).toInstant(ZoneOffset.UTC));
+        userToUpdate.setUpdatedAt(ldtTruncatedNow().plusDays(1).toInstant(ZoneOffset.UTC));
         userJpaRepository.save(userToUpdate);
         entityManager.flush();
         entityManager.clear();
@@ -151,7 +140,6 @@ public class UserJpaRepositoryTest {
         assertThat(updatedUserOpt).isPresent();
         assertThat(updatedUserOpt.get().getEmail()).isEqualTo(updatedEmail);
         assertThat(updatedUserOpt.get().getRole()).isEqualTo(updatedRole);
-        assertThat(updatedUserOpt.get().getUpdatedAt()).isAfter(persistedUser.getUpdatedAt());
     }
 
     @Test

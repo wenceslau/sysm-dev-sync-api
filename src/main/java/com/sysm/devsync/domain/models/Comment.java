@@ -7,15 +7,6 @@ import java.time.temporal.ChronoUnit;
 
 public class Comment extends AbstractModel {
 
-    /*
-        id: UUID
-        targetType: NOTE | QUESTION | ANSWER
-        targetId: UUID
-        authorId: User reference
-        content
-        createdAt, updatedAt
-     */
-
     private final String id;
     private final TargetType targetType; // NOTE, QUESTION, ANSWER
     private final String targetId; // Reference to the target (Note, Question, Answer)

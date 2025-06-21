@@ -2,15 +2,6 @@ package com.sysm.devsync.domain.models;
 
 public class Tag extends AbstractModel {
 
-    /*
-        id: UUID
-        name
-        color
-        description (optional)
-        category: String (optional)
-        countUsage: int (optional, default 0)
-     */
-
     private final String id;
     private String name;
     private String color;

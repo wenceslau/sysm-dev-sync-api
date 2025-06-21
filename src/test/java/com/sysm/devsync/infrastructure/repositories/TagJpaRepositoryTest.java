@@ -1,14 +1,12 @@
 package com.sysm.devsync.infrastructure.repositories;
 
-import com.sysm.devsync.infrastructure.PersistenceTest;
+import com.sysm.devsync.infrastructure.AbstractRepositoryTest;
 
 import com.sysm.devsync.infrastructure.repositories.entities.TagJpaEntity;
 import jakarta.persistence.criteria.Predicate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -21,14 +19,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat; // Using AssertJ for fluent assertions
 
-@PersistenceTest // Your custom annotation that includes @DataJpaTest
-public class TagJpaRepositoryTest {
-
-    @Autowired
-    private TestEntityManager entityManager; // Useful for more fine-grained persistence operations
-
-    @Autowired
-    private TagJpaRepository tagJpaRepository;
+public class TagJpaRepositoryTest extends AbstractRepositoryTest {
 
     private TagJpaEntity tag1;
     private TagJpaEntity tag2;
@@ -36,24 +27,23 @@ public class TagJpaRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        // Clean up before each test if needed, though @DataJpaTest usually handles rollbacks
-         tagJpaRepository.deleteAll(); // Usually not needed due to transactional rollback
 
-        // Create some sample TagJpa entities
-        // Assuming TagJpa has a constructor like TagJpa(String id, String name)
-        // or setters. For simplicity, let's assume setters or a builder.
+        clearRepositories();
 
         tag1 = new TagJpaEntity();
         tag1.setId(UUID.randomUUID().toString());
         tag1.setName("Java");
+        tag1.setColor("#FF0000");
 
         tag2 = new TagJpaEntity();
         tag2.setId(UUID.randomUUID().toString());
         tag2.setName("Spring Boot");
+        tag2.setColor("#00FF00");
 
         tag3 = new TagJpaEntity();
         tag3.setId(UUID.randomUUID().toString());
         tag3.setName("Testing");
+        tag3.setColor("#0000FF");
     }
 
     @Test

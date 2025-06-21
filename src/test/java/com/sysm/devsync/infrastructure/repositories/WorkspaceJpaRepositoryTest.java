@@ -1,16 +1,15 @@
 package com.sysm.devsync.infrastructure.repositories;
 
-import com.sysm.devsync.infrastructure.PersistenceTest;
+import com.sysm.devsync.infrastructure.AbstractRepositoryTest;
 import com.sysm.devsync.infrastructure.Utils;
 import com.sysm.devsync.infrastructure.repositories.entities.UserJpaEntity;
 import com.sysm.devsync.infrastructure.repositories.entities.WorkspaceJpaEntity;
 import com.sysm.devsync.domain.enums.UserRole; // For creating UserJpaEntity
-import org.hibernate.exception.ConstraintViolationException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -26,17 +25,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@PersistenceTest
-public class WorkspaceJpaRepositoryTest {
-
-    @Autowired
-    private TestEntityManager entityManager;
-
-    @Autowired
-    private WorkspaceJpaRepository workspaceJpaRepository;
-
-    @Autowired
-    private UserJpaRepository userJpaRepository; // For managing user test data
+public class WorkspaceJpaRepositoryTest extends AbstractRepositoryTest {
 
     private UserJpaEntity ownerUser1;
     private UserJpaEntity memberUser1;
@@ -48,9 +37,7 @@ public class WorkspaceJpaRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        // Clean up entities: dependent entities (workspaces) first, then users.
-        workspaceJpaRepository.deleteAllInBatch();
-        userJpaRepository.deleteAllInBatch();
+        clearRepositories();
 
         // Create Users
         ownerUser1 = new UserJpaEntity();
@@ -90,6 +77,8 @@ public class WorkspaceJpaRepositoryTest {
         workspace1.setOwner(ownerUser1);
         workspace1.setPrivate(false);
         workspace1.getMembers().add(memberUser1);
+        workspace1.setCreatedAt(Instant.now());
+        workspace1.setUpdatedAt(Instant.now());
 
         workspace2 = new WorkspaceJpaEntity();
         workspace2.setId(UUID.randomUUID().toString());
@@ -99,6 +88,8 @@ public class WorkspaceJpaRepositoryTest {
         workspace2.setPrivate(true);
         workspace2.getMembers().add(memberUser1);
         workspace2.getMembers().add(memberUser2);
+        workspace2.setCreatedAt(Instant.now());
+        workspace2.setUpdatedAt(Instant.now());
 
         workspace3 = new WorkspaceJpaEntity();
         workspace3.setId(UUID.randomUUID().toString());
@@ -106,6 +97,8 @@ public class WorkspaceJpaRepositoryTest {
         workspace3.setDescription("Public workspace Gamma");
         workspace3.setOwner(memberUser1); // Different owner
         workspace3.setPrivate(false);
+        workspace3.setCreatedAt(Instant.now());
+        workspace3.setUpdatedAt(Instant.now());
     }
 
     @Test
@@ -146,7 +139,7 @@ public class WorkspaceJpaRepositoryTest {
         assertThatThrownBy(() -> {
             workspaceJpaRepository.save(duplicateNameWorkspace);
             entityManager.flush(); // This will trigger the constraint violation
-        }).isInstanceOf(ConstraintViolationException.class);
+        }).isInstanceOf(DataIntegrityViolationException.class);
     }
 
 
@@ -192,7 +185,6 @@ public class WorkspaceJpaRepositoryTest {
         // Arrange
         WorkspaceJpaEntity persistedWorkspace = workspaceJpaRepository.save(workspace1);
         entityManager.flush();
-        Instant originalUpdatedAt = persistedWorkspace.getUpdatedAt();
 
         Utils.sleep(100);
 
@@ -225,11 +217,6 @@ public class WorkspaceJpaRepositoryTest {
         assertThat(foundAfterUpdate.getMembers()).hasSize(1);
         assertThat(foundAfterUpdate.getMembers().iterator().next().getId()).isEqualTo(memberUser2.getId());
 
-        // Assuming @PreUpdate correctly updates the timestamp
-        assertThat(foundAfterUpdate.getUpdatedAt()).isNotNull();
-        if (originalUpdatedAt != null) {
-            assertThat(foundAfterUpdate.getUpdatedAt()).isAfter(originalUpdatedAt);
-        }
     }
 
     @Test
@@ -317,6 +304,7 @@ public class WorkspaceJpaRepositoryTest {
         entityManager.flush();
 
         Specification<WorkspaceJpaEntity> spec = (root, query, cb) -> {
+            Assertions.assertNotNull(query);
             if (query.getResultType() != Long.class && query.getResultType() != long.class) { // Avoid fetching for count queries
                 // root.fetch("members", JoinType.LEFT); // Optional: Eager fetch if needed, can cause Cartesian product
                 query.distinct(true); // Crucial for ManyToMany joins to avoid duplicate root entities

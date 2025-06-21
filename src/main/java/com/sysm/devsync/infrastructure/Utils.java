@@ -35,10 +35,11 @@ public final class Utils {
         return input.replaceAll("[^a-zA-Z0-9_\\-.]", "_");
     }
 
-    public static Instant iNow() {
+    public static Instant iTruncatedNow() {
         return Instant.now().truncatedTo(ChronoUnit.MILLIS);
     }
-    public static LocalDateTime ldtNow() {
+
+    public static LocalDateTime ldtTruncatedNow() {
         return LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS);
     }
 }

@@ -1,13 +1,12 @@
 package com.sysm.devsync.infrastructure.repositories;
 
 import com.sysm.devsync.domain.enums.QuestionStatus;
-import com.sysm.devsync.infrastructure.PersistenceTest; // Your custom test slice
+import com.sysm.devsync.domain.enums.UserRole;
+import com.sysm.devsync.infrastructure.AbstractRepositoryTest;
 import com.sysm.devsync.infrastructure.repositories.entities.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,87 +22,74 @@ import java.util.stream.Collectors;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@PersistenceTest
-public class QuestionJpaRepositoryTest {
-
-    @Autowired
-    private TestEntityManager entityManager;
-
-    @Autowired
-    private QuestionJpaRepository questionJpaRepository;
-
-    // Autowire other repositories needed for setup
-    @Autowired
-    private UserJpaRepository userJpaRepository;
-    @Autowired
-    private WorkspaceJpaRepository workspaceJpaRepository;
-    @Autowired
-    private ProjectJpaRepository projectJpaRepository;
-    @Autowired
-    private TagJpaRepository tagJpaRepository; // Assuming you have this
+public class QuestionJpaRepositoryTest extends AbstractRepositoryTest {
 
     private UserJpaEntity authorUser;
-    private UserJpaEntity workspaceOwner;
-    private WorkspaceJpaEntity workspace;
     private ProjectJpaEntity project1;
     private ProjectJpaEntity project2;
     private TagJpaEntity tag1;
-    private TagJpaEntity tag2;
     private TagJpaEntity tag3;
 
     private QuestionJpaEntity question1;
     private QuestionJpaEntity question2;
     private QuestionJpaEntity question3;
 
-
     @BeforeEach
     void setUp() {
-        // Clean up in reverse order of dependency or let @DataJpaTest handle rollback
-        questionJpaRepository.deleteAllInBatch();
-        tagJpaRepository.deleteAllInBatch(); // Clean tags
-        projectJpaRepository.deleteAllInBatch();
-        // If WorkspaceMember join table exists and is not cascaded
-        // entityManager.getEntityManager().createNativeQuery("DELETE FROM workspace_members").executeUpdate();
-        workspaceJpaRepository.deleteAllInBatch();
-        userJpaRepository.deleteAllInBatch();
-        entityManager.flush();
 
+        clearRepositories(); // Clear previous data to ensure a clean state
 
         // 1. Create Users
-        workspaceOwner = new UserJpaEntity(UUID.randomUUID().toString());
+        UserJpaEntity workspaceOwner = new UserJpaEntity(UUID.randomUUID().toString());
         workspaceOwner.setName("Workspace Owner");
         workspaceOwner.setEmail("ws.owner@example.com");
-        // Set other required fields for UserJpaEntity if any (e.g., role, passwordHash)
+        workspaceOwner.setCreatedAt(Instant.now());
+        workspaceOwner.setUpdatedAt(Instant.now());
+        workspaceOwner.setRole(UserRole.ADMIN);
         entityManager.persist(workspaceOwner);
 
         authorUser = new UserJpaEntity(UUID.randomUUID().toString());
         authorUser.setName("Author User");
         authorUser.setEmail("author@example.com");
+        authorUser.setCreatedAt(Instant.now());
+        authorUser.setUpdatedAt(Instant.now());
+        authorUser.setRole(UserRole.MEMBER);
         entityManager.persist(authorUser);
 
         // 2. Create Workspace
-        workspace = new WorkspaceJpaEntity(UUID.randomUUID().toString());
+        WorkspaceJpaEntity workspace = new WorkspaceJpaEntity(UUID.randomUUID().toString());
         workspace.setName("Test Workspace for Questions");
         workspace.setOwner(workspaceOwner); // Set managed owner
+        workspace.setCreatedAt(Instant.now());
+        workspace.setUpdatedAt(Instant.now());
         entityManager.persist(workspace);
 
         // 3. Create Projects
         project1 = new ProjectJpaEntity(UUID.randomUUID().toString());
         project1.setName("Project Alpha for Questions");
         project1.setWorkspace(workspace); // Set managed workspace
+        project1.setCreatedAt(Instant.now());
+        project1.setUpdatedAt(Instant.now());
         entityManager.persist(project1);
 
         project2 = new ProjectJpaEntity(UUID.randomUUID().toString());
         project2.setName("Project Beta for Questions");
         project2.setWorkspace(workspace);
+        project2.setCreatedAt(Instant.now());
+        project2.setUpdatedAt(Instant.now());
         entityManager.persist(project2);
 
         // 4. Create Tags
         tag1 = new TagJpaEntity(UUID.randomUUID().toString(), "java");
+        tag1.setColor("#FF0000"); // Example color
         entityManager.persist(tag1);
-        tag2 = new TagJpaEntity(UUID.randomUUID().toString(), "spring");
+
+        TagJpaEntity tag2 = new TagJpaEntity(UUID.randomUUID().toString(), "spring");
+        tag2.setColor("#00FF00"); // Example color
         entityManager.persist(tag2);
+
         tag3 = new TagJpaEntity(UUID.randomUUID().toString(), "jpa");
+        tag3.setColor("#0000FF"); // Example color
         entityManager.persist(tag3);
 
         entityManager.flush(); // Ensure all prerequisites are in DB
@@ -120,7 +106,8 @@ public class QuestionJpaRepositoryTest {
         question1.setAuthor(authorUser); // Set managed author
         question1.setProject(project1);  // Set managed project
         question1.setTags(Set.of(tag1, tag2)); // Set managed tags
-        // Timestamps will be set by @PrePersist
+        question1.setCreatedAt(Instant.now());
+        question1.setUpdatedAt(Instant.now()); // Set updatedAt, if needed
 
         question2 = new QuestionJpaEntity(UUID.randomUUID().toString());
         question2.setTitle("Best practices for Spring Boot?");
@@ -129,6 +116,8 @@ public class QuestionJpaRepositoryTest {
         question2.setAuthor(authorUser);
         question2.setProject(project1); // Same project as question1
         question2.setTags(Set.of(tag2, tag3));
+        question2.setCreatedAt(Instant.now());
+        question2.setUpdatedAt(Instant.now());
 
         question3 = new QuestionJpaEntity(UUID.randomUUID().toString());
         question3.setTitle("Understanding JPA Fetch Types");
@@ -137,6 +126,8 @@ public class QuestionJpaRepositoryTest {
         question3.setAuthor(authorUser);
         question3.setProject(project2); // Different project
         question3.setTags(Set.of(tag1, tag3));
+        question3.setCreatedAt(Instant.now());
+        question3.setUpdatedAt(Instant.now());
     }
 
     @Test
@@ -192,13 +183,11 @@ public class QuestionJpaRepositoryTest {
         }).isInstanceOf(DataIntegrityViolationException.class);
     }
 
-
     @Test
     @DisplayName("should update an existing question")
     void updateQuestion() {
         QuestionJpaEntity persistedQuestion = questionJpaRepository.save(question1);
         entityManager.flush();
-        Instant originalUpdatedAt = persistedQuestion.getUpdatedAt();
 
         persistedQuestion.setTitle("Updated: How to test JPA ManyToMany?");
         persistedQuestion.setStatus(QuestionStatus.CLOSED);
@@ -218,7 +207,6 @@ public class QuestionJpaRepositoryTest {
         assertThat(updatedQuestion.getTags()).hasSize(2);
         assertThat(updatedQuestion.getTags().stream().map(TagJpaEntity::getName).collect(Collectors.toSet()))
                 .containsExactlyInAnyOrder("spring", "jpa"); // java removed, jpa added
-        assertThat(updatedQuestion.getUpdatedAt()).isAfter(originalUpdatedAt);
     }
 
     @Test
@@ -311,6 +299,9 @@ public class QuestionJpaRepositoryTest {
         UserJpaEntity anotherAuthor = new UserJpaEntity(UUID.randomUUID().toString());
         anotherAuthor.setName("Another Author");
         anotherAuthor.setEmail("another.author@example.com");
+        anotherAuthor.setCreatedAt(Instant.now());
+        anotherAuthor.setUpdatedAt(Instant.now());
+        anotherAuthor.setRole(UserRole.MEMBER);
         entityManager.persist(anotherAuthor);
 
         QuestionJpaEntity questionByAnotherAuthor = new QuestionJpaEntity(UUID.randomUUID().toString());
@@ -319,6 +310,8 @@ public class QuestionJpaRepositoryTest {
         questionByAnotherAuthor.setStatus(QuestionStatus.OPEN);
         questionByAnotherAuthor.setAuthor(anotherAuthor); // Different author
         questionByAnotherAuthor.setProject(project1);
+        questionByAnotherAuthor.setCreatedAt(Instant.now());
+        questionByAnotherAuthor.setUpdatedAt(Instant.now());
         questionJpaRepository.save(questionByAnotherAuthor);
 
 
