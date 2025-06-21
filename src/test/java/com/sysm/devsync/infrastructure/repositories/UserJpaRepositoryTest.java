@@ -12,6 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -120,6 +121,11 @@ public class UserJpaRepositoryTest extends AbstractRepositoryTest {
         UserJpaEntity persistedUser = entityManager.persistAndFlush(user1);
         String updatedEmail = "john.doe.updated@example.com";
         UserRole updatedRole = UserRole.ADMIN;
+        Instant originalUpdatedAt = persistedUser.getUpdatedAt();
+        entityManager.flush();
+        entityManager.clear();
+
+        sleep(100); // Ensure updatedAt is different
 
         // Act
         Optional<UserJpaEntity> userToUpdateOpt = userJpaRepository.findById(persistedUser.getId());
@@ -128,18 +134,15 @@ public class UserJpaRepositoryTest extends AbstractRepositoryTest {
         UserJpaEntity userToUpdate = userToUpdateOpt.get();
         userToUpdate.setEmail(updatedEmail);
         userToUpdate.setRole(updatedRole);
-        userToUpdate.setUpdatedAt(ldtTruncatedNow().plusDays(1).toInstant(ZoneOffset.UTC));
+        userToUpdate.setUpdatedAt(Instant.now());
         userJpaRepository.save(userToUpdate);
-        entityManager.flush();
-        entityManager.clear();
-
-        sleep(100); // Ensure updatedAt is different
 
         // Assert
         Optional<UserJpaEntity> updatedUserOpt = userJpaRepository.findById(persistedUser.getId());
         assertThat(updatedUserOpt).isPresent();
         assertThat(updatedUserOpt.get().getEmail()).isEqualTo(updatedEmail);
         assertThat(updatedUserOpt.get().getRole()).isEqualTo(updatedRole);
+        assertThat(updatedUserOpt.get().getUpdatedAt()).isAfter(originalUpdatedAt);
     }
 
     @Test

@@ -37,9 +37,9 @@ public class AnswerService {
         }
 
         var answer = Answer.create(
+                answerCreateUpdate.content(),
                 questionId,
-                authorId,
-                answerCreateUpdate.content()
+                authorId
         );
 
         answerPersistence.create(answer);

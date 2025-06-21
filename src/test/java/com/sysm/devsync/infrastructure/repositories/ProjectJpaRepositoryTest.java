@@ -200,7 +200,7 @@ public class ProjectJpaRepositoryTest extends AbstractRepositoryTest {
         entityManager.flush();
         Instant originalUpdatedAt = persistedProject.getUpdatedAt(); // Capture before update
 
-        sleep(1000); // Ensure a noticeable time difference for updatedAt
+        sleep(100); // Ensure a noticeable time difference for updatedAt
 
         // Act
         // Fetch, modify, and save
@@ -211,14 +211,7 @@ public class ProjectJpaRepositoryTest extends AbstractRepositoryTest {
         projectToUpdate.setName("Project Alpha Updated");
         projectToUpdate.setDescription("Updated description for Alpha");
         projectToUpdate.setWorkspace(workspace2); // Change workspace to another persisted one
-
-        // If ProjectJpaEntity's @PreUpdate is fixed to always update updatedAt:
-        // projectJpaRepository.save(projectToUpdate);
-
-        // If ProjectJpaEntity's @PreUpdate is NOT fixed (only updates if null):
-        // To force an update for testing with the current buggy @PreUpdate,
-        // you might need to manually set it or ensure it was null.
-        // For a robust test assuming @PreUpdate should work:
+        projectToUpdate.setUpdatedAt(Instant.now());
         projectJpaRepository.save(projectToUpdate); // This save should trigger @PreUpdate
 
         entityManager.flush();

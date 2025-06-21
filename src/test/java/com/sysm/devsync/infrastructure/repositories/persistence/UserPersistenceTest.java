@@ -5,19 +5,17 @@ import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.enums.UserRole;
+import com.sysm.devsync.domain.models.Tag;
 import com.sysm.devsync.domain.models.User;
 import com.sysm.devsync.infrastructure.AbstractRepositoryTest;
-import com.sysm.devsync.infrastructure.PersistenceTest;
 // Import your UserJpaEntity if it's in a different package
 // import com.sysm.devsync.infrastructure.repositories.entities.UserJpaEntity;
-import com.sysm.devsync.infrastructure.repositories.UserJpaRepository;
 import com.sysm.devsync.infrastructure.repositories.entities.UserJpaEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
 
 import java.time.Instant;
@@ -25,6 +23,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static com.sysm.devsync.infrastructure.Utils.sleep;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -59,10 +58,6 @@ public class UserPersistenceTest extends AbstractRepositoryTest {
         user3Jpa = UserJpaEntity.fromModel(user3Domain);
     }
 
-    private UserJpaEntity persistUser(UserJpaEntity userJpa) {
-        return entityManager.persistAndFlush(userJpa);
-    }
-
     @Nested
     @DisplayName("create Method Tests")
     class CreateTests {
@@ -71,7 +66,7 @@ public class UserPersistenceTest extends AbstractRepositoryTest {
         void create_shouldSaveUser() {
             User newUser = User.create("Test User", "test.user@example.com", UserRole.MEMBER);
             // Act
-            assertDoesNotThrow(() -> userPersistence.create(newUser));
+            assertDoesNotThrow(() -> create(newUser));
 
             // Assert
             UserJpaEntity foundInDb = entityManager.find(UserJpaEntity.class, newUser.getId());
@@ -94,8 +89,9 @@ public class UserPersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should update an existing user")
         void update_shouldModifyExistingUser() {
             // Arrange
-            persistUser(user1Jpa); // Persist initial user1
-            entityManager.detach(user1Jpa); // Detach to simulate fetching and updating
+            entityPersist(user1Jpa); // Persist initial user1
+
+            sleep(100);
 
             // Create an updated version of user1Domain using User.build to include all fields
             // We need to fetch the original createdAt time.
@@ -113,9 +109,7 @@ public class UserPersistenceTest extends AbstractRepositoryTest {
 
 
             // Act
-            userPersistence.update(updatedDomainUser);
-            entityManager.flush();
-            entityManager.clear();
+            update(updatedDomainUser);
 
             // Assert
             Optional<User> foundUser = userPersistence.findById(user1Domain.getId());
@@ -138,18 +132,16 @@ public class UserPersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should delete a user by its ID")
         void deleteById_shouldRemoveUser() {
             // Arrange
-            UserJpaEntity persistedUser = persistUser(user1Jpa);
+            entityPersist(user1Jpa);
 
             // Act
-            userPersistence.deleteById(persistedUser.getId());
-            entityManager.flush();
-            entityManager.clear();
+            deleteById(user1Jpa.getId());
 
             // Assert
-            Optional<User> foundUser = userPersistence.findById(persistedUser.getId());
+            Optional<User> foundUser = userPersistence.findById(user1Jpa.getId());
             assertThat(foundUser).isNotPresent();
-            assertThat(userPersistence.existsById(persistedUser.getId())).isFalse();
-            assertThat(entityManager.find(UserJpaEntity.class, persistedUser.getId())).isNull();
+            assertThat(userPersistence.existsById(user1Jpa.getId())).isFalse();
+            assertThat(entityManager.find(UserJpaEntity.class, user1Jpa.getId())).isNull();
         }
     }
 
@@ -160,7 +152,7 @@ public class UserPersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should return user when found")
         void findById_whenUserExists_shouldReturnUser() {
             // Arrange
-            persistUser(user1Jpa);
+            entityPersist(user1Jpa);
 
             // Act
             Optional<User> foundUser = userPersistence.findById(user1Domain.getId());
@@ -190,7 +182,7 @@ public class UserPersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should return true when user exists")
         void existsById_whenUserExists_shouldReturnTrue() {
             // Arrange
-            persistUser(user1Jpa);
+            entityPersist(user1Jpa);
 
             // Act
             boolean exists = userPersistence.existsById(user1Domain.getId());
@@ -217,9 +209,9 @@ public class UserPersistenceTest extends AbstractRepositoryTest {
         void setUpFindAll() {
             // Data for these specific tests.
             // The main setUp already cleared the DB and re-initialized userXDomain/userXJpa instances.
-            persistUser(user1Jpa); // John Doe, john.doe@example.com, MEMBER
-            persistUser(user2Jpa); // Alice Smith, alice.smith@example.com, ADMIN
-            persistUser(user3Jpa); // Bob Johnson, bob.johnson@example.com, MEMBER
+            entityPersist(user1Jpa); // John Doe, john.doe@example.com, MEMBER
+            entityPersist(user2Jpa); // Alice Smith, alice.smith@example.com, ADMIN
+            entityPersist(user3Jpa); // Bob Johnson, bob.johnson@example.com, MEMBER
         }
 
         @Test
@@ -325,7 +317,7 @@ public class UserPersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should respect sorting parameters (name ascending)")
         void findAll_withSortingNameAsc_shouldReturnSortedUsers() {
             User extraUserDomain = User.create("Aaron Aardvark", "aaron@example.com", UserRole.MEMBER);
-            persistUser(UserJpaEntity.fromModel(extraUserDomain));
+            entityPersist(UserJpaEntity.fromModel(extraUserDomain));
 
             SearchQuery query = new SearchQuery(Page.of(0, 10, "name", "asc"), ""); // Sort by name
             Pagination<User> result = userPersistence.findAll(query);
@@ -335,5 +327,20 @@ public class UserPersistenceTest extends AbstractRepositoryTest {
             // Expected order: Aaron Aardvark, Alice Smith, Bob Johnson, John Doe
             assertThat(names).containsExactly("Aaron Aardvark", "Alice Smith", "Bob Johnson", "John Doe");
         }
+    }
+
+    private void create(User entity) {
+        userPersistence.create(entity);
+        flushAndClear();
+    }
+
+    private void update(User entity) {
+        userPersistence.update(entity);
+        flushAndClear();
+    }
+
+    private void deleteById(String id) {
+        userPersistence.deleteById(id);
+        flushAndClear();
     }
 }

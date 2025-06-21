@@ -4,17 +4,15 @@ import com.sysm.devsync.domain.BusinessException;
 import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
+import com.sysm.devsync.domain.models.Question;
 import com.sysm.devsync.domain.models.Tag;
 import com.sysm.devsync.infrastructure.AbstractRepositoryTest;
-import com.sysm.devsync.infrastructure.PersistenceTest; // Changed to PersistenceTest
-import com.sysm.devsync.infrastructure.repositories.TagJpaRepository;
 import com.sysm.devsync.infrastructure.repositories.entities.TagJpaEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager; // Use TestEntityManager
 import org.springframework.context.annotation.Import;
 
 import java.util.List;
@@ -42,8 +40,6 @@ public class TagPersistenceTest extends AbstractRepositoryTest {
     void setUp() {
         clearRepositories();
 
-        entityManager.flush();
-
         tag1Domain = Tag.build(UUID.randomUUID().toString(), "Java", "Blue", "Java Programming Language", "Programming", 0);
         Tag tag2Domain = Tag.build(UUID.randomUUID().toString(), "Spring", "Green", "Spring Framework", "Framework", 0);
         Tag tag3Domain = Tag.build(UUID.randomUUID().toString(), "Testing", "Red", "Software Testing", "Programming", 0);
@@ -53,12 +49,6 @@ public class TagPersistenceTest extends AbstractRepositoryTest {
         tag3Jpa = TagJpaEntity.fromModel(tag3Domain);
     }
 
-    // Helper to persist using TestEntityManager
-    private TagJpaEntity persistTag(TagJpaEntity tagJpa) {
-        // Persist makes the entity managed; flush writes it to the DB within the current transaction.
-        return entityManager.persistAndFlush(tagJpa);
-    }
-
     @Nested
     @DisplayName("create Method Tests")
     class CreateTests {
@@ -66,9 +56,7 @@ public class TagPersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should create and save a tag")
         void create_shouldSaveTag() {
             // Act
-            assertDoesNotThrow(() -> tagPersistence.create(tag1Domain));
-             entityManager.flush(); // Not strictly needed here if findById triggers a flush
-             entityManager.clear(); // Clear persistence context to ensure fresh load for findById
+            assertDoesNotThrow(() -> create(tag1Domain));
 
             // Assert
             // Verify directly with the repository or TestEntityManager if needed,
@@ -91,8 +79,7 @@ public class TagPersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should update an existing tag")
         void update_shouldModifyExistingTag() {
             // Arrange
-            persistTag(tag1Jpa); // tag1Jpa is now persisted
-            entityManager.detach(tag1Jpa); // Detach to simulate fetching and updating
+            entityPersist(tag1Jpa); // tag1Jpa is now persisted
 
             Tag updatedDomainTag = Tag.build(
                     tag1Domain.getId(), // Use the ID of the persisted tag
@@ -104,9 +91,7 @@ public class TagPersistenceTest extends AbstractRepositoryTest {
             );
 
             // Act
-            tagPersistence.update(updatedDomainTag);
-            entityManager.flush(); // Ensure update is flushed
-            entityManager.clear(); // Clear context to ensure fresh read
+            update(updatedDomainTag);
 
             // Assert
             Optional<Tag> foundTag = tagPersistence.findById(tag1Domain.getId());
@@ -124,18 +109,16 @@ public class TagPersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should delete a tag by its ID")
         void deleteById_shouldRemoveTag() {
             // Arrange
-            TagJpaEntity persistedTag = persistTag(tag1Jpa);
+            entityPersist(tag1Jpa);
 
             // Act
-            tagPersistence.deleteById(persistedTag.getId());
-            entityManager.flush(); // Ensure delete is flushed
-            entityManager.clear(); // Clear context
+            deleteById(tag1Jpa.getId());
 
             // Assert
-            Optional<Tag> foundTag = tagPersistence.findById(persistedTag.getId());
+            Optional<Tag> foundTag = tagPersistence.findById(tag1Jpa.getId());
             assertThat(foundTag).isNotPresent();
-            assertThat(tagPersistence.existsById(persistedTag.getId())).isFalse();
-            assertThat(entityManager.find(TagJpaEntity.class, persistedTag.getId())).isNull();
+            assertThat(tagPersistence.existsById(tag1Jpa.getId())).isFalse();
+            assertThat(entityManager.find(TagJpaEntity.class, tag1Jpa.getId())).isNull();
         }
     }
 
@@ -146,7 +129,7 @@ public class TagPersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should return tag when found")
         void findById_whenTagExists_shouldReturnTag() {
             // Arrange
-            persistTag(tag1Jpa);
+            entityPersist(tag1Jpa);
 
             // Act
             Optional<Tag> foundTag = tagPersistence.findById(tag1Domain.getId());
@@ -175,7 +158,7 @@ public class TagPersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should return true when tag exists")
         void existsById_whenTagExists_shouldReturnTrue() {
             // Arrange
-            persistTag(tag1Jpa);
+            entityPersist(tag1Jpa);
 
             // Act
             boolean exists = tagPersistence.existsById(tag1Domain.getId());
@@ -200,16 +183,10 @@ public class TagPersistenceTest extends AbstractRepositoryTest {
     class FindAllTests {
         @BeforeEach
         void setUpFindAll() {
-            entityManager.getEntityManager()
-                    .createQuery("DELETE FROM Tag")
-                    .executeUpdate();
-
-            entityManager.flush();
-
             // Persist test data using TestEntityManager
-            persistTag(tag1Jpa); // Java, Blue, Programming
-            persistTag(tag2Jpa); // Spring, Green, Framework
-            persistTag(tag3Jpa); // Testing, Red, Programming
+            entityPersist(tag1Jpa); // Java, Blue, Programming
+            entityPersist(tag2Jpa); // Spring, Green, Framework
+            entityPersist(tag3Jpa); // Testing, Red, Programming
         }
 
         @Test
@@ -300,7 +277,7 @@ public class TagPersistenceTest extends AbstractRepositoryTest {
         void findAll_withSortingNameAsc_shouldReturnSortedTags() {
             // Persist an additional tag for a more robust sort test
             TagJpaEntity appleTagJpa = TagJpaEntity.fromModel(Tag.create("Apple", "Red"));
-            persistTag(appleTagJpa); // Persisted "Apple"
+            entityPersist(appleTagJpa); // Persisted "Apple"
 
             // Now we have "Java", "Spring", "Testing", "Apple"
             SearchQuery query = new SearchQuery(Page.of(0, 10, "name", "asc"), "");
@@ -310,5 +287,20 @@ public class TagPersistenceTest extends AbstractRepositoryTest {
             assertThat(names).isSorted();
             assertThat(names).containsExactly("Apple", "Java", "Spring", "Testing");
         }
+    }
+
+    private void create(Tag entity) {
+        tagPersistence.create(entity);
+        flushAndClear();
+    }
+
+    private void update(Tag entity) {
+        tagPersistence.update(entity);
+        flushAndClear();
+    }
+
+    private void deleteById(String id) {
+        tagPersistence.deleteById(id);
+        flushAndClear();
     }
 }

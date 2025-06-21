@@ -87,9 +87,6 @@ public class QuestionPersistence extends AbstractPersistence<QuestionJpaEntity> 
 
     @Override
     public Pagination<Question> findAllByProjectId(Page page, String projectId) {
-        if (page == null) {
-            page = Page.of(0, 10); // Default to first page with 10 items
-        }
         if (projectId == null || projectId.isEmpty()) {
             throw new IllegalArgumentException("Project ID must not be null or empty");
         }

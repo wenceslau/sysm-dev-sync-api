@@ -94,7 +94,7 @@ public class Answer extends AbstractModel {
         return null;
     }
 
-    public static Answer create(String questionId, String authorId, String content) {
+    public static Answer create(String content, String questionId, String authorId) {
         String id = java.util.UUID.randomUUID().toString();
         Instant now = Instant.now();
         return new Answer(

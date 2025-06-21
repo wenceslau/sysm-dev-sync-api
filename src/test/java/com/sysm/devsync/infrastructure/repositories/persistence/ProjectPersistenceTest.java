@@ -5,15 +5,11 @@ import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.enums.UserRole;
+import com.sysm.devsync.domain.models.Answer;
 import com.sysm.devsync.domain.models.Project;
 import com.sysm.devsync.domain.models.User; // For workspace owner setup
 import com.sysm.devsync.domain.models.Workspace; // For project workspace setup
 import com.sysm.devsync.infrastructure.AbstractRepositoryTest;
-import com.sysm.devsync.infrastructure.PersistenceTest;
-import com.sysm.devsync.infrastructure.repositories.ProjectJpaRepository;
-import com.sysm.devsync.infrastructure.repositories.TagJpaRepository;
-import com.sysm.devsync.infrastructure.repositories.UserJpaRepository;
-import com.sysm.devsync.infrastructure.repositories.WorkspaceJpaRepository;
 import com.sysm.devsync.infrastructure.repositories.entities.ProjectJpaEntity;
 import com.sysm.devsync.infrastructure.repositories.entities.UserJpaEntity;
 import com.sysm.devsync.infrastructure.repositories.entities.WorkspaceJpaEntity;
@@ -23,7 +19,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
 
 import java.time.Instant;
@@ -31,6 +26,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static com.sysm.devsync.infrastructure.Utils.sleep;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -57,7 +53,7 @@ public class ProjectPersistenceTest extends AbstractRepositoryTest {
         User ownerDomain = User.create("Owner User", "owner@example.com", UserRole.ADMIN);
         // Dependent entities for setup
         UserJpaEntity ownerUserJpa = UserJpaEntity.fromModel(ownerDomain);
-        entityManager.persist(ownerUserJpa);
+        entityPersist(ownerUserJpa);
 
         // 2. Create Workspaces
         Workspace ws1Domain = Workspace.create("Workspace One", "First test workspace", false, ownerUserJpa.getId());
@@ -69,7 +65,7 @@ public class ProjectPersistenceTest extends AbstractRepositoryTest {
         workspace1Jpa.setOwner(ownerUserJpa); // Set managed owner
         workspace1Jpa.setCreatedAt(Instant.now());
         workspace1Jpa.setUpdatedAt(Instant.now());
-        entityManager.persist(workspace1Jpa);
+        entityPersist(workspace1Jpa);
 
         Workspace ws2Domain = Workspace.create("Workspace Two", "Second test workspace", true, ownerUserJpa.getId());
         workspace2Jpa = new WorkspaceJpaEntity();
@@ -80,9 +76,8 @@ public class ProjectPersistenceTest extends AbstractRepositoryTest {
         workspace2Jpa.setOwner(ownerUserJpa);
         workspace2Jpa.setCreatedAt(Instant.now());
         workspace2Jpa.setUpdatedAt(Instant.now());
-        entityManager.persist(workspace2Jpa);
+        entityPersist(workspace2Jpa);
 
-        entityManager.flush(); // Ensure users and workspaces are in DB
 
         // 3. Create Project Domain Models
         project1Domain = Project.create("Project Alpha", "Description for Alpha", workspace1Jpa.getId());
@@ -97,9 +92,7 @@ public class ProjectPersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should create and save a project")
         void create_shouldSaveProject() {
             // Act
-            assertDoesNotThrow(() -> projectPersistence.create(project1Domain));
-            entityManager.flush();
-            entityManager.clear();
+            assertDoesNotThrow(() -> create(project1Domain));
 
             // Assert
             ProjectJpaEntity foundInDb = entityManager.find(ProjectJpaEntity.class, project1Domain.getId());
@@ -115,7 +108,7 @@ public class ProjectPersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should throw IllegalArgumentException when creating with null model")
         void create_nullModel_shouldThrowException() {
-            assertThatThrownBy(() -> projectPersistence.create(null))
+            assertThatThrownBy(() -> create(null))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("Project model cannot be null");
         }
@@ -125,8 +118,8 @@ public class ProjectPersistenceTest extends AbstractRepositoryTest {
         void create_nonExistentWorkspaceId_shouldFail() {
             Project projectWithInvalidWorkspace = Project.create("Invalid WS Project", "Desc", UUID.randomUUID().toString());
             assertThatThrownBy(() -> {
-                projectPersistence.create(projectWithInvalidWorkspace);
-                entityManager.flush(); // Force DB interaction
+                create(projectWithInvalidWorkspace);
+                entityManager.flush();
             }).isInstanceOf(ConstraintViolationException.class); // Or a more specific FK violation if available
         }
     }
@@ -138,9 +131,9 @@ public class ProjectPersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should update an existing project")
         void update_shouldModifyExistingProject() {
             // Arrange: First, create the project
-            projectPersistence.create(project1Domain);
-            entityManager.flush();
-            entityManager.clear(); // Detach to simulate fresh fetch & update
+            create(project1Domain);
+
+            sleep(100); // Ensure updatedAt will be different
 
             Project updatedDomainProject = Project.build(
                     project1Domain.getId(),
@@ -152,9 +145,7 @@ public class ProjectPersistenceTest extends AbstractRepositoryTest {
             );
 
             // Act
-            projectPersistence.update(updatedDomainProject);
-            entityManager.flush();
-            entityManager.clear();
+            update(updatedDomainProject);
 
             // Assert
             Optional<Project> foundProjectOpt = projectPersistence.findById(project1Domain.getId());
@@ -170,7 +161,7 @@ public class ProjectPersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should throw IllegalArgumentException when updating with null model")
         void update_nullModel_shouldThrowException() {
-            assertThatThrownBy(() -> projectPersistence.update(null))
+            assertThatThrownBy(() -> update(null))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("Project model cannot be null");
         }
@@ -182,9 +173,7 @@ public class ProjectPersistenceTest extends AbstractRepositoryTest {
             Project newProjectToUpdate = Project.create("New Project via Update", "Desc", workspace1Jpa.getId());
 
             // Act: Attempt to update (which should insert since it doesn't exist)
-            assertDoesNotThrow(() -> projectPersistence.update(newProjectToUpdate));
-            entityManager.flush();
-            entityManager.clear();
+            assertDoesNotThrow(() -> update(newProjectToUpdate));
 
             // Assert: Check if the project was created
             Optional<Project> foundProject = projectPersistence.findById(newProjectToUpdate.getId());
@@ -200,14 +189,11 @@ public class ProjectPersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should delete a project by its ID")
         void deleteById_shouldRemoveProject() {
             // Arrange
-            projectPersistence.create(project1Domain);
-            entityManager.flush();
+            create(project1Domain);
             assertThat(projectPersistence.existsById(project1Domain.getId())).isTrue();
 
             // Act
-            projectPersistence.deleteById(project1Domain.getId());
-            entityManager.flush();
-            entityManager.clear();
+            deleteById(project1Domain.getId());
 
             // Assert
             assertThat(projectPersistence.existsById(project1Domain.getId())).isFalse();
@@ -217,7 +203,7 @@ public class ProjectPersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should throw IllegalArgumentException when deleting with null ID")
         void deleteById_nullId_shouldThrowException() {
-            assertThatThrownBy(() -> projectPersistence.deleteById(null))
+            assertThatThrownBy(() -> deleteById(null))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("Project ID cannot be null or empty");
         }
@@ -225,8 +211,7 @@ public class ProjectPersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("deleteById should not throw error for non-existent ID")
         void deleteById_nonExistentId_shouldNotThrowError() {
-            assertDoesNotThrow(() -> projectPersistence.deleteById(UUID.randomUUID().toString()));
-            entityManager.flush(); // Ensure no exceptions during flush
+            assertDoesNotThrow(() -> deleteById(UUID.randomUUID().toString()));
         }
     }
 
@@ -237,8 +222,7 @@ public class ProjectPersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should return project when found")
         void findById_whenProjectExists_shouldReturnProject() {
             // Arrange
-            projectPersistence.create(project1Domain);
-            entityManager.flush();
+            create(project1Domain);
 
             // Act
             Optional<Project> foundProject = projectPersistence.findById(project1Domain.getId());
@@ -275,8 +259,7 @@ public class ProjectPersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should return true when project exists")
         void existsById_whenProjectExists_shouldReturnTrue() {
             // Arrange
-            projectPersistence.create(project1Domain);
-            entityManager.flush();
+            create(project1Domain);
 
             // Act
             boolean exists = projectPersistence.existsById(project1Domain.getId());
@@ -310,10 +293,9 @@ public class ProjectPersistenceTest extends AbstractRepositoryTest {
         @BeforeEach
         void setUpFindAll() {
             // Persist test data
-            projectPersistence.create(project1Domain); // Alpha, workspace1
-            projectPersistence.create(project2Domain); // Beta, workspace2
-            projectPersistence.create(project3Domain); // Gamma, workspace1
-            entityManager.flush();
+            create(project1Domain); // Alpha, workspace1
+            create(project2Domain); // Beta, workspace2
+            create(project3Domain); // Gamma, workspace1
         }
 
         @Test
@@ -392,5 +374,20 @@ public class ProjectPersistenceTest extends AbstractRepositoryTest {
             Pagination<Project> result2 = projectPersistence.findAll(queryPage2);
             assertThat(result2.items()).hasSize(1);
         }
+    }
+
+    private void create(Project entity) {
+        projectPersistence.create(entity);
+        flushAndClear();
+    }
+
+    private void update(Project entity) {
+        projectPersistence.update(entity);
+        flushAndClear();
+    }
+
+    private void deleteById(String id) {
+        projectPersistence.deleteById(id);
+        flushAndClear();
     }
 }

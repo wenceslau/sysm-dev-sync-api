@@ -5,11 +5,9 @@ import com.sysm.devsync.domain.Page; // Assuming you have this domain Pageable
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.enums.UserRole;
+import com.sysm.devsync.domain.models.User;
 import com.sysm.devsync.domain.models.Workspace; // Domain Workspace
 import com.sysm.devsync.infrastructure.AbstractRepositoryTest;
-import com.sysm.devsync.infrastructure.PersistenceTest; // Your test slice annotation
-import com.sysm.devsync.infrastructure.repositories.UserJpaRepository;
-import com.sysm.devsync.infrastructure.repositories.WorkspaceJpaRepository;
 import com.sysm.devsync.infrastructure.repositories.entities.UserJpaEntity;
 import com.sysm.devsync.infrastructure.repositories.entities.WorkspaceJpaEntity;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,7 +15,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
 
 import java.time.Instant;
@@ -27,6 +24,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.sysm.devsync.infrastructure.Utils.sleep;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -56,7 +54,7 @@ public class WorkspacePersistenceTest extends AbstractRepositoryTest {
         ownerUser.setRole(UserRole.ADMIN);
         ownerUser.setCreatedAt(LocalDateTime.now().minusDays(1).toInstant(ZoneOffset.UTC));
         ownerUser.setUpdatedAt(LocalDateTime.now().minusDays(1).toInstant(ZoneOffset.UTC));
-        entityManager.persistAndFlush(ownerUser);
+        entityPersist(ownerUser);
 
         memberUser1 = new UserJpaEntity();
         memberUser1.setId(UUID.randomUUID().toString());
@@ -65,7 +63,7 @@ public class WorkspacePersistenceTest extends AbstractRepositoryTest {
         memberUser1.setRole(UserRole.MEMBER);
         memberUser1.setCreatedAt(LocalDateTime.now().minusDays(1).toInstant(ZoneOffset.UTC));
         memberUser1.setUpdatedAt(LocalDateTime.now().minusDays(1).toInstant(ZoneOffset.UTC));
-        entityManager.persistAndFlush(memberUser1);
+        entityPersist(memberUser1);
 
         memberUser2 = new UserJpaEntity();
         memberUser2.setId(UUID.randomUUID().toString());
@@ -74,7 +72,7 @@ public class WorkspacePersistenceTest extends AbstractRepositoryTest {
         memberUser2.setRole(UserRole.MEMBER);
         memberUser2.setCreatedAt(LocalDateTime.now().minusDays(1).toInstant(ZoneOffset.UTC));
         memberUser2.setUpdatedAt(LocalDateTime.now().minusDays(1).toInstant(ZoneOffset.UTC));
-        entityManager.persistAndFlush(memberUser2);
+        entityPersist(memberUser2);
 
         workspace1Domain = Workspace.create("Workspace Alpha", "Alpha description", false, ownerUser.getId());
         workspace1Domain.addMember(memberUser1.getId());
@@ -93,7 +91,7 @@ public class WorkspacePersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should create and save a workspace")
         void create_shouldSaveWorkspace() {
             // Act
-            assertDoesNotThrow(() -> workspacePersistence.create(workspace1Domain));
+            assertDoesNotThrow(() -> create(workspace1Domain));
 
             // Assert
             WorkspaceJpaEntity foundInDb = entityManager.find(WorkspaceJpaEntity.class, workspace1Domain.getId());
@@ -112,7 +110,7 @@ public class WorkspacePersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should throw BusinessException when creating with null model")
         void create_nullModel_shouldThrowException() {
-            assertThatThrownBy(() -> workspacePersistence.create(null))
+            assertThatThrownBy(() -> create(null))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("Workspace model cannot be null");
         }
@@ -125,9 +123,9 @@ public class WorkspacePersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should update an existing workspace")
         void update_shouldModifyExistingWorkspace() {
             // Arrange: First, create the workspace
-            workspacePersistence.create(workspace1Domain);
-            entityManager.flush(); // Ensure it's in DB
-            entityManager.clear(); // Detach to simulate fresh fetch & update
+            create(workspace1Domain);
+
+            sleep(100);
 
             var workspace = workspacePersistence.findById(workspace1Domain.getId());
             assertThat(workspace).isPresent();
@@ -147,9 +145,7 @@ public class WorkspacePersistenceTest extends AbstractRepositoryTest {
             );
 
             // Act
-            workspacePersistence.update(updatedDomainWorkspace);
-            entityManager.flush();
-            entityManager.clear();
+            update(updatedDomainWorkspace);
 
             // Assert
             Optional<Workspace> foundWorkspaceOpt = workspacePersistence.findById(workspace1Domain.getId());
@@ -173,7 +169,7 @@ public class WorkspacePersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should throw BusinessException when updating with null model")
         void update_nullModel_shouldThrowException() {
-            assertThatThrownBy(() -> workspacePersistence.update(null))
+            assertThatThrownBy(() -> update(null))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("Workspace model cannot be null");
         }
@@ -182,9 +178,9 @@ public class WorkspacePersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should update workspace with different owner and members")
         void update_workspaceWithDifferentOwnerAndMembers_shouldUpdateSuccessfully() {
             // Arrange: First, create the workspace
-            workspacePersistence.create(workspace1Domain);
-            entityManager.flush(); // Ensure it's in DB
-            entityManager.clear(); // Detach to simulate fresh fetch & update
+            create(workspace1Domain);
+
+            sleep(100); // Ensure a different updatedAt timestamp
 
             var workspace = workspacePersistence.findById(workspace1Domain.getId());
             assertThat(workspace).isPresent();
@@ -204,9 +200,7 @@ public class WorkspacePersistenceTest extends AbstractRepositoryTest {
             );
 
             // Act
-            workspacePersistence.update(updatedDomainWorkspace);
-            entityManager.flush();
-            entityManager.clear();
+            update(updatedDomainWorkspace);
 
             // Assert
             Optional<Workspace> foundWorkspaceOpt = workspacePersistence.findById(workspace1Domain.getId());
@@ -235,14 +229,11 @@ public class WorkspacePersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should delete a workspace by its ID")
         void deleteById_shouldRemoveWorkspace() {
             // Arrange
-            workspacePersistence.create(workspace1Domain);
-            entityManager.flush();
+            create(workspace1Domain);
             assertThat(workspacePersistence.existsById(workspace1Domain.getId())).isTrue();
 
             // Act
-            workspacePersistence.deleteById(workspace1Domain.getId());
-            entityManager.flush();
-            entityManager.clear();
+            deleteById(workspace1Domain.getId());
 
             // Assert
             assertThat(workspacePersistence.existsById(workspace1Domain.getId())).isFalse();
@@ -252,7 +243,7 @@ public class WorkspacePersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should throw BusinessException when deleting with null ID")
         void deleteById_nullId_shouldThrowException() {
-            assertThatThrownBy(() -> workspacePersistence.deleteById(null))
+            assertThatThrownBy(() -> deleteById(null))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("Workspace ID cannot be null or blank");
         }
@@ -265,8 +256,7 @@ public class WorkspacePersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should return workspace when found")
         void findById_whenWorkspaceExists_shouldReturnWorkspace() {
             // Arrange
-            workspacePersistence.create(workspace1Domain);
-            entityManager.flush();
+            create(workspace1Domain);
 
             // Act
             Optional<Workspace> foundWorkspace = workspacePersistence.findById(workspace1Domain.getId());
@@ -295,8 +285,7 @@ public class WorkspacePersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should return true when workspace exists")
         void existsById_whenWorkspaceExists_shouldReturnTrue() {
             // Arrange
-            workspacePersistence.create(workspace1Domain);
-            entityManager.flush();
+            create(workspace1Domain);
 
             // Act
             boolean exists = workspacePersistence.existsById(workspace1Domain.getId());
@@ -323,10 +312,9 @@ public class WorkspacePersistenceTest extends AbstractRepositoryTest {
         @BeforeEach
         void setUpFindAll() {
             // Persist test data
-            workspacePersistence.create(workspace1Domain); // Alpha, false, ownerUser, memberUser1
-            workspacePersistence.create(workspace2Domain); // Beta, true, ownerUser, memberUser1, memberUser2
-            workspacePersistence.create(workspace3Domain); // Gamma, false, memberUser1
-            entityManager.flush();
+            create(workspace1Domain); // Alpha, false, ownerUser, memberUser1
+            create(workspace2Domain); // Beta, true, ownerUser, memberUser1, memberUser2
+            create(workspace3Domain); // Gamma, false, memberUser1
 
         }
 
@@ -442,5 +430,20 @@ public class WorkspacePersistenceTest extends AbstractRepositoryTest {
             Pagination<Workspace> result2 = workspacePersistence.findAll(queryPage2);
             assertThat(result2.items()).hasSize(1);
         }
+    }
+
+    private void create(Workspace entity) {
+        workspacePersistence.create(entity);
+        flushAndClear();
+    }
+
+    private void update(Workspace entity) {
+        workspacePersistence.update(entity);
+        flushAndClear();
+    }
+
+    private void deleteById(String id) {
+        workspacePersistence.deleteById(id);
+        flushAndClear();
     }
 }

@@ -33,7 +33,7 @@ public class AnswerTest {
     @DisplayName("create() should successfully create an answer with valid arguments")
     void create_shouldSucceed_withValidArguments() {
         Instant beforeCreation = Utils.iTruncatedNow();
-        Answer answer = Answer.create(validQuestionId, validAuthorId, validContent);
+        Answer answer = Answer.create(validContent, validQuestionId, validAuthorId);
         Instant afterCreation = Utils.iTruncatedNow();
         assertNotNull(answer.getId(), "ID should be generated and not null");
         try {
@@ -60,7 +60,7 @@ public class AnswerTest {
     @DisplayName("create() should throw IllegalArgumentException for null questionId")
     void create_shouldThrowException_whenQuestionIdIsNull() {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            Answer.create(null, validAuthorId, validContent);
+            Answer.create(validContent, null, validAuthorId);
         });
         assertEquals("Question ID cannot be null or empty", exception.getMessage());
     }
@@ -69,7 +69,7 @@ public class AnswerTest {
     @DisplayName("create() should throw IllegalArgumentException for empty questionId")
     void create_shouldThrowException_whenQuestionIdIsEmpty() {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            Answer.create("", validAuthorId, validContent);
+            Answer.create(validContent,"", validAuthorId);
         });
         assertEquals("Question ID cannot be null or empty", exception.getMessage());
     }
@@ -78,7 +78,7 @@ public class AnswerTest {
     @DisplayName("create() should throw IllegalArgumentException for null authorId")
     void create_shouldThrowException_whenAuthorIdIsNull() {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            Answer.create(validQuestionId, null, validContent);
+            Answer.create(validContent, validQuestionId, null);
         });
         assertEquals("Author ID cannot be null or empty", exception.getMessage());
     }
@@ -87,7 +87,7 @@ public class AnswerTest {
     @DisplayName("create() should throw IllegalArgumentException for empty authorId")
     void create_shouldThrowException_whenAuthorIdIsEmpty() {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            Answer.create(validQuestionId, "", validContent);
+            Answer.create(validContent, validQuestionId, "");
         });
         assertEquals("Author ID cannot be null or empty", exception.getMessage());
     }
@@ -96,7 +96,7 @@ public class AnswerTest {
     @DisplayName("create() should throw IllegalArgumentException for null content")
     void create_shouldThrowException_whenContentIsNull() {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            Answer.create(validQuestionId, validAuthorId, null);
+            Answer.create(null, validQuestionId, validAuthorId);
         });
         assertEquals("Content cannot be null or empty", exception.getMessage());
     }
@@ -105,7 +105,7 @@ public class AnswerTest {
     @DisplayName("create() should throw IllegalArgumentException for empty content")
     void create_shouldThrowException_whenContentIsEmpty() {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            Answer.create(validQuestionId, validAuthorId, "");
+            Answer.create("", validQuestionId, validAuthorId);
         });
         assertEquals("Content cannot be null or empty", exception.getMessage());
     }
@@ -199,7 +199,7 @@ public class AnswerTest {
     @Test
     @DisplayName("accept() should set isAccepted to true and update timestamp")
     void accept_shouldSetIsAcceptedTrueAndUpdateTimestamp() throws InterruptedException {
-        Answer answer = Answer.create(validQuestionId, validAuthorId, validContent); // isAccepted is false initially
+        Answer answer = Answer.create(validContent, validQuestionId, validAuthorId); // isAccepted is false initially
         assertFalse(answer.isAccepted());
         Instant initialUpdatedAt = answer.getUpdatedAt();
 

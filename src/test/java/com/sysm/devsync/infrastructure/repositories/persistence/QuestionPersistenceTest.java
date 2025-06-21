@@ -12,22 +12,14 @@ import com.sysm.devsync.domain.models.Workspace;
 import com.sysm.devsync.domain.models.Project;
 import com.sysm.devsync.domain.models.Tag;
 import com.sysm.devsync.infrastructure.AbstractRepositoryTest;
-import com.sysm.devsync.infrastructure.PersistenceTest; // Your custom test slice
-import com.sysm.devsync.infrastructure.repositories.*; // Import all repositories
 import com.sysm.devsync.infrastructure.repositories.entities.*; // Import all entities
-import jakarta.persistence.criteria.Predicate; // Needed for Specification tests
 import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
-import org.springframework.dao.DataIntegrityViolationException; // For FK constraint violations
-import org.springframework.data.domain.PageRequest; // Spring's PageRequest
-import org.springframework.data.domain.Pageable; // Spring's Pageable
-import org.springframework.data.jpa.domain.Specification; // Spring's Specification
 import org.springframework.orm.jpa.JpaObjectRetrievalFailureException;
 
 import java.time.Instant;
@@ -39,7 +31,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static com.sysm.devsync.infrastructure.Utils.like; // Assuming this utility exists
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -76,12 +67,12 @@ public class QuestionPersistenceTest extends AbstractRepositoryTest {
         User workspaceOwnerDomain = User.create("Workspace Owner", "ws.owner@example.com",  UserRole.ADMIN);
         // Needed for Workspace setup
         UserJpaEntity workspaceOwnerJpa = UserJpaEntity.fromModel(workspaceOwnerDomain); // Assuming fromModel works for User
-        entityManager.persist(workspaceOwnerJpa);
+        entityPersist(workspaceOwnerJpa);
 
         // Create Author User for Questions
         User authorDomain = User.create("Author User", "author@example.com",  UserRole.MEMBER);
         authorUserJpa = UserJpaEntity.fromModel(authorDomain); // Assuming fromModel works for User
-        entityManager.persist(authorUserJpa);
+        entityPersist(authorUserJpa);
 
         // Create Workspace (requires owner)
         Workspace wsDomain = Workspace.create("Test Workspace for Questions", "Workspace description", false, workspaceOwnerJpa.getId());
@@ -94,7 +85,7 @@ public class QuestionPersistenceTest extends AbstractRepositoryTest {
         workspaceJpa.setOwner(workspaceOwnerJpa); // Set the managed owner
         workspaceJpa.setCreatedAt(wsDomain.getCreatedAt());
         workspaceJpa.setUpdatedAt(wsDomain.getUpdatedAt());
-        entityManager.persist(workspaceJpa);
+        entityPersist(workspaceJpa);
 
         // Create Projects (requires workspace)
         Project project1DomainModel = Project.create("Project Alpha for Questions", "Alpha description", workspaceJpa.getId());
@@ -106,7 +97,7 @@ public class QuestionPersistenceTest extends AbstractRepositoryTest {
         project1Jpa.setWorkspace(workspaceJpa); // Set the managed workspace
         project1Jpa.setCreatedAt(project1DomainModel.getCreatedAt());
         project1Jpa.setUpdatedAt(project1DomainModel.getUpdatedAt());
-        entityManager.persist(project1Jpa);
+        entityPersist(project1Jpa);
 
         Project project2DomainModel = Project.create("Project Beta for Questions", "Beta description", workspaceJpa.getId());
         project2Jpa = new ProjectJpaEntity();
@@ -116,22 +107,20 @@ public class QuestionPersistenceTest extends AbstractRepositoryTest {
         project2Jpa.setWorkspace(workspaceJpa);
         project2Jpa.setCreatedAt(project2DomainModel.getCreatedAt());
         project2Jpa.setUpdatedAt(project2DomainModel.getUpdatedAt());
-        entityManager.persist(project2Jpa);
+        entityPersist(project2Jpa);
 
         // Create Tags
         Tag tag1Domain = Tag.build(UUID.randomUUID().toString(), "java", "#FF0000", "Java related questions", "Programming", 10);
         tag1Jpa = TagJpaEntity.fromModel(tag1Domain); // Assuming fromModel works for Tag
-        entityManager.persist(tag1Jpa);
+        entityPersist(tag1Jpa);
 
         Tag tag2Domain = Tag.build(UUID.randomUUID().toString(), "spring", "#00FF00", "Spring related questions", "Frameworks", 15);
         tag2Jpa = TagJpaEntity.fromModel(tag2Domain);
-        entityManager.persist(tag2Jpa);
+        entityPersist(tag2Jpa);
 
         Tag tag3Domain = Tag.build(UUID.randomUUID().toString(), "jpa", "#0000FF", "JPA related questions", "Databases", 20);
         tag3Jpa = TagJpaEntity.fromModel(tag3Domain);
-        entityManager.persist(tag3Jpa);
-
-        entityManager.flush(); // Ensure all prerequisites are in DB before creating questions
+        entityPersist(tag3Jpa);
 
         // 2. Create Question Domain Models (referencing IDs of persisted entities)
         question1Domain = Question.create(
@@ -172,10 +161,7 @@ public class QuestionPersistenceTest extends AbstractRepositoryTest {
             // Act
             // This relies on QuestionJpaEntity.fromModel correctly mapping IDs to transient entities
             // and JPA being able to resolve them because the entities with those IDs exist in the DB.
-            assertDoesNotThrow(() -> questionPersistence.create(question1Domain));
-
-            entityManager.flush(); // Ensure save is committed
-            entityManager.clear(); // Clear cache to fetch fresh from DB
+            assertDoesNotThrow(() -> create(question1Domain));
 
             // Assert
             QuestionJpaEntity foundInDb = entityManager.find(QuestionJpaEntity.class, question1Domain.getId());
@@ -200,7 +186,7 @@ public class QuestionPersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should throw IllegalArgumentException when creating with null model")
         void create_nullModel_shouldThrowException() {
-            assertThatThrownBy(() -> questionPersistence.create(null))
+            assertThatThrownBy(() -> create(null))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("Question model must not be null");
         }
@@ -216,8 +202,7 @@ public class QuestionPersistenceTest extends AbstractRepositoryTest {
             // When saving QuestionJpaEntity, if the author_id doesn't exist in the users table,
             // the DB will throw a constraint violation.
             assertThatThrownBy(() -> {
-                questionPersistence.create(questionWithInvalidAuthor);
-                entityManager.flush(); // Force DB interaction
+                create(questionWithInvalidAuthor);
             }).isInstanceOf(ConstraintViolationException.class); // Or a more specific FK violation if available
         }
 
@@ -232,8 +217,7 @@ public class QuestionPersistenceTest extends AbstractRepositoryTest {
             // When saving QuestionJpaEntity, if the project_id doesn't exist in the projecs table,
             // the DB will throw a constraint violation.
             assertThatThrownBy(() -> {
-                questionPersistence.create(questionWithInvalidProject);
-                entityManager.flush(); // Force DB interaction
+                create(questionWithInvalidProject);
             }).isInstanceOf(ConstraintViolationException.class); // Or a more specific FK violation if available
         }
 
@@ -250,8 +234,7 @@ public class QuestionPersistenceTest extends AbstractRepositoryTest {
             // When saving QuestionJpaEntity, JPA will try to insert rows into question_tags.
             // If a tag_id doesn't exist in the tags table, the DB will throw a constraint violation.
             assertThatThrownBy(() -> {
-                questionPersistence.create(questionWithInvalidTag);
-                entityManager.flush(); // Force DB interaction
+                create(questionWithInvalidTag);
             }).isInstanceOf(JpaObjectRetrievalFailureException.class); // Or a more specific FK violation if available
         }
     }
@@ -263,9 +246,7 @@ public class QuestionPersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should update an existing question")
         void update_shouldModifyExistingQuestion() {
             // Arrange: First, create the question
-            questionPersistence.create(question1Domain);
-            entityManager.flush();
-            entityManager.clear(); // Detach to simulate fresh fetch & update
+            create(question1Domain);
 
             // Build updated domain model
             Question updatedDomainQuestion = Question.build(
@@ -283,9 +264,7 @@ public class QuestionPersistenceTest extends AbstractRepositoryTest {
             // Act
             // This relies on QuestionJpaEntity.fromModel correctly mapping IDs to transient entities
             // and JPA being able to resolve them because the entities with those IDs exist in the DB.
-            assertDoesNotThrow(() -> questionPersistence.update(updatedDomainQuestion));
-            entityManager.flush();
-            entityManager.clear();
+            assertDoesNotThrow(() -> update(updatedDomainQuestion));
 
             // Assert
             Optional<Question> foundQuestionOpt = questionPersistence.findById(question1Domain.getId());
@@ -306,7 +285,7 @@ public class QuestionPersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should throw IllegalArgumentException when updating with null model")
         void update_nullModel_shouldThrowException() {
-            assertThatThrownBy(() -> questionPersistence.update(null))
+            assertThatThrownBy(() -> update(null))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("Question model must not be null");
         }
@@ -333,9 +312,7 @@ public class QuestionPersistenceTest extends AbstractRepositoryTest {
             );
 
 
-            assertDoesNotThrow(() -> questionPersistence.update(newQuestionToUpdate));
-            entityManager.flush();
-            entityManager.clear();
+            assertDoesNotThrow(() -> update(newQuestionToUpdate));
 
             Optional<Question> foundQuestion = questionPersistence.findById(newQuestionToUpdate.getId());
             assertThat(foundQuestion).isPresent();
@@ -346,9 +323,7 @@ public class QuestionPersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should fail to update question with non-existent Author ID due to FK constraint")
         void update_nonExistentAuthorId_shouldFail() {
             // Arrange: Create an initial valid question
-            questionPersistence.create(question1Domain);
-            entityManager.flush();
-            entityManager.clear();
+            create(question1Domain);
 
             // Build an updated model with a non-existent author ID
             Question updatedQuestion = Question.build(
@@ -365,8 +340,7 @@ public class QuestionPersistenceTest extends AbstractRepositoryTest {
 
             // Act & Assert
             assertThatThrownBy(() -> {
-                questionPersistence.update(updatedQuestion);
-                entityManager.flush(); // Force DB interaction
+                update(updatedQuestion);
             }).isInstanceOf(ConstraintViolationException.class);
         }
 
@@ -374,9 +348,7 @@ public class QuestionPersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should fail to update question with non-existent Project ID due to FK constraint")
         void update_nonExistentProjectId_shouldFail() {
             // Arrange: Create an initial valid question
-            questionPersistence.create(question1Domain);
-            entityManager.flush();
-            entityManager.clear();
+            create(question1Domain);
 
             // Build an updated model with a non-existent project ID
             Question updatedQuestion = Question.build(
@@ -393,8 +365,7 @@ public class QuestionPersistenceTest extends AbstractRepositoryTest {
 
             // Act & Assert
             assertThatThrownBy(() -> {
-                questionPersistence.update(updatedQuestion);
-                entityManager.flush(); // Force DB interaction
+                update(updatedQuestion);
             }).isInstanceOf(ConstraintViolationException.class);
         }
 
@@ -402,9 +373,7 @@ public class QuestionPersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should fail to update question with non-existent Tag ID due to FK constraint")
         void update_nonExistentTagId_shouldFail() {
             // Arrange: Create an initial valid question
-            questionPersistence.create(question1Domain);
-            entityManager.flush();
-            entityManager.clear();
+            create(question1Domain);
 
             // Build an updated model with a non-existent tag ID
             Set<String> updatedTags = new HashSet<>(question1Domain.getTagsId());
@@ -424,8 +393,7 @@ public class QuestionPersistenceTest extends AbstractRepositoryTest {
 
             // Act & Assert
             assertThatThrownBy(() -> {
-                questionPersistence.update(updatedQuestion);
-                entityManager.flush(); // Force DB interaction
+                update(updatedQuestion);
             }).isInstanceOf(JpaObjectRetrievalFailureException.class);
         }
     }
@@ -437,14 +405,11 @@ public class QuestionPersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should delete a question by its ID")
         void deleteById_shouldRemoveQuestion() {
             // Arrange
-            questionPersistence.create(question1Domain);
-            entityManager.flush();
+            create(question1Domain);
             assertThat(questionPersistence.existsById(question1Domain.getId())).isTrue();
 
             // Act
-            questionPersistence.deleteById(question1Domain.getId());
-            entityManager.flush();
-            entityManager.clear();
+            deleteById(question1Domain.getId());
 
             // Assert
             assertThat(questionPersistence.existsById(question1Domain.getId())).isFalse();
@@ -454,7 +419,7 @@ public class QuestionPersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should throw IllegalArgumentException when deleting with null ID")
         void deleteById_nullId_shouldThrowException() {
-            assertThatThrownBy(() -> questionPersistence.deleteById(null))
+            assertThatThrownBy(() -> deleteById(null))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("Question ID must not be null or empty");
         }
@@ -462,8 +427,7 @@ public class QuestionPersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("deleteById should not throw error for non-existent ID")
         void deleteById_nonExistentId_shouldNotThrowError() {
-            assertDoesNotThrow(() -> questionPersistence.deleteById(UUID.randomUUID().toString()));
-            entityManager.flush(); // Ensure no exceptions during flush
+            assertDoesNotThrow(() -> deleteById(UUID.randomUUID().toString()));
         }
     }
 
@@ -474,8 +438,7 @@ public class QuestionPersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should return question when found")
         void findById_whenQuestionExists_shouldReturnQuestion() {
             // Arrange
-            questionPersistence.create(question1Domain);
-            entityManager.flush();
+            create(question1Domain);
 
             // Act
             Optional<Question> foundQuestion = questionPersistence.findById(question1Domain.getId());
@@ -512,8 +475,7 @@ public class QuestionPersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should return true when question exists")
         void existsById_whenQuestionExists_shouldReturnTrue() {
             // Arrange
-            questionPersistence.create(question1Domain);
-            entityManager.flush();
+            create(question1Domain);
 
             // Act
             boolean exists = questionPersistence.existsById(question1Domain.getId());
@@ -547,10 +509,9 @@ public class QuestionPersistenceTest extends AbstractRepositoryTest {
         @BeforeEach
         void setUpFindAllByProjectId() {
             // Persist test data
-            questionPersistence.create(question1Domain); // project1
-            questionPersistence.create(question2Domain); // project1
-            questionPersistence.create(question3Domain); // project2
-            entityManager.flush();
+            create(question1Domain); // project1
+            create(question2Domain); // project1
+            create(question3Domain); // project2
         }
 
         @Test
@@ -591,17 +552,15 @@ public class QuestionPersistenceTest extends AbstractRepositoryTest {
         }
     }
 
-
     @Nested
     @DisplayName("findAll Method Tests (AbstractPersistence)")
     class FindAllTests {
         @BeforeEach
         void setUpFindAll() {
             // Persist test data
-            questionPersistence.create(question1Domain); // Alpha, project1, authorUser, tags: java, spring
-            questionPersistence.create(question2Domain); // Beta, project1, authorUser, tags: spring, jpa
-            questionPersistence.create(question3Domain); // Gamma, project2, authorUser, tags: java, jpa
-            entityManager.flush();
+            create(question1Domain); // Alpha, project1, authorUser, tags: java, spring
+            create(question2Domain); // Beta, project1, authorUser, tags: spring, jpa
+            create(question3Domain); // Gamma, project2, authorUser, tags: java, jpa
         }
 
         @Test
@@ -660,13 +619,12 @@ public class QuestionPersistenceTest extends AbstractRepositoryTest {
             anotherAuthor.setCreatedAt(Instant.now());
             anotherAuthor.setUpdatedAt(Instant.now());
             anotherAuthor.setRole(UserRole.MEMBER);
-            entityManager.persist(anotherAuthor);
+            entityPersist(anotherAuthor);
 
             Question questionByAnotherAuthor = Question.create(
                     "Question by Another", "Desc", project1Jpa.getId(), anotherAuthor.getId()
             );
-            questionPersistence.create(questionByAnotherAuthor);
-            entityManager.flush();
+            create(questionByAnotherAuthor);
 
 
             SearchQuery query = new SearchQuery(com.sysm.devsync.domain.Page.of(0, 10), "authorId=" + authorUserJpa.getId());
@@ -793,5 +751,20 @@ public class QuestionPersistenceTest extends AbstractRepositoryTest {
             assertThat(result2.items()).extracting(Question::getTitle)
                     .containsExactly("Understanding JPA Fetch Types"); // The last one
         }
+    }
+
+    private void create(Question entity) {
+        questionPersistence.create(entity);
+        flushAndClear();
+    }
+
+    private void update(Question entity) {
+        questionPersistence.update(entity);
+        flushAndClear();
+    }
+
+    private void deleteById(String id) {
+        questionPersistence.deleteById(id);
+        flushAndClear();
     }
 }
