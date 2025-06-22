@@ -251,14 +251,14 @@ class TagServiceTest {
 
     @Test
     @DisplayName("getAllTags should return pagination result from repository")
-    void getAllTags_shouldReturnPaginationResult_fromRepository() {
+    void searchTags_shouldReturnPaginationResult_fromRepository() {
         // Arrange
         SearchQuery query = new SearchQuery(new Page(1, 10,  "asc", "search"), "name");
         Pagination<Tag> expectedPagination = new Pagination<>(1, 10, 0,  Collections.emptyList());
         when(tagPersistence.findAll(query)).thenReturn(expectedPagination);
 
         // Act
-        Pagination<Tag> actualPagination = tagService.getAllTags(query);
+        Pagination<Tag> actualPagination = tagService.searchTags(query);
 
         // Assert
         assertNotNull(actualPagination);

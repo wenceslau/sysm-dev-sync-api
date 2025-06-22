@@ -58,7 +58,7 @@ public class TagService {
                 .orElseThrow(() -> new IllegalArgumentException("Tag not found"));
     }
 
-    public Pagination<Tag> getAllTags(SearchQuery query) {
+    public Pagination<Tag> searchTags(SearchQuery query) {
         return tagPersistence.findAll(query);
     }
 
