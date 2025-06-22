@@ -1,14 +1,15 @@
 package com.sysm.devsync.infrastructure;
 
 import com.sysm.devsync.infrastructure.repositories.*;
-import org.hibernate.type.descriptor.java.ObjectJavaType;
+import com.sysm.devsync.infrastructure.repositories.NoteJpaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 
-import static com.sysm.devsync.infrastructure.Utils.sleep;
-
 @PersistenceTest
 public class AbstractRepositoryTest {
+
+    @Autowired
+    protected CommentJpaRepository commentJpaRepository;
 
     @Autowired
     protected NoteJpaRepository noteJpaRepository;
@@ -35,6 +36,7 @@ public class AbstractRepositoryTest {
     protected TagJpaRepository tagJpaRepository;
 
     protected void clearRepositories() {
+        commentJpaRepository.deleteAllInBatch();
         noteJpaRepository.deleteAllInBatch();
         answerJpaRepository.deleteAllInBatch();
         questionJpaRepository.deleteAllInBatch();

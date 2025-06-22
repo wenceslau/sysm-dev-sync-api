@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static com.sysm.devsync.infrastructure.Utils.sleep;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -173,6 +174,7 @@ public class NotePersistenceTest extends AbstractRepositoryTest {
             notePersistence.create(note1Domain);
             flushAndClear();
 
+            sleep(100); // Ensure updatedAt will be different
 
             // Build updated domain model
             Note updatedDomainNote = Note.build(
@@ -212,7 +214,7 @@ public class NotePersistenceTest extends AbstractRepositoryTest {
             // The implementation throws "Question model must not be null"
             assertThatThrownBy(() -> notePersistence.update(null))
                     .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("Question model must not be null");
+                    .hasMessage("Note model must not be null");
         }
     }
 

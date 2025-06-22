@@ -4,15 +4,10 @@ import com.sysm.devsync.domain.BusinessException;
 import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
-import com.sysm.devsync.domain.enums.QuestionStatus;
 import com.sysm.devsync.domain.models.Note;
-import com.sysm.devsync.domain.models.Question;
 import com.sysm.devsync.domain.persistence.NotePersistencePort;
-import com.sysm.devsync.domain.persistence.QuestionPersistencePort;
 import com.sysm.devsync.infrastructure.repositories.NoteJpaRepository;
-import com.sysm.devsync.infrastructure.repositories.QuestionJpaRepository;
 import com.sysm.devsync.infrastructure.repositories.entities.NoteJpaEntity;
-import com.sysm.devsync.infrastructure.repositories.entities.QuestionJpaEntity;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
@@ -44,7 +39,7 @@ public class NotePersistence extends AbstractPersistence<NoteJpaEntity> implemen
     @Transactional
     public void update(Note model) {
         if (model == null) {
-            throw new IllegalArgumentException("Question model must not be null");
+            throw new IllegalArgumentException("Note model must not be null");
         }
         NoteJpaEntity entity = NoteJpaEntity.fromModel(model);
         repository.save(entity);
