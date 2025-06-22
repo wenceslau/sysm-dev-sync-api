@@ -5,9 +5,13 @@ import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.enums.QuestionStatus;
+import com.sysm.devsync.domain.models.Note;
 import com.sysm.devsync.domain.models.Question;
+import com.sysm.devsync.domain.persistence.NotePersistencePort;
 import com.sysm.devsync.domain.persistence.QuestionPersistencePort;
+import com.sysm.devsync.infrastructure.repositories.NoteJpaRepository;
 import com.sysm.devsync.infrastructure.repositories.QuestionJpaRepository;
+import com.sysm.devsync.infrastructure.repositories.entities.NoteJpaEntity;
 import com.sysm.devsync.infrastructure.repositories.entities.QuestionJpaEntity;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Predicate;
@@ -20,59 +24,59 @@ import java.util.Optional;
 import static com.sysm.devsync.infrastructure.Utils.like;
 
 @Repository
-public class QuestionPersistence extends AbstractPersistence<QuestionJpaEntity> implements QuestionPersistencePort {
+public class NotePersistence extends AbstractPersistence<NoteJpaEntity> implements NotePersistencePort {
 
-    private final QuestionJpaRepository repository;
+    private final NoteJpaRepository repository;
 
-    public QuestionPersistence(QuestionJpaRepository repository) {
+    public NotePersistence(NoteJpaRepository repository) {
         this.repository = repository;
     }
 
     @Transactional
-    public void create(Question model) {
+    public void create(Note model) {
         if (model == null) {
-            throw new IllegalArgumentException("Question model must not be null");
+            throw new IllegalArgumentException("Note model must not be null");
         }
-        QuestionJpaEntity entity = QuestionJpaEntity.fromModel(model);
+        NoteJpaEntity entity = NoteJpaEntity.fromModel(model);
         repository.save(entity);
     }
 
     @Transactional
-    public void update(Question model) {
+    public void update(Note model) {
         if (model == null) {
             throw new IllegalArgumentException("Question model must not be null");
         }
-        QuestionJpaEntity entity = QuestionJpaEntity.fromModel(model);
+        NoteJpaEntity entity = NoteJpaEntity.fromModel(model);
         repository.save(entity);
     }
 
     @Transactional
     public void deleteById(String id) {
         if (id == null || id.isEmpty()) {
-            throw new IllegalArgumentException("Question ID must not be null or empty");
+            throw new IllegalArgumentException("Note ID must not be null or empty");
         }
         repository.deleteById(id);
     }
 
     @Transactional(readOnly = true)
-    public Optional<Question> findById(String id) {
+    public Optional<Note> findById(String id) {
         if (id == null || id.isEmpty()) {
-            throw new IllegalArgumentException("Question ID must not be null or empty");
+            throw new IllegalArgumentException("Note ID must not be null or empty");
         }
         return repository.findById(id)
-                .map(QuestionJpaEntity::toModel);
+                .map(NoteJpaEntity::toModel);
     }
 
     @Transactional(readOnly = true)
     public boolean existsById(String id) {
         if (id == null || id.isEmpty()) {
-            throw new IllegalArgumentException("Question ID must not be null or empty");
+            throw new IllegalArgumentException("Note ID must not be null or empty");
         }
         return repository.existsById(id);
     }
 
     @Transactional(readOnly = true)
-    public Pagination<Question> findAll(SearchQuery query) {
+    public Pagination<Note> findAll(SearchQuery query) {
         var pageableRequest = buildPageRequest(query);
         var specification = buildSpecification(query);
 
@@ -82,36 +86,40 @@ public class QuestionPersistence extends AbstractPersistence<QuestionJpaEntity> 
                 questionPage.getNumber(),
                 questionPage.getSize(),
                 questionPage.getTotalElements(),
-                questionPage.map(QuestionJpaEntity::toModel).toList()
+                questionPage.map(NoteJpaEntity::toModel).toList()
         );
     }
 
-    @Transactional
-    public Pagination<Question> findAllByProjectId(Page page, String projectId) {
+    @Transactional(readOnly = true)
+    public Pagination<Note> findAllByProjectId(Page page, String projectId) {
         if (projectId == null || projectId.isEmpty()) {
-            throw new IllegalArgumentException("Project ID must not be null or empty");
+            throw new IllegalArgumentException("Note ID must not be null or empty");
         }
 
         var pageableRequest = buildPageRequest(page);
-        var questionPage = repository.findAllByProject_Id(projectId, pageableRequest);
+        var notePage = repository.findAllByProject_Id(projectId, pageableRequest);
 
         return new Pagination<>(
-                questionPage.getNumber(),
-                questionPage.getSize(),
-                questionPage.getTotalElements(),
-                questionPage.map(QuestionJpaEntity::toModel).toList()
+                notePage.getNumber(),
+                notePage.getSize(),
+                notePage.getTotalElements(),
+                notePage.map(NoteJpaEntity::toModel).toList()
         );
     }
 
-    protected Predicate createPredicateForField(Root<QuestionJpaEntity> root, CriteriaBuilder crBuilder, String key, String value) {
+    protected Predicate createPredicateForField(Root<NoteJpaEntity> root, CriteriaBuilder crBuilder, String key, String value) {
         return switch (key) {
             case "title" -> crBuilder.like(crBuilder.lower(root.get("title")), like(value));
-            case "description" -> crBuilder.like(crBuilder.lower(root.get("description")), like(value));
-            case "projectId" -> crBuilder.equal(root.get("project").get("id"), value);
+            case "content" -> crBuilder.like(crBuilder.lower(root.get("content")), like(value));
             case "authorId" -> crBuilder.equal(root.get("author").get("id"), value);
-            case "status" -> crBuilder.equal(root.get("status"), QuestionStatus.valueOf(value));
-            case "tagsId" -> crBuilder.equal(root.join("tags").get("id"), value);
-            case "tagsName" -> crBuilder.equal(root.join("tags").get("name"), value);
+            case "projectId" -> crBuilder.equal(root.get("project").get("id"), value);
+            case "version" -> {
+                try {
+                    yield crBuilder.equal(root.get("version"), Integer.parseInt(value));
+                } catch (NumberFormatException e) {
+                    throw new BusinessException("Invalid value for version field: '" + value + "'. Expected an integer.");
+                }
+            }
             default -> throw new BusinessException("Invalid search field provided: '" + key + "'");
         };
     }

@@ -145,10 +145,12 @@ public class WorkspaceJpaEntity {
 
     @PrePersist
     protected void onCreate() {
+        // Intentionally left blank. Timestamps are managed by the domain layer.
     }
 
     @PreUpdate
     protected void onUpdate() {
+        // Intentionally left blank. Timestamps are managed by the domain layer.
     }
 
     public static WorkspaceJpaEntity fromModel(Workspace workspace) {

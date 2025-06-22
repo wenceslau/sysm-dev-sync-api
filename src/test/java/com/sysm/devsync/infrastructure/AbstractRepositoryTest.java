@@ -11,6 +11,9 @@ import static com.sysm.devsync.infrastructure.Utils.sleep;
 public class AbstractRepositoryTest {
 
     @Autowired
+    protected NoteJpaRepository noteJpaRepository;
+
+    @Autowired
     protected TestEntityManager entityManager;
 
     @Autowired
@@ -32,6 +35,7 @@ public class AbstractRepositoryTest {
     protected TagJpaRepository tagJpaRepository;
 
     protected void clearRepositories() {
+        noteJpaRepository.deleteAllInBatch();
         answerJpaRepository.deleteAllInBatch();
         questionJpaRepository.deleteAllInBatch();
         projectJpaRepository.deleteAllInBatch();

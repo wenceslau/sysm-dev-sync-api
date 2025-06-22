@@ -136,10 +136,12 @@ public class UserJpaEntity {
 
     @PrePersist
     protected void onCreate() {
+        // Intentionally left blank. Timestamps are managed by the domain layer.
     }
 
     @PreUpdate
     protected void onUpdate() {
+        // Intentionally left blank. Timestamps are managed by the domain layer.
     }
 
     public static UserJpaEntity fromModel(User user) {
