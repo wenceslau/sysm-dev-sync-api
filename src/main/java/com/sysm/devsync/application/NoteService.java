@@ -1,5 +1,6 @@
 package com.sysm.devsync.application;
 
+import com.sysm.devsync.domain.NotFoundException;
 import com.sysm.devsync.infrastructure.controller.dto.CreateResponse;
 import com.sysm.devsync.infrastructure.controller.dto.request.NoteCreateUpdate;
 import com.sysm.devsync.domain.Pagination;
@@ -30,12 +31,12 @@ public class NoteService {
 
         var exist = projectPersistence.existsById(noteCreateUpdate.projectId());
         if (!exist) {
-            throw new IllegalArgumentException("Project not found");
+            throw new NotFoundException("Project not found", noteCreateUpdate.projectId());
         }
 
         var userExists = userPersistence.existsById(authorId);
         if (!userExists) {
-            throw new IllegalArgumentException("User not found");
+            throw new NotFoundException("User not found", authorId);
         }
 
         var note = Note.create(
@@ -51,7 +52,7 @@ public class NoteService {
 
     public void updateNote(String noteId, NoteCreateUpdate noteUpdate) {
         var note = notePersistence.findById(noteId)
-                .orElseThrow(() -> new IllegalArgumentException("Note not found"));
+                .orElseThrow(() -> new NotFoundException("Note not found", noteId));
 
         note.update(
                 noteUpdate.title(),
@@ -63,7 +64,7 @@ public class NoteService {
 
     public void updateNoteContent(String noteId, NoteCreateUpdate noteUpdate) {
         var note = notePersistence.findById(noteId)
-                .orElseThrow(() -> new IllegalArgumentException("Note not found"));
+                .orElseThrow(() -> new NotFoundException("Note not found", noteId));
 
         note.updateContent(noteUpdate.content());
 
@@ -72,11 +73,11 @@ public class NoteService {
 
     public void addTagToNote(String noteId, String tagId) {
         var note = notePersistence.findById(noteId)
-                .orElseThrow(() -> new IllegalArgumentException("Note not found"));
+                .orElseThrow(() -> new NotFoundException("Note not found", noteId));
 
         var exists = tagPersistence.existsById(tagId);
         if (!exists) {
-            throw new IllegalArgumentException("Tag not found");
+            throw new NotFoundException("Tag not found", tagId);
         }
 
         note.addTag(tagId);
@@ -85,11 +86,11 @@ public class NoteService {
 
     public void removeTagFromNote(String noteId, String tagId) {
         var note = notePersistence.findById(noteId)
-                .orElseThrow(() -> new IllegalArgumentException("Note not found"));
+                .orElseThrow(() -> new NotFoundException("Note not found", noteId));
 
         var exists = tagPersistence.existsById(tagId);
         if (!exists) {
-            throw new IllegalArgumentException("Tag not found");
+            throw new NotFoundException("Tag not found", tagId);
         }
 
         note.removeTag(tagId);
@@ -100,7 +101,7 @@ public class NoteService {
         var exists = notePersistence.existsById(noteId);
 
         if (!exists) {
-            throw new IllegalArgumentException("Note not found");
+            throw new NotFoundException("Note not found", noteId);
         }
 
         notePersistence.deleteById(noteId);
@@ -108,7 +109,7 @@ public class NoteService {
 
     public Note getNoteById(String noteId) {
         return notePersistence.findById(noteId)
-                .orElseThrow(() -> new IllegalArgumentException("Note not found"));
+                .orElseThrow(() -> new NotFoundException("Note not found", noteId));
     }
 
     public Pagination<Note> getAllNotes(SearchQuery query) {
@@ -121,7 +122,7 @@ public class NoteService {
     public Pagination<Note> getAllNotes(Page page, String projectId) {
         var exists = projectPersistence.existsById(projectId);
         if (!exists) {
-            throw new IllegalArgumentException("Project not found");
+            throw new NotFoundException("Project not found", projectId);
         }
 
         return notePersistence.findAllByProjectId(page, projectId);

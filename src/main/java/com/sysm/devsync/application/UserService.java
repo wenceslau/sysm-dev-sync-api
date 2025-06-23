@@ -1,5 +1,6 @@
 package com.sysm.devsync.application;
 
+import com.sysm.devsync.domain.NotFoundException;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.models.User;
@@ -28,7 +29,7 @@ public class UserService {
 
     public void updateUser(String userId, UserCreateUpdate userUpdate) {
         User user = userPersistence.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new NotFoundException("User not found", userId));
 
         user.update(
                 userUpdate.name(),
@@ -45,7 +46,7 @@ public class UserService {
 
     public void updateUserPatch(String userId, UserCreateUpdate userUpdate) {
         User user = userPersistence.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new NotFoundException("User not found", userId));
 
         if (StringUtils.hasText(userUpdate.name())) {
             user.updateName(userUpdate.name());
@@ -64,12 +65,15 @@ public class UserService {
     }
 
     public void deleteUser(String userId) {
+        if (!userPersistence.existsById(userId)) {
+            throw new NotFoundException("User not found", userId);
+        }
         userPersistence.deleteById(userId);
     }
 
     public User getUserById(String userId) {
         return userPersistence.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new NotFoundException("User not found", userId));
     }
 
     public Pagination<User> getAllUsers(SearchQuery query) {

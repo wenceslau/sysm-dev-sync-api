@@ -39,7 +39,7 @@ public class WorkspaceService {
 
     public void updateWorkspace(String workspaceId, WorkspaceCreateUpdate workspaceUpdate) {
         Workspace workspace = workspacePersistence.findById(workspaceId)
-                .orElseThrow(() -> new IllegalArgumentException("Workspace not found"));
+                .orElseThrow(() -> new NotFoundException("Workspace not found", workspaceId));
 
         workspace.update(
                 workspaceUpdate.name(),
@@ -51,7 +51,7 @@ public class WorkspaceService {
 
     public void changeWorkspacePrivacy(String workspaceId, boolean isPrivate) {
         Workspace workspace = workspacePersistence.findById(workspaceId)
-                .orElseThrow(() -> new IllegalArgumentException("Workspace not found"));
+                .orElseThrow(() -> new NotFoundException("Workspace not found", workspaceId));
 
         workspace.setPrivate(isPrivate);
         workspacePersistence.update(workspace);
@@ -59,11 +59,11 @@ public class WorkspaceService {
 
     public void addMemberToWorkspace(String workspaceId, String memberId) {
         Workspace workspace = workspacePersistence.findById(workspaceId)
-                .orElseThrow(() -> new IllegalArgumentException("Workspace not found"));
+                .orElseThrow(() -> new NotFoundException("Workspace not found", workspaceId));
 
         var exist = userPersistence.existsById(memberId);
         if (!exist){
-            throw new IllegalArgumentException("Member not found");
+            throw new NotFoundException("Member not found", memberId);
         }
 
         workspace.addMember(memberId);
@@ -73,10 +73,10 @@ public class WorkspaceService {
 
     public void removeMemberFromWorkspace(String workspaceId, String memberId) {
         Workspace workspace = workspacePersistence.findById(workspaceId)
-                .orElseThrow(() -> new IllegalArgumentException("Workspace not found"));
+                .orElseThrow(() -> new NotFoundException("Workspace not found", workspaceId));
 
         if (!workspace.getMembersId().contains(memberId)) {
-            throw new IllegalArgumentException("Member not found in workspace");
+            throw new NotFoundException("Member not found in workspace", memberId);
         }
         workspace.getMembersId().remove(memberId);
 
@@ -85,11 +85,11 @@ public class WorkspaceService {
 
     public void changeOwnerOfWorkspace(String workspaceId, String newOwnerId) {
         Workspace workspace = workspacePersistence.findById(workspaceId)
-                .orElseThrow(() -> new IllegalArgumentException("Workspace not found"));
+                .orElseThrow(() -> new NotFoundException("Workspace not found", workspaceId));
 
         var exist = userPersistence.existsById(newOwnerId);
         if (!exist){
-            throw new IllegalArgumentException("New owner not found");
+            throw new NotFoundException("New owner not found", newOwnerId);
         }
 
         workspace.changeOwner(newOwnerId);
@@ -97,12 +97,15 @@ public class WorkspaceService {
     }
 
     public void deleteWorkspace(String workspaceId) {
+        if (!workspacePersistence.existsById(workspaceId)) {
+            throw new NotFoundException("Workspace not found", workspaceId);
+        }
         workspacePersistence.deleteById(workspaceId);
     }
 
     public Workspace getWorkspaceById(String workspaceId) {
         return workspacePersistence.findById(workspaceId)
-                .orElseThrow(() -> new IllegalArgumentException("Workspace not found"));
+                .orElseThrow(() -> new NotFoundException("Workspace not found", workspaceId));
     }
 
     public Pagination<Workspace> getAllWorkspaces(SearchQuery query) {

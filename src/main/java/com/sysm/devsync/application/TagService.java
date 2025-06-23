@@ -1,5 +1,6 @@
 package com.sysm.devsync.application;
 
+import com.sysm.devsync.domain.NotFoundException;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.models.Tag;
@@ -34,7 +35,7 @@ public class TagService {
 
     public void updateTag(String tagId, TagCreateUpdate tagCreateUpdate) {
         Tag tag = tagPersistence.findById(tagId)
-                .orElseThrow(() -> new IllegalArgumentException("Tag not found"));
+                .orElseThrow(() -> new NotFoundException("Tag not found", tagId));
 
         tag.update(tagCreateUpdate.name(), tagCreateUpdate.color());
 
@@ -50,12 +51,15 @@ public class TagService {
     }
 
     public void deleteTag(String tagId) {
+        if (!tagPersistence.existsById(tagId)) {
+            throw new NotFoundException("Tag not found", tagId);
+        }
         tagPersistence.deleteById(tagId);
     }
 
     public Tag getTagById(String tagId) {
         return tagPersistence.findById(tagId)
-                .orElseThrow(() -> new IllegalArgumentException("Tag not found"));
+                .orElseThrow(() -> new NotFoundException("Tag not found", tagId));
     }
 
     public Pagination<Tag> searchTags(SearchQuery query) {
