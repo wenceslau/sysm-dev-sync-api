@@ -4,7 +4,7 @@ import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.models.Tag;
-import com.sysm.devsync.infrastructure.controller.dto.CreateResponse;
+import com.sysm.devsync.infrastructure.controller.dto.response.CreateResponse;
 import com.sysm.devsync.infrastructure.controller.dto.request.TagCreateUpdate;
 import com.sysm.devsync.domain.persistence.TagPersistencePort;
 import org.junit.jupiter.api.BeforeEach;

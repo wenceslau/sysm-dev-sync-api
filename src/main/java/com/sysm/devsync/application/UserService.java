@@ -4,7 +4,7 @@ import com.sysm.devsync.domain.NotFoundException;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.models.User;
-import com.sysm.devsync.infrastructure.controller.dto.CreateResponse;
+import com.sysm.devsync.infrastructure.controller.dto.response.CreateResponse;
 import com.sysm.devsync.infrastructure.controller.dto.request.UserCreateUpdate;
 import com.sysm.devsync.domain.persistence.UserPersistencePort;
 import org.springframework.util.StringUtils;
@@ -76,7 +76,7 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("User not found", userId));
     }
 
-    public Pagination<User> getAllUsers(SearchQuery query) {
+    public Pagination<User> searchUsers(SearchQuery query) {
         return userPersistence.findAll(query);
     }
 

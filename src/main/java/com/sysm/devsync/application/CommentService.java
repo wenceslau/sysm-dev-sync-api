@@ -1,6 +1,6 @@
 package com.sysm.devsync.application;
 
-import com.sysm.devsync.infrastructure.controller.dto.CreateResponse;
+import com.sysm.devsync.infrastructure.controller.dto.response.CreateResponse;
 import com.sysm.devsync.infrastructure.controller.dto.request.CommentCreateUpdate;
 import com.sysm.devsync.domain.NotFoundException;
 import com.sysm.devsync.domain.Pagination;

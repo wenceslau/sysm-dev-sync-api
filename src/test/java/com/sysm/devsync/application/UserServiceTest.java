@@ -5,7 +5,7 @@ import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.enums.UserRole;
 import com.sysm.devsync.domain.models.User;
-import com.sysm.devsync.infrastructure.controller.dto.CreateResponse;
+import com.sysm.devsync.infrastructure.controller.dto.response.CreateResponse;
 import com.sysm.devsync.infrastructure.controller.dto.request.UserCreateUpdate;
 import com.sysm.devsync.domain.persistence.UserPersistencePort;
 import org.junit.jupiter.api.*;
@@ -410,14 +410,14 @@ class UserServiceTest {
 
     @Test
     @DisplayName("getAllUsers should return pagination result from repository")
-    void getAllUsers_shouldReturnPaginationResult_fromRepository() {
+    void searchUsers_shouldReturnPaginationResult_fromRepository() {
         // Arrange
         SearchQuery query = new SearchQuery(new Page(1, 10,  "asc", "search"), "name");
         Pagination<User> expectedPagination = new Pagination<>(1, 10, 0L, Collections.emptyList()); // Ensure totalElements is Long
         when(userPersistence.findAll(query)).thenReturn(expectedPagination);
 
         // Act
-        Pagination<User> actualPagination = userService.getAllUsers(query);
+        Pagination<User> actualPagination = userService.searchUsers(query);
 
         // Assert
         assertNotNull(actualPagination);

@@ -106,7 +106,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, status);
     }
 
-
     /**
      * A catch-all handler for any other unhandled exceptions.
      * This prevents stack traces from being exposed to the client.
