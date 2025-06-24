@@ -22,18 +22,19 @@ public class Question extends AbstractModel {
     private Instant updatedAt;
 
 
-    private Question(String id, Instant createdAt, String projectId,
-                     String authorId, Set<String> tagsId, String title,
-                     String description, QuestionStatus status, Instant updatedAt) {
+    // The private constructor with the new, matching order
+    private Question(String id, Instant createdAt, Instant updatedAt, String title,
+                     String description, Set<String> tagsId, String projectId,
+                     String authorId, QuestionStatus status) {
         this.id = id;
         this.createdAt = createdAt;
-        this.projectId = projectId;
-        this.authorId = authorId;
-        this.tagsId = tagsId;
+        this.updatedAt = updatedAt;
         this.title = title;
         this.description = description;
+        this.tagsId = tagsId;
+        this.projectId = projectId;
+        this.authorId = authorId;
         this.status = status;
-        this.updatedAt = updatedAt;
         validate();
     }
 
@@ -140,13 +141,13 @@ public class Question extends AbstractModel {
         return new Question(
                 id,
                 now,
+                now,
                 projectId,
                 authorId,
                 new HashSet<>(),
                 title,
                 description,
-                QuestionStatus.OPEN,
-                now
+                QuestionStatus.OPEN
         );
     }
 
@@ -156,13 +157,13 @@ public class Question extends AbstractModel {
         return new Question(
                 id,
                 createdAt,
+                updatedAt,
                 projectId,
                 authorId,
                 new HashSet<>(tags),
                 title,
                 description,
-                questionStatus,
-                updatedAt
+                questionStatus
         );
     }
 }
