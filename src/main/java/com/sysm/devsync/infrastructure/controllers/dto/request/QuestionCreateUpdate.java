@@ -1,11 +1,14 @@
 package com.sysm.devsync.infrastructure.controllers.dto.request;
 
-import com.sysm.devsync.domain.enums.QuestionStatus;
+import jakarta.validation.constraints.NotBlank;
 
 public record QuestionCreateUpdate(
+        @NotBlank(message = "Question title must not be blank")
         String title,
+
+        @NotBlank(message = "Question description must not be blank")
         String description,
-        String projectId,
-        QuestionStatus status
-) {
-}
+
+        @NotBlank(message = "Project ID must be provided")
+        String projectId
+) {}

@@ -61,8 +61,7 @@ class QuestionServiceTest {
         questionCreateUpdateDto = new QuestionCreateUpdate(
                 "Test Question Title",
                 "Detailed description of the test question.",
-                projectId,
-                QuestionStatus.OPEN // Assuming QuestionCreateUpdate might have status for creation, or it's defaulted
+                projectId
         );
         mockQuestion = mock(Question.class);
     }
@@ -130,7 +129,7 @@ class QuestionServiceTest {
     @DisplayName("updateQuestion should update existing question")
     void updateQuestion_shouldUpdateExistingQuestion() {
         // Arrange
-        QuestionCreateUpdate updateDto = new QuestionCreateUpdate("Updated Title", "Updated Desc", null, null);
+        QuestionCreateUpdate updateDto = new QuestionCreateUpdate("Updated Title", "Updated Desc", null);
         when(questionPersistence.findById(questionId)).thenReturn(Optional.of(mockQuestion));
 
         // Act
@@ -146,7 +145,7 @@ class QuestionServiceTest {
     @DisplayName("updateQuestion should throw NotFoundException when question not found")
     void updateQuestion_shouldThrowNotFoundException_whenQuestionNotFound() {
         // Arrange
-        QuestionCreateUpdate updateDto = new QuestionCreateUpdate("Updated Title", "Updated Desc", null, null);
+        QuestionCreateUpdate updateDto = new QuestionCreateUpdate("Updated Title", "Updated Desc", null);
         when(questionPersistence.findById(questionId)).thenReturn(Optional.empty());
 
         // Act & Assert
