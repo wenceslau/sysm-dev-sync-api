@@ -78,7 +78,7 @@ public class WorkspaceService {
         if (!workspace.getMembersId().contains(memberId)) {
             throw new NotFoundException("Member not found in workspace", memberId);
         }
-        workspace.getMembersId().remove(memberId);
+        workspace.removeMember(memberId);
 
         workspacePersistence.update(workspace);
     }

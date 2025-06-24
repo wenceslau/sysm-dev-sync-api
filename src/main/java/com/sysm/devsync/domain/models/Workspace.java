@@ -87,6 +87,16 @@ public class Workspace extends AbstractModel {
         this.membersId.add(userId);
     }
 
+    public void removeMember(String userId) {
+        if (userId == null) {
+            throw new IllegalArgumentException("User cannot be null");
+        }
+        if (membersId == null) {
+            throw new IllegalArgumentException("Members cannot be null");
+        }
+        this.membersId.remove(userId);
+    }
+
     public String getId() {
         return id;
     }

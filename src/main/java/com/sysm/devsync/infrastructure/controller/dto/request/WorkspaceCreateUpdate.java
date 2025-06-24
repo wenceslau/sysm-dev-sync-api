@@ -1,8 +1,16 @@
 package com.sysm.devsync.infrastructure.controller.dto.request;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 public record WorkspaceCreateUpdate(
+        @NotBlank(message = "Workspace name must not be blank")
         String name,
+
+        @NotBlank(message = "Workspace description must not be blank")
         String description,
-        boolean isPrivate
+
+        @NotNull(message = "Privacy setting must be provided")
+        Boolean isPrivate
 ) {
 }

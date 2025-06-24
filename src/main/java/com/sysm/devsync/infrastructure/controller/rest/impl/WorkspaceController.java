@@ -1,0 +1,91 @@
+package com.sysm.devsync.infrastructure.controller.rest.impl;
+
+import com.sysm.devsync.application.WorkspaceService;
+import com.sysm.devsync.domain.Page;
+import com.sysm.devsync.domain.Pagination;
+import com.sysm.devsync.domain.SearchQuery;
+import com.sysm.devsync.infrastructure.controller.dto.request.WorkspaceCreateUpdate;
+import com.sysm.devsync.infrastructure.controller.dto.response.WorkspaceResponse;
+import com.sysm.devsync.infrastructure.controller.rest.WorkspaceAPI;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import java.net.URI;
+
+@RestController
+public class WorkspaceController implements WorkspaceAPI {
+
+    private final WorkspaceService workspaceService;
+
+    // For now, we'll hardcode the ownerId. In a real app, this would come from security context.
+    private static final String FAKE_AUTHENTICATED_USER_ID = "036dc698-3b84-49e1-8999-25e57bcb7a8a";
+
+    public WorkspaceController(WorkspaceService workspaceService) {
+        this.workspaceService = workspaceService;
+    }
+
+    @Override
+    public ResponseEntity<?> create(@Valid @RequestBody WorkspaceCreateUpdate request) {
+        var response = workspaceService.createWorkspace(request, FAKE_AUTHENTICATED_USER_ID);
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(response.id())
+                .toUri();
+        return ResponseEntity.created(location).body(response);
+    }
+
+    @Override
+    public ResponseEntity<WorkspaceResponse> getById(String id) {
+        var workspace = workspaceService.getWorkspaceById(id);
+        return ResponseEntity.ok(WorkspaceResponse.from(workspace));
+    }
+
+    @Override
+    public Pagination<WorkspaceResponse> search(int pageNumber, int pageSize, String sort, String direction, String terms) {
+        var page = Page.of(pageNumber, pageSize, sort, direction);
+        var searchQuery = new SearchQuery(page, terms);
+        return workspaceService.getAllWorkspaces(searchQuery).map(WorkspaceResponse::from);
+    }
+
+    @Override
+    public ResponseEntity<?> update(String id, @Valid @RequestBody WorkspaceCreateUpdate request) {
+        workspaceService.updateWorkspace(id, request);
+        return ResponseEntity.noContent().build();
+    }
+
+
+
+    @Override
+    public ResponseEntity<?> delete(String id) {
+        workspaceService.deleteWorkspace(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    public ResponseEntity<?> changePrivacy(String id, boolean isPrivate) {
+        workspaceService.changeWorkspacePrivacy(id, isPrivate);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    public ResponseEntity<?> addMember(String id, String memberId) {
+        workspaceService.addMemberToWorkspace(id, memberId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    public ResponseEntity<?> removeMember(String id, String memberId) {
+        workspaceService.removeMemberFromWorkspace(id, memberId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    public ResponseEntity<?> changeOwner(String id, String newOwnerId) {
+        workspaceService.changeOwnerOfWorkspace(id, newOwnerId);
+        return ResponseEntity.noContent().build();
+    }
+}
