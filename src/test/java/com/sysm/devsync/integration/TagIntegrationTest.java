@@ -13,7 +13,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 public class TagIntegrationTest extends AbstractIntegrationTest {
@@ -56,10 +59,19 @@ public class TagIntegrationTest extends AbstractIntegrationTest {
         var requestJson = objectMapper.writeValueAsString(requestDto);
 
         // Act & Assert
-        mockMvc.perform(post("/tags")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestJson))
-                .andExpect(status().isBadRequest());
+
+        var content = post("/tags")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson);
+
+        final var response = this.mockMvc.perform(content)
+                .andDo(print());
+
+        response.andExpect(status().isBadRequest())
+                .andExpect(header().string("Location", nullValue()))
+                .andExpect(header().string("Content-Type", MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(jsonPath("$.validationErrors.name[0]", equalTo("Tag name must not be blank")));
+
     }
 
     @Test

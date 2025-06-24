@@ -47,3 +47,24 @@ logging:
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Add this new section to your application.yaml
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html   # The path to access the Swagger UI. This is the default. http://localhost:8080/swagger-ui.html,
+    disable-swagger-default-url: true # Disables the petstore example API from showing up.
+    display-request-duration: true    # Shows how long each API call took.
+    operations-sorter: method         # Sorts endpoints by HTTP method (GET, POST, etc.).
+  api-docs:
+    path: /v3/api-docs       # The path to the raw OpenAPI 3 spec. This is the default. http://localhost:8080/v3/api-docs
+  info:
+    title: "DevSync API"
+    description: "API documentation for the DevSync project management application."
+    version: "v1.0.0"
+    contact:
+      name: "Wenceslau Neto"
+      email: "wbaneto@gmail.com"
+
+
+#
