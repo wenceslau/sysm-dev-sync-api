@@ -1,8 +1,8 @@
-package com.sysm.devsync.infrastructure.controller.rest;
+package com.sysm.devsync.infrastructure.controllers.rest;
 
 import com.sysm.devsync.domain.Pagination;
-import com.sysm.devsync.infrastructure.controller.dto.request.TagCreateUpdate;
-import com.sysm.devsync.infrastructure.controller.dto.response.TagResponse;
+import com.sysm.devsync.infrastructure.controllers.dto.request.TagCreateUpdate;
+import com.sysm.devsync.infrastructure.controllers.dto.response.TagResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;

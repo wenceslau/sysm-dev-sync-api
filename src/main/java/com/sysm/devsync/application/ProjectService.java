@@ -1,8 +1,8 @@
 package com.sysm.devsync.application;
 
 import com.sysm.devsync.domain.NotFoundException;
-import com.sysm.devsync.infrastructure.controller.dto.response.CreateResponse;
-import com.sysm.devsync.infrastructure.controller.dto.request.ProjectCreateUpdate;
+import com.sysm.devsync.infrastructure.controllers.dto.response.CreateResponse;
+import com.sysm.devsync.infrastructure.controllers.dto.request.ProjectCreateUpdate;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.models.Project;

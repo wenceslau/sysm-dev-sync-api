@@ -1,12 +1,12 @@
-package com.sysm.devsync.infrastructure.controller.rest.impl;
+package com.sysm.devsync.infrastructure.controllers.rest.impl;
 
 import com.sysm.devsync.application.TagService;
 import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
-import com.sysm.devsync.infrastructure.controller.dto.request.TagCreateUpdate;
-import com.sysm.devsync.infrastructure.controller.dto.response.TagResponse;
-import com.sysm.devsync.infrastructure.controller.rest.TagAPI;
+import com.sysm.devsync.infrastructure.controllers.dto.request.TagCreateUpdate;
+import com.sysm.devsync.infrastructure.controllers.dto.response.TagResponse;
+import com.sysm.devsync.infrastructure.controllers.rest.TagAPI;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;

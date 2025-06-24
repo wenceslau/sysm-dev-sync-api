@@ -1,4 +1,4 @@
-package com.sysm.devsync.infrastructure.controller.dto.request;
+package com.sysm.devsync.infrastructure.controllers.dto.request;
 
 import com.sysm.devsync.domain.enums.UserRole;
 import jakarta.validation.constraints.Email;

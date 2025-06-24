@@ -1,12 +1,12 @@
-package com.sysm.devsync.infrastructure.controller.rest.impl;
+package com.sysm.devsync.infrastructure.controllers.rest.impl;
 
 import com.sysm.devsync.application.WorkspaceService;
 import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
-import com.sysm.devsync.infrastructure.controller.dto.request.WorkspaceCreateUpdate;
-import com.sysm.devsync.infrastructure.controller.dto.response.WorkspaceResponse;
-import com.sysm.devsync.infrastructure.controller.rest.WorkspaceAPI;
+import com.sysm.devsync.infrastructure.controllers.dto.request.WorkspaceCreateUpdate;
+import com.sysm.devsync.infrastructure.controllers.dto.response.WorkspaceResponse;
+import com.sysm.devsync.infrastructure.controllers.rest.WorkspaceAPI;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;

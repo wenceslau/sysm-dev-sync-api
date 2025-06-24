@@ -1,12 +1,12 @@
-package com.sysm.devsync.infrastructure.controller.rest.impl;
+package com.sysm.devsync.infrastructure.controllers.rest.impl;
 
 import com.sysm.devsync.application.UserService;
 import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
-import com.sysm.devsync.infrastructure.controller.dto.request.UserCreateUpdate;
-import com.sysm.devsync.infrastructure.controller.dto.response.UserResponse;
-import com.sysm.devsync.infrastructure.controller.rest.UserAPI;
+import com.sysm.devsync.infrastructure.controllers.dto.request.UserCreateUpdate;
+import com.sysm.devsync.infrastructure.controllers.dto.response.UserResponse;
+import com.sysm.devsync.infrastructure.controllers.rest.UserAPI;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;

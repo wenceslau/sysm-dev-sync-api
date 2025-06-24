@@ -2,7 +2,7 @@ package com.sysm.devsync.integration;
 
 import com.sysm.devsync.domain.enums.UserRole;
 import com.sysm.devsync.domain.models.User;
-import com.sysm.devsync.infrastructure.controller.dto.request.UserCreateUpdate;
+import com.sysm.devsync.infrastructure.controllers.dto.request.UserCreateUpdate;
 import com.sysm.devsync.infrastructure.repositories.UserJpaRepository;
 import com.sysm.devsync.infrastructure.repositories.entities.UserJpaEntity;
 import org.junit.jupiter.api.DisplayName;

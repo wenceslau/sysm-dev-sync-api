@@ -4,8 +4,8 @@ import com.sysm.devsync.domain.NotFoundException;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.models.User;
-import com.sysm.devsync.infrastructure.controller.dto.response.CreateResponse;
-import com.sysm.devsync.infrastructure.controller.dto.request.UserCreateUpdate;
+import com.sysm.devsync.infrastructure.controllers.dto.response.CreateResponse;
+import com.sysm.devsync.infrastructure.controllers.dto.request.UserCreateUpdate;
 import com.sysm.devsync.domain.persistence.UserPersistencePort;
 import org.springframework.util.StringUtils;
 

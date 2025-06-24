@@ -1,7 +1,7 @@
 package com.sysm.devsync.integration;
 
 import com.sysm.devsync.domain.models.Tag; // Import Tag domain model
-import com.sysm.devsync.infrastructure.controller.dto.request.TagCreateUpdate;
+import com.sysm.devsync.infrastructure.controllers.dto.request.TagCreateUpdate;
 import com.sysm.devsync.infrastructure.repositories.TagJpaRepository;
 import com.sysm.devsync.infrastructure.repositories.entities.TagJpaEntity;
 import org.junit.jupiter.api.DisplayName;

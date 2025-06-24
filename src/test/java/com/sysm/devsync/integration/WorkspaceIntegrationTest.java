@@ -3,7 +3,7 @@ package com.sysm.devsync.integration;
 import com.sysm.devsync.domain.enums.UserRole;
 import com.sysm.devsync.domain.models.User;
 import com.sysm.devsync.domain.models.Workspace;
-import com.sysm.devsync.infrastructure.controller.dto.request.WorkspaceCreateUpdate;
+import com.sysm.devsync.infrastructure.controllers.dto.request.WorkspaceCreateUpdate;
 import com.sysm.devsync.infrastructure.repositories.UserJpaRepository;
 import com.sysm.devsync.infrastructure.repositories.WorkspaceJpaRepository;
 import com.sysm.devsync.infrastructure.repositories.entities.UserJpaEntity;
@@ -16,7 +16,6 @@ import org.springframework.http.MediaType;
 
 import java.time.Instant;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.equalTo;

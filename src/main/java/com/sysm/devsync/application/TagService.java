@@ -4,8 +4,8 @@ import com.sysm.devsync.domain.NotFoundException;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.models.Tag;
-import com.sysm.devsync.infrastructure.controller.dto.response.CreateResponse;
-import com.sysm.devsync.infrastructure.controller.dto.request.TagCreateUpdate;
+import com.sysm.devsync.infrastructure.controllers.dto.response.CreateResponse;
+import com.sysm.devsync.infrastructure.controllers.dto.request.TagCreateUpdate;
 import com.sysm.devsync.domain.persistence.TagPersistencePort;
 import org.springframework.util.StringUtils;
 

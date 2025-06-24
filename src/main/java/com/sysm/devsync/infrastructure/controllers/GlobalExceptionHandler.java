@@ -1,8 +1,8 @@
-package com.sysm.devsync.infrastructure.controller;
+package com.sysm.devsync.infrastructure.controllers;
 
 import com.sysm.devsync.domain.BusinessException;
 import com.sysm.devsync.domain.NotFoundException;
-import com.sysm.devsync.infrastructure.controller.dto.response.ErrorResponse;
+import com.sysm.devsync.infrastructure.controllers.dto.response.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
