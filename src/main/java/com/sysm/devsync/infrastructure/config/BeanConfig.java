@@ -1,11 +1,7 @@
 package com.sysm.devsync.infrastructure.config;
 
-import com.sysm.devsync.application.TagService;
-import com.sysm.devsync.application.UserService;
-import com.sysm.devsync.application.WorkspaceService;
-import com.sysm.devsync.domain.persistence.TagPersistencePort;
-import com.sysm.devsync.domain.persistence.UserPersistencePort;
-import com.sysm.devsync.domain.persistence.WorkspacePersistencePort;
+import com.sysm.devsync.application.*;
+import com.sysm.devsync.domain.persistence.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -23,8 +19,25 @@ public class BeanConfig {
     }
 
     @Bean
-    public WorkspaceService workspaceService(WorkspacePersistencePort workspacePersistencePort, UserPersistencePort userPersistencePort){
+    public WorkspaceService workspaceService(WorkspacePersistencePort workspacePersistencePort, UserPersistencePort userPersistencePort) {
         return new WorkspaceService(workspacePersistencePort, userPersistencePort);
+    }
+
+    @Bean
+    public ProjectService projectService(WorkspacePersistencePort workspacePersistencePort, ProjectPersistencePort projectPersistencePort) {
+        return new ProjectService(projectPersistencePort, workspacePersistencePort);
+    }
+
+    @Bean
+    public QuestionService questionService(QuestionPersistencePort questionPersistencePort,
+                                           ProjectPersistencePort projectPersistencePort,
+                                           TagPersistencePort tagPersistencePort,
+                                           UserPersistencePort userPersistencePort) {
+        return new QuestionService(questionPersistencePort,
+                projectPersistencePort,
+                tagPersistencePort,
+                userPersistencePort);
+
     }
 
 }

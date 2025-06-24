@@ -9,7 +9,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
 @Entity(name = "Project")
-@Table(name = "projecs")
+@Table(name = "projects")
 public class ProjectJpaEntity {
 
     @Id
@@ -98,7 +98,7 @@ public class ProjectJpaEntity {
     }
 
     public final String toString() {
-        return "WorkspaceJpaEntity{" +
+        return "ProjectJpaEntity{" +
                "id='" + id + '\'' +
                ", name='" + name + '\'' +
                ", description='" + description + '\'' +
