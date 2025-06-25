@@ -1,0 +1,226 @@
+package com.sysm.devsync.integration;
+
+import com.sysm.devsync.domain.enums.UserRole;
+import com.sysm.devsync.domain.models.Project;
+import com.sysm.devsync.domain.models.Tag;
+import com.sysm.devsync.domain.models.User;
+import com.sysm.devsync.domain.models.Workspace;
+import com.sysm.devsync.infrastructure.controllers.dto.request.NoteCreateUpdate;
+import com.sysm.devsync.infrastructure.repositories.*;
+import com.sysm.devsync.infrastructure.repositories.entities.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+
+import java.time.Instant;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+public class NoteIntegrationTest extends AbstractIntegrationTest {
+
+    @Autowired
+    private NoteJpaRepository noteJpaRepository;
+    @Autowired
+    private ProjectJpaRepository projectJpaRepository;
+    @Autowired
+    private UserJpaRepository userJpaRepository;
+    @Autowired
+    private TagJpaRepository tagJpaRepository;
+    @Autowired
+    private WorkspaceJpaRepository workspaceJpaRepository;
+
+    // This ID is hardcoded in the controller for the "authenticated" user
+    private static final String FAKE_AUTHENTICATED_USER_ID = "036dc698-3b84-49e1-8999-25e57bcb7a8a";
+
+    private UserJpaEntity testAuthor;
+    private ProjectJpaEntity testProject;
+    private TagJpaEntity testTag;
+
+    @BeforeEach
+    void setUp() {
+        // Clean all relevant repositories to ensure test isolation
+        noteJpaRepository.deleteAll();
+        tagJpaRepository.deleteAll();
+        projectJpaRepository.deleteAll();
+        workspaceJpaRepository.deleteAll();
+        userJpaRepository.deleteAll();
+
+        // 1. Create a user to be the author
+        testAuthor = userJpaRepository.saveAndFlush(UserJpaEntity.fromModel(User.create("Test Author", "author@test.com", UserRole.MEMBER)));
+
+        // 2. Ensure the fake authenticated user (who will create the note) exists
+        if (!userJpaRepository.existsById(FAKE_AUTHENTICATED_USER_ID)) {
+            UserJpaEntity fakeAuthUser = new UserJpaEntity();
+            fakeAuthUser.setId(FAKE_AUTHENTICATED_USER_ID);
+            fakeAuthUser.setName("Controller User");
+            fakeAuthUser.setEmail("controller.user@example.com");
+            fakeAuthUser.setRole(UserRole.ADMIN);
+            fakeAuthUser.setCreatedAt(Instant.now());
+            fakeAuthUser.setUpdatedAt(Instant.now());
+            userJpaRepository.saveAndFlush(fakeAuthUser);
+        }
+
+        // 3. Create a workspace and project for the note
+        var testWorkspace = workspaceJpaRepository.saveAndFlush(WorkspaceJpaEntity.fromModel(Workspace.create("Test WS", "Desc", true, testAuthor.getId())));
+        testProject = projectJpaRepository.saveAndFlush(ProjectJpaEntity.fromModel(Project.create("Test Project", "Desc", testWorkspace.getId())));
+
+        // 4. Create a tag to be used in tests
+        testTag = tagJpaRepository.saveAndFlush(TagJpaEntity.fromModel(Tag.create("Test Tag", "A tag for notes")));
+    }
+
+    @Test
+    @DisplayName("POST /notes - should create a new note successfully")
+    void createNote_shouldSucceed() throws Exception {
+        // Arrange
+        var requestDto = new NoteCreateUpdate("My First Note", "This is the content of the note.", testProject.getId());
+        var requestJson = objectMapper.writeValueAsString(requestDto);
+
+        // Act & Assert
+        mockMvc.perform(post("/notes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").isNotEmpty())
+                .andExpect(header().exists("Location"));
+
+        // Verify DB state
+        var createdNote = noteJpaRepository.findAll().get(0);
+        assertThat(createdNote.getTitle()).isEqualTo("My First Note");
+        assertThat(createdNote.getProject().getId()).isEqualTo(testProject.getId());
+        assertThat(createdNote.getAuthor().getId()).isEqualTo(FAKE_AUTHENTICATED_USER_ID);
+        assertThat(createdNote.getVersion()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("PUT /notes/{id} - should update a note's title and content")
+    void updateNote_shouldSucceed() throws Exception {
+        // Arrange
+        var noteModel = com.sysm.devsync.domain.models.Note.create("Old Title", "Old Content", testProject.getId(), testAuthor.getId());
+        var savedNote = noteJpaRepository.saveAndFlush(NoteJpaEntity.fromModel(noteModel));
+
+        var requestDto = new NoteCreateUpdate("New Title", "New Content", testProject.getId());
+        var requestJson = objectMapper.writeValueAsString(requestDto);
+
+        // Act & Assert
+        mockMvc.perform(put("/notes/{id}", savedNote.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
+                .andExpect(status().isNoContent());
+
+        // Verify DB state
+        Optional<NoteJpaEntity> updatedNote = noteJpaRepository.findById(savedNote.getId());
+        assertThat(updatedNote).isPresent();
+        assertThat(updatedNote.get().getTitle()).isEqualTo("New Title");
+        assertThat(updatedNote.get().getContent()).isEqualTo("New Content");
+        assertThat(updatedNote.get().getVersion()).isEqualTo(2); // Version should increment
+    }
+
+    @Test
+    @DisplayName("PATCH /notes/{id}/content - should partially update a note's content")
+    void updateNoteContent_shouldSucceed() throws Exception {
+        // Arrange
+        var noteModel = com.sysm.devsync.domain.models.Note.create("Title", "Original Content", testProject.getId(), testAuthor.getId());
+        var savedNote = noteJpaRepository.saveAndFlush(NoteJpaEntity.fromModel(noteModel));
+
+        // Using NoteCreateUpdate as per your decision, but only 'content' is relevant for this endpoint
+        var requestDto = new NoteCreateUpdate("Ignored Title", "Updated Partial Content", "ignored-project-id");
+        var requestJson = objectMapper.writeValueAsString(requestDto);
+
+        // Act & Assert
+        mockMvc.perform(patch("/notes/{id}/content", savedNote.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
+                .andExpect(status().isNoContent());
+
+        // Verify DB state
+        Optional<NoteJpaEntity> updatedNote = noteJpaRepository.findById(savedNote.getId());
+        assertThat(updatedNote).isPresent();
+        assertThat(updatedNote.get().getTitle()).isEqualTo("Title"); // Title should remain unchanged
+        assertThat(updatedNote.get().getContent()).isEqualTo("Updated Partial Content");
+        assertThat(updatedNote.get().getVersion()).isEqualTo(2); // Version should increment
+    }
+
+    @Test
+    @DisplayName("DELETE /notes/{id} - should delete an existing note")
+    void deleteNote_shouldSucceed() throws Exception {
+        // Arrange
+        var noteModel = com.sysm.devsync.domain.models.Note.create("To Be Deleted", "Content", testProject.getId(), testAuthor.getId());
+        var savedNote = noteJpaRepository.saveAndFlush(NoteJpaEntity.fromModel(noteModel));
+        assertThat(noteJpaRepository.existsById(savedNote.getId())).isTrue();
+
+        // Act & Assert
+        mockMvc.perform(delete("/notes/{id}", savedNote.getId()))
+                .andExpect(status().isNoContent());
+
+        // Verify DB state
+        assertThat(noteJpaRepository.existsById(savedNote.getId())).isFalse();
+    }
+
+    @Test
+    @DisplayName("POST /notes/{id}/tags/{tagId} - should add a tag to a note")
+    void addTagToNote_shouldSucceed() throws Exception {
+        // Arrange
+        var noteModel = com.sysm.devsync.domain.models.Note.create("Note with Tags", "Content", testProject.getId(), testAuthor.getId());
+        var savedNote = noteJpaRepository.saveAndFlush(NoteJpaEntity.fromModel(noteModel));
+        assertThat(savedNote.getTags()).isEmpty();
+
+        // Act & Assert
+        mockMvc.perform(post("/notes/{id}/tags/{tagId}", savedNote.getId(), testTag.getId()))
+                .andExpect(status().isNoContent());
+
+        // Verify DB state
+        Optional<NoteJpaEntity> updatedNote = noteJpaRepository.findById(savedNote.getId());
+        assertThat(updatedNote).isPresent();
+        assertThat(updatedNote.get().getTags()).hasSize(1);
+        assertThat(updatedNote.get().getTags().iterator().next().getId()).isEqualTo(testTag.getId());
+    }
+
+    @Test
+    @DisplayName("DELETE /notes/{id}/tags/{tagId} - should remove a tag from a note")
+    void removeTagFromNote_shouldSucceed() throws Exception {
+        // Arrange
+        var noteModel = com.sysm.devsync.domain.models.Note.create("Note to Untag", "Content", testProject.getId(), testAuthor.getId());
+        var savedNote = noteJpaRepository.saveAndFlush(NoteJpaEntity.fromModel(noteModel));
+        savedNote.getTags().add(testTag); // Add tag directly for setup
+        noteJpaRepository.saveAndFlush(savedNote); // Persist the tag relationship
+        assertThat(savedNote.getTags()).hasSize(1);
+
+        // Act & Assert
+        mockMvc.perform(delete("/notes/{id}/tags/{tagId}", savedNote.getId(), testTag.getId()))
+                .andExpect(status().isNoContent());
+
+        // Verify DB state
+        Optional<NoteJpaEntity> updatedNote = noteJpaRepository.findById(savedNote.getId());
+        assertThat(updatedNote).isPresent();
+        assertThat(updatedNote.get().getTags()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("GET /notes - should return paginated list of notes")
+    void searchNotes_shouldReturnPaginatedResults() throws Exception {
+        // Arrange
+        noteJpaRepository.save(NoteJpaEntity.fromModel(com.sysm.devsync.domain.models.Note.create("Note C", "...", testProject.getId(), testAuthor.getId())));
+        noteJpaRepository.save(NoteJpaEntity.fromModel(com.sysm.devsync.domain.models.Note.create("Note A", "...", testProject.getId(), testAuthor.getId())));
+        noteJpaRepository.save(NoteJpaEntity.fromModel(com.sysm.devsync.domain.models.Note.create("Note B", "...", testProject.getId(), testAuthor.getId())));
+        noteJpaRepository.flush();
+
+        // Act & Assert
+        mockMvc.perform(get("/notes")
+                        .param("pageNumber", "0")
+                        .param("pageSize", "2")
+                        .param("sort", "title")
+                        .param("direction", "asc"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(3))
+                .andExpect(jsonPath("$.items", hasSize(2)))
+                .andExpect(jsonPath("$.items[0].title").value("Note A"))
+                .andExpect(jsonPath("$.items[1].title").value("Note B"));
+    }
+}

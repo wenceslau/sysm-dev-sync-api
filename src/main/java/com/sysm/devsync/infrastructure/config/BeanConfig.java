@@ -2,6 +2,7 @@ package com.sysm.devsync.infrastructure.config;
 
 import com.sysm.devsync.application.*;
 import com.sysm.devsync.domain.persistence.*;
+import com.sysm.devsync.infrastructure.repositories.persistence.NotePersistence;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -45,6 +46,14 @@ public class BeanConfig {
                                        QuestionPersistencePort questionPersistencePort,
                                        UserPersistencePort userPersistencePort){
         return new AnswerService(answerPersistencePort, questionPersistencePort, userPersistencePort);
+    }
+
+    @Bean
+    public NoteService noteService(NotePersistencePort notePersistencePort,
+                                   ProjectPersistencePort projectPersistence,
+                                   UserPersistencePort userPersistence,
+                                   TagPersistencePort tagPersistence) {
+        return new NoteService(notePersistencePort, projectPersistence, userPersistence, tagPersistence);
     }
 
 }
