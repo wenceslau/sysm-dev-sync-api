@@ -52,9 +52,21 @@ public abstract class AbstractPersistence<T> {
             );
         }
 
+        if (!StringUtils.hasText(page.direction()) && !StringUtils.hasText(page.sort())) {
+            return PageRequest.of(
+                    page.pageNumber(),
+                    page.pageSize()
+            );
+
+        }
+
         return PageRequest.of(
                 page.pageNumber(),
-                page.pageSize()
+                page.pageSize(),
+                Sort.by(
+                        Sort.Direction.fromString(page.direction()),
+                        page.sort()
+                )
         );
     }
 

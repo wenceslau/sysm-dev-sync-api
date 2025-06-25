@@ -1,9 +1,11 @@
 package com.sysm.devsync.application;
 
+import com.sysm.devsync.domain.NotFoundException;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.models.Tag;
+import com.sysm.devsync.domain.models.Workspace;
 import com.sysm.devsync.infrastructure.controllers.dto.response.CreateResponse;
 import com.sysm.devsync.infrastructure.controllers.dto.request.TagCreateUpdate;
 import com.sysm.devsync.domain.persistence.TagPersistencePort;
@@ -177,7 +179,7 @@ class TagServiceTest {
         when(tagPersistence.findById(tagId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
             tagService.updateTag(tagId, validTagCreateUpdateDto);
         });
         assertEquals("Tag not found", exception.getMessage());
@@ -206,6 +208,7 @@ class TagServiceTest {
     @DisplayName("deleteTag should call repository deleteById")
     void deleteTag_shouldCallRepositoryDeleteById() {
         // Arrange
+        when(tagPersistence.existsById(tagId)).thenReturn(true);
         doNothing().when(tagPersistence).deleteById(tagId);
 
         // Act
@@ -240,7 +243,7 @@ class TagServiceTest {
         when(tagPersistence.findById(tagId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
             tagService.getTagById(tagId);
         });
         assertEquals("Tag not found", exception.getMessage());

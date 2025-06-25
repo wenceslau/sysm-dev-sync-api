@@ -53,7 +53,6 @@ class AnswerServiceTest {
         authorId = UUID.randomUUID().toString();
 
         answerCreateUpdateDto = new AnswerCreateUpdate(
-                "Test Answer",
                 "This is the content of the test answer."
         );
         mockAnswer = mock(Answer.class);
@@ -120,7 +119,7 @@ class AnswerServiceTest {
     @DisplayName("updateAnswer should update existing answer's content")
     void updateAnswer_shouldUpdateExistingAnswerContent() {
         // Arrange
-        AnswerCreateUpdate updateDto = new AnswerCreateUpdate("Updated title","Updated content.");
+        AnswerCreateUpdate updateDto = new AnswerCreateUpdate("Updated content.");
         when(answerPersistence.findById(answerId)).thenReturn(Optional.of(mockAnswer));
 
         // Act
@@ -136,7 +135,7 @@ class AnswerServiceTest {
     @DisplayName("updateAnswer should throw NotFoundException when answer not found")
     void updateAnswer_shouldThrowNotFoundException_whenAnswerNotFound() {
         // Arrange
-        AnswerCreateUpdate updateDto = new AnswerCreateUpdate("Updated title","Updated content.");
+        AnswerCreateUpdate updateDto = new AnswerCreateUpdate("Updated content.");
         when(answerPersistence.findById(answerId)).thenReturn(Optional.empty());
 
         // Act & Assert

@@ -1,5 +1,6 @@
 package com.sysm.devsync.application;
 
+import com.sysm.devsync.domain.NotFoundException;
 import com.sysm.devsync.infrastructure.controllers.dto.response.CreateResponse;
 import com.sysm.devsync.infrastructure.controllers.dto.request.ProjectCreateUpdate;
 import com.sysm.devsync.domain.Pagination;
@@ -88,7 +89,7 @@ class ProjectServiceTest {
         when(workspacePersistencePort.existsById(workspaceId)).thenReturn(false);
 
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
             projectService.createProject(projectCreateUpdateDto);
         });
 
@@ -138,7 +139,7 @@ class ProjectServiceTest {
         when(projectPersistencePort.findById(projectId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
             projectService.updateProject(projectId, updateDto);
         });
 
@@ -173,7 +174,7 @@ class ProjectServiceTest {
         when(projectPersistencePort.findById(projectId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
             projectService.changeWorkspace(projectId, newWorkspaceId);
         });
 
@@ -192,7 +193,7 @@ class ProjectServiceTest {
         when(workspacePersistencePort.existsById(newWorkspaceId)).thenReturn(false);
 
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
             projectService.changeWorkspace(projectId, newWorkspaceId);
         });
 
@@ -207,7 +208,9 @@ class ProjectServiceTest {
     @DisplayName("deleteProject should call persistence port deleteById")
     void deleteProject_shouldCallPersistenceDeleteById() {
         // Arrange
+        when(projectPersistencePort.existsById(projectId)).thenReturn(true);
         doNothing().when(projectPersistencePort).deleteById(projectId);
+
 
         // Act
         projectService.deleteProject(projectId);
@@ -240,7 +243,7 @@ class ProjectServiceTest {
         when(projectPersistencePort.findById(projectId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
             projectService.getProjectById(projectId);
         });
 

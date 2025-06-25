@@ -1,5 +1,6 @@
 package com.sysm.devsync.application;
 
+import com.sysm.devsync.domain.NotFoundException;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.SearchQuery;
@@ -162,7 +163,7 @@ class UserServiceTest {
         when(userPersistence.findById(userId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
             userService.updateUser(userId, validUserCreateUpdateDto);
         });
         assertEquals("User not found", exception.getMessage());
@@ -198,7 +199,7 @@ class UserServiceTest {
         UserCreateUpdate patchDto = new UserCreateUpdate("Patch Name", null, null, null);
 
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
             userService.updateUserPatch(userId, patchDto);
         });
         assertEquals("User not found", exception.getMessage());
@@ -363,6 +364,7 @@ class UserServiceTest {
     @DisplayName("deleteUser should call repository deleteById")
     void deleteUser_shouldCallRepositoryDeleteById() {
         // Arrange
+        when(userPersistence.existsById(userId)).thenReturn(true);
         doNothing().when(userPersistence).deleteById(userId);
 
         // Act
@@ -399,7 +401,7 @@ class UserServiceTest {
         when(userPersistence.findById(userId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
             userService.getUserById(userId);
         });
         assertEquals("User not found", exception.getMessage());

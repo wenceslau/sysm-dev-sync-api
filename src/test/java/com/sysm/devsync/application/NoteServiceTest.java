@@ -1,5 +1,6 @@
 package com.sysm.devsync.application;
 
+import com.sysm.devsync.domain.NotFoundException;
 import com.sysm.devsync.infrastructure.controllers.dto.response.CreateResponse;
 import com.sysm.devsync.infrastructure.controllers.dto.request.NoteCreateUpdate;
 import com.sysm.devsync.domain.Pagination;
@@ -97,7 +98,7 @@ class NoteServiceTest {
         when(projectPersistence.existsById(projectId)).thenReturn(false);
 
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
             noteService.createNote(noteCreateUpdateDto, authorId);
         });
         assertEquals("Project not found", exception.getMessage());
@@ -113,7 +114,7 @@ class NoteServiceTest {
         when(userPersistence.existsById(authorId)).thenReturn(false);
 
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
             noteService.createNote(noteCreateUpdateDto, authorId);
         });
         assertEquals("User not found", exception.getMessage());
@@ -144,7 +145,7 @@ class NoteServiceTest {
         when(notePersistence.findById(noteId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
             noteService.updateNote(noteId, updateDto);
         });
         assertEquals("Note not found", exception.getMessage());
@@ -175,7 +176,7 @@ class NoteServiceTest {
         when(notePersistence.findById(noteId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
             noteService.updateNoteContent(noteId, updateDto);
         });
         assertEquals("Note not found", exception.getMessage());
@@ -206,7 +207,7 @@ class NoteServiceTest {
         when(notePersistence.findById(noteId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
             noteService.addTagToNote(noteId, tagId);
         });
         assertEquals("Note not found", exception.getMessage());
@@ -222,7 +223,7 @@ class NoteServiceTest {
         when(tagPersistence.existsById(tagId)).thenReturn(false);
 
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
             noteService.addTagToNote(noteId, tagId);
         });
         assertEquals("Tag not found", exception.getMessage());
@@ -254,7 +255,7 @@ class NoteServiceTest {
         when(notePersistence.findById(noteId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
             noteService.removeTagFromNote(noteId, tagId);
         });
         assertEquals("Note not found", exception.getMessage());
@@ -270,7 +271,7 @@ class NoteServiceTest {
         when(tagPersistence.existsById(tagId)).thenReturn(false);
 
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
             noteService.removeTagFromNote(noteId, tagId);
         });
         assertEquals("Tag not found", exception.getMessage());
@@ -300,7 +301,7 @@ class NoteServiceTest {
         when(notePersistence.existsById(noteId)).thenReturn(false);
 
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
             noteService.deleteNote(noteId);
         });
         assertEquals("Note not found", exception.getMessage());
@@ -329,7 +330,7 @@ class NoteServiceTest {
         when(notePersistence.findById(noteId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
             noteService.getNoteById(noteId);
         });
         assertEquals("Note not found", exception.getMessage());
@@ -390,7 +391,7 @@ class NoteServiceTest {
         when(projectPersistence.existsById(projectId)).thenReturn(false);
 
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
             noteService.getAllNotes(page, projectId);
         });
         assertEquals("Project not found", exception.getMessage());
