@@ -40,4 +40,11 @@ public class BeanConfig {
 
     }
 
+    @Bean
+    public AnswerService answerService(AnswerPersistencePort answerPersistencePort,
+                                       QuestionPersistencePort questionPersistencePort,
+                                       UserPersistencePort userPersistencePort){
+        return new AnswerService(answerPersistencePort, questionPersistencePort, userPersistencePort);
+    }
+
 }
