@@ -4,6 +4,7 @@ import com.sysm.devsync.domain.enums.QuestionStatus;
 import com.sysm.devsync.domain.enums.UserRole;
 import com.sysm.devsync.infrastructure.AbstractRepositoryTest;
 import com.sysm.devsync.infrastructure.repositories.entities.*;
+import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -164,7 +165,7 @@ public class QuestionJpaRepositoryTest extends AbstractRepositoryTest {
         assertThatThrownBy(() -> {
             questionJpaRepository.save(invalidQuestion);
             entityManager.flush();
-        }).isInstanceOf(DataIntegrityViolationException.class); // Or ConstraintViolationException
+        }).isInstanceOf(ConstraintViolationException.class); // Or ConstraintViolationException
     }
 
     @Test
@@ -180,7 +181,7 @@ public class QuestionJpaRepositoryTest extends AbstractRepositoryTest {
         assertThatThrownBy(() -> {
             questionJpaRepository.save(invalidQuestion);
             entityManager.flush();
-        }).isInstanceOf(DataIntegrityViolationException.class);
+        }).isInstanceOf(ConstraintViolationException.class);
     }
 
     @Test

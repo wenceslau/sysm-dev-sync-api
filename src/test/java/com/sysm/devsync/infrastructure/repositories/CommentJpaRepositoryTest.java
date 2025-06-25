@@ -5,6 +5,7 @@ import com.sysm.devsync.domain.enums.TargetType;
 import com.sysm.devsync.domain.enums.UserRole;
 import com.sysm.devsync.infrastructure.AbstractRepositoryTest;
 import com.sysm.devsync.infrastructure.repositories.entities.*;
+import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -157,7 +158,7 @@ public class CommentJpaRepositoryTest extends AbstractRepositoryTest {
             assertThatThrownBy(() -> {
                 commentJpaRepository.save(comment1OnQuestion);
                 entityManager.flush();
-            }).isInstanceOf(DataIntegrityViolationException.class);
+            }).isInstanceOf(ConstraintViolationException.class);
         }
 
         @Test
@@ -170,7 +171,7 @@ public class CommentJpaRepositoryTest extends AbstractRepositoryTest {
             assertThatThrownBy(() -> {
                 commentJpaRepository.save(comment1OnQuestion);
                 entityManager.flush();
-            }).isInstanceOf(DataIntegrityViolationException.class);
+            }).isInstanceOf(ConstraintViolationException.class);
         }
     }
 

@@ -5,6 +5,7 @@ import com.sysm.devsync.infrastructure.AbstractRepositoryTest;
 import com.sysm.devsync.infrastructure.repositories.entities.ProjectJpaEntity;
 import com.sysm.devsync.infrastructure.repositories.entities.UserJpaEntity;
 import com.sysm.devsync.infrastructure.repositories.entities.WorkspaceJpaEntity;
+import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -133,7 +134,7 @@ public class ProjectJpaRepositoryTest extends AbstractRepositoryTest {
         assertThatThrownBy(() -> {
             projectJpaRepository.save(projectWithNullWorkspace);
             entityManager.flush();
-        }).isInstanceOf(DataIntegrityViolationException.class); // Or potentially ConstraintViolationException
+        }).isInstanceOf(ConstraintViolationException.class); // Or potentially ConstraintViolationException
     }
 
     @Test
@@ -153,7 +154,7 @@ public class ProjectJpaRepositoryTest extends AbstractRepositoryTest {
         assertThatThrownBy(() -> {
             projectJpaRepository.save(duplicateNameProject);
             entityManager.flush(); // This will trigger the constraint violation
-        }).isInstanceOf(DataIntegrityViolationException.class);
+        }).isInstanceOf(ConstraintViolationException.class);
     }
 
     @Test

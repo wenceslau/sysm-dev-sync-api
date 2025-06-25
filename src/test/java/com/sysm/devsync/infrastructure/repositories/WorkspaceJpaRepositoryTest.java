@@ -5,6 +5,7 @@ import com.sysm.devsync.infrastructure.Utils;
 import com.sysm.devsync.infrastructure.repositories.entities.UserJpaEntity;
 import com.sysm.devsync.infrastructure.repositories.entities.WorkspaceJpaEntity;
 import com.sysm.devsync.domain.enums.UserRole; // For creating UserJpaEntity
+import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -139,7 +140,7 @@ public class WorkspaceJpaRepositoryTest extends AbstractRepositoryTest {
         assertThatThrownBy(() -> {
             workspaceJpaRepository.save(duplicateNameWorkspace);
             entityManager.flush(); // This will trigger the constraint violation
-        }).isInstanceOf(DataIntegrityViolationException.class);
+        }).isInstanceOf(ConstraintViolationException.class);
     }
 
 
