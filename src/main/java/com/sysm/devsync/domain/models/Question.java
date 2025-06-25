@@ -142,11 +142,11 @@ public class Question extends AbstractModel {
                 id,
                 now,
                 now,
-                projectId,
-                authorId,
-                new HashSet<>(),
                 title,
                 description,
+                new HashSet<>(),
+                projectId,
+                authorId,
                 QuestionStatus.OPEN
         );
     }
@@ -158,11 +158,11 @@ public class Question extends AbstractModel {
                 id,
                 createdAt,
                 updatedAt,
-                projectId,
-                authorId,
-                new HashSet<>(tags),
                 title,
                 description,
+                new HashSet<>(tags),
+                projectId,
+                authorId,
                 questionStatus
         );
     }
