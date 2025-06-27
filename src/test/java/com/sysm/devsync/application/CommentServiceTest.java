@@ -57,7 +57,7 @@ class CommentServiceTest {
         authorId = UUID.randomUUID().toString();
 
         commentCreateUpdateDto = new CommentCreateUpdate(
-                TargetType.NOTE, // Default, can be overridden in tests
+                TargetType.NOTE,
                 targetId,
                 "This is a test comment."
         );

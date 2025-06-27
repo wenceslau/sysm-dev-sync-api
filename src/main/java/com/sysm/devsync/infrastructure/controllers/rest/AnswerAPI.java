@@ -9,11 +9,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@RequestMapping
+@RequestMapping("answers")
 @Tag(name = "Answers")
 public interface AnswerAPI {
 
-    @PostMapping("/questions/{questionId}/answers")
+    @PostMapping("/questions/{questionId}")
     @Operation(summary = "Create a new answer for a question")
     @ApiResponse(responseCode = "201", description = "Answer created successfully")
     ResponseEntity<?> createAnswer(
@@ -21,11 +21,11 @@ public interface AnswerAPI {
             @RequestBody AnswerCreateUpdate request
     );
 
-    @GetMapping("/answers/{answerId}")
+    @GetMapping("/{answerId}")
     @Operation(summary = "Get an answer by its ID")
     ResponseEntity<AnswerResponse> getAnswerById(@PathVariable("answerId") String answerId);
 
-    @GetMapping("/questions/{questionId}/answers")
+    @GetMapping("/questions/{questionId}")
     @Operation(summary = "Get all answers for a specific question")
     Pagination<AnswerResponse> getAnswersByQuestionId(
             @PathVariable("questionId") String questionId,
@@ -35,24 +35,24 @@ public interface AnswerAPI {
             @RequestParam(name = "direction", defaultValue = "asc") String direction
     );
 
-    @PutMapping("/answers/{answerId}")
+    @PutMapping("/{answerId}")
     @Operation(summary = "Update an answer's content")
     ResponseEntity<?> updateAnswer(
             @PathVariable("answerId") String answerId,
             @RequestBody AnswerCreateUpdate request
     );
 
-    @PatchMapping("/answers/{answerId}/accept")
+    @PatchMapping("/{answerId}/accept")
     @Operation(summary = "Mark an answer as accepted")
     @ApiResponse(responseCode = "204", description = "Answer marked as accepted")
     ResponseEntity<?> acceptAnswer(@PathVariable("answerId") String answerId);
 
-    @PatchMapping("/answers/{answerId}/reject")
+    @PatchMapping("/{answerId}/reject")
     @Operation(summary = "Un-mark an answer as accepted")
     @ApiResponse(responseCode = "204", description = "Answer acceptance removed")
     ResponseEntity<?> rejectAnswer(@PathVariable("answerId") String answerId);
 
-    @DeleteMapping("/answers/{answerId}")
+    @DeleteMapping("/{answerId}")
     @Operation(summary = "Delete an answer")
     @ApiResponse(responseCode = "204", description = "Answer deleted successfully")
     ResponseEntity<?> deleteAnswer(@PathVariable("answerId") String answerId);

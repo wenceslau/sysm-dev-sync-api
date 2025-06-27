@@ -56,4 +56,17 @@ public class BeanConfig {
         return new NoteService(notePersistencePort, projectPersistence, userPersistence, tagPersistence);
     }
 
+    @Bean
+    public CommentService commentService(CommentPersistencePort commentPersistencePort,
+                                         NotePersistencePort notePersistencePort,
+                                         QuestionPersistencePort questionPersistencePort,
+                                         AnswerPersistencePort answerPersistencePort,
+                                         UserPersistencePort userPersistencePort){
+        return new CommentService(commentPersistencePort,
+                notePersistencePort,
+                questionPersistencePort,
+                answerPersistencePort,
+                userPersistencePort);
+    }
+
 }

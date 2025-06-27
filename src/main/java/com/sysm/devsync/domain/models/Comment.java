@@ -33,6 +33,9 @@ public class Comment extends AbstractModel {
         if (id == null || id.isBlank()) {
             throw new IllegalArgumentException("ID cannot be null or empty");
         }
+        if (targetType == null) { // <-- Add this line
+            throw new IllegalArgumentException("Target type cannot be null");
+        }
         if (authorId == null || authorId.isBlank()) {
             throw new IllegalArgumentException("Author ID cannot be null or empty");
         }

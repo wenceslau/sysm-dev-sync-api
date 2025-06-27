@@ -77,14 +77,14 @@ public class AnswerIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("POST /questions/{qId}/answers - should create a new answer successfully")
+    @DisplayName("POST /questions/{qId} - should create a new answer successfully")
     void createAnswer_shouldSucceed() throws Exception {
         // Arrange
         var requestDto = new AnswerCreateUpdate("This is the correct way to test.");
         var requestJson = objectMapper.writeValueAsString(requestDto);
 
         // Act & Assert
-        mockMvc.perform(post("/questions/{questionId}/answers", testQuestion.getId())
+        mockMvc.perform(post("/answers/questions/{questionId}", testQuestion.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isCreated())
@@ -100,7 +100,7 @@ public class AnswerIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("POST /questions/{qId}/answers - should fail with 404 for non-existent question")
+    @DisplayName("POST /questions/{qId} - should fail with 404 for non-existent question")
     void createAnswer_forNonExistentQuestion_shouldFail() throws Exception {
         // Arrange
         var nonExistentQuestionId = UUID.randomUUID().toString();
@@ -108,7 +108,7 @@ public class AnswerIntegrationTest extends AbstractIntegrationTest {
         var requestJson = objectMapper.writeValueAsString(requestDto);
 
         // Act & Assert
-        mockMvc.perform(post("/questions/{questionId}/answers", nonExistentQuestionId)
+        mockMvc.perform(post("/answers/questions/{questionId}", nonExistentQuestionId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isNotFound())
@@ -206,7 +206,7 @@ public class AnswerIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("GET /questions/{qId}/answers - should return paginated answers")
+    @DisplayName("GET /questions/{qId} - should return paginated answers")
     void getAnswersByQuestionId_shouldReturnPaginatedResults() throws Exception {
         // Arrange
         answerJpaRepository.save(AnswerJpaEntity.fromModel(com.sysm.devsync.domain.models.Answer.create("Answer C", testQuestion.getId(), testAuthor.getId())));
@@ -215,7 +215,7 @@ public class AnswerIntegrationTest extends AbstractIntegrationTest {
         answerJpaRepository.flush();
 
         // Act & Assert
-        mockMvc.perform(get("/questions/{questionId}/answers", testQuestion.getId())
+        mockMvc.perform(get("/answers/questions/{questionId}", testQuestion.getId())
                         .param("pageNumber", "0")
                         .param("pageSize", "2")
                         .param("sort", "content")
