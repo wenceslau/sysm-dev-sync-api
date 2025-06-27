@@ -4,7 +4,6 @@ import com.sysm.devsync.domain.BusinessException;
 import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
-import com.sysm.devsync.domain.models.Question;
 import com.sysm.devsync.domain.models.Tag;
 import com.sysm.devsync.infrastructure.AbstractRepositoryTest;
 import com.sysm.devsync.infrastructure.repositories.entities.TagJpaEntity;
@@ -16,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -59,8 +59,6 @@ public class TagPersistenceTest extends AbstractRepositoryTest {
             assertDoesNotThrow(() -> create(tag1Domain));
 
             // Assert
-            // Verify directly with the repository or TestEntityManager if needed,
-            // or through the persistence port method as you are doing.
             TagJpaEntity foundInDb = entityManager.find(TagJpaEntity.class, tag1Domain.getId());
             assertThat(foundInDb).isNotNull();
             assertThat(foundInDb.getName()).isEqualTo(tag1Domain.getName());
@@ -79,10 +77,10 @@ public class TagPersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should update an existing tag")
         void update_shouldModifyExistingTag() {
             // Arrange
-            entityPersist(tag1Jpa); // tag1Jpa is now persisted
+            entityPersist(tag1Jpa);
 
             Tag updatedDomainTag = Tag.build(
-                    tag1Domain.getId(), // Use the ID of the persisted tag
+                    tag1Domain.getId(),
                     "Java Updated",
                     "Dark Blue",
                     "Updated Desc",
@@ -98,7 +96,6 @@ public class TagPersistenceTest extends AbstractRepositoryTest {
             assertThat(foundTag).isPresent();
             assertThat(foundTag.get().getName()).isEqualTo("Java Updated");
             assertThat(foundTag.get().getColor()).isEqualTo("Dark Blue");
-            // ... other assertions
         }
     }
 
@@ -192,7 +189,7 @@ public class TagPersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should return all tags when no search terms provided")
         void findAll_noTerms_shouldReturnAllTags() {
-            SearchQuery query = new SearchQuery(Page.of(0, 10), ""); // Empty terms
+            SearchQuery query = new SearchQuery(Page.of(0, 10), Map.of());
 
             Pagination<Tag> result = tagPersistence.findAll(query);
 
@@ -203,7 +200,7 @@ public class TagPersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should filter by a single valid term (name)")
         void findAll_singleValidTermName_shouldReturnMatchingTags() {
-            SearchQuery query = new SearchQuery(Page.of(0, 10), "name=Java");
+            SearchQuery query = new SearchQuery(Page.of(0, 10), Map.of("name", "Java"));
 
             Pagination<Tag> result = tagPersistence.findAll(query);
 
@@ -215,7 +212,7 @@ public class TagPersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should filter by a single valid term (category) case-insensitive")
         void findAll_singleValidTermCategory_shouldReturnMatchingTags() {
-            SearchQuery query = new SearchQuery(Page.of(0, 10), "category=programming"); // lowercase
+            SearchQuery query = new SearchQuery(Page.of(0, 10), Map.of("category", "programming"));
 
             Pagination<Tag> result = tagPersistence.findAll(query);
 
@@ -224,20 +221,34 @@ public class TagPersistenceTest extends AbstractRepositoryTest {
         }
 
         @Test
-        @DisplayName("should filter by multiple valid terms (OR logic)")
-        void findAll_multipleValidTerms_OR_Logic_shouldReturnMatchingTags() {
-            SearchQuery query = new SearchQuery(Page.of(0, 10), "name=Java#color=Green");
+        @DisplayName("should filter by multiple valid terms (AND logic)")
+        void findAll_withMultipleTerms_shouldReturnAndedResults() {
+            // Arrange: Search for a tag that is named "Java" AND is in the "Programming" category
+            SearchQuery queryWithMatch = new SearchQuery(Page.of(0, 10), Map.of("name", "Java", "category", "Programming"));
 
-            Pagination<Tag> result = tagPersistence.findAll(query);
+            // Act
+            Pagination<Tag> resultWithMatch = tagPersistence.findAll(queryWithMatch);
 
-            assertThat(result.items()).hasSize(2);
-            assertThat(result.items()).extracting(Tag::getName).containsExactlyInAnyOrder("Java", "Spring");
+            // Assert: Should find exactly one tag
+            assertThat(resultWithMatch.items()).hasSize(1);
+            assertThat(resultWithMatch.items().get(0).getName()).isEqualTo("Java");
+            assertThat(resultWithMatch.total()).isEqualTo(1);
+
+            // Arrange: Search for a tag that is named "Java" AND is in the "Framework" category
+            SearchQuery queryWithoutMatch = new SearchQuery(Page.of(0, 10), Map.of("name", "Java", "category", "Framework"));
+
+            // Act
+            Pagination<Tag> resultWithoutMatch = tagPersistence.findAll(queryWithoutMatch);
+
+            // Assert: Should find no tags
+            assertThat(resultWithoutMatch.items()).isEmpty();
+            assertThat(resultWithoutMatch.total()).isZero();
         }
 
         @Test
         @DisplayName("should throw BusinessException for an invalid search field")
         void findAll_invalidSearchField_shouldThrowBusinessException() {
-            SearchQuery query = new SearchQuery(Page.of(0, 10), "invalidField=test");
+            SearchQuery query = new SearchQuery(Page.of(0, 10), Map.of("invalidField", "value"));
 
             assertThatThrownBy(() -> tagPersistence.findAll(query))
                     .isInstanceOf(BusinessException.class)
@@ -247,8 +258,7 @@ public class TagPersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should handle terms with no matches")
         void findAll_termWithNoMatches_shouldReturnEmptyPage() {
-            SearchQuery query = new SearchQuery(Page.of(0, 10), "name=NonExistent");
-
+            SearchQuery query = new SearchQuery(Page.of(0, 10), Map.of("name", "No Match"));
             Pagination<Tag> result = tagPersistence.findAll(query);
 
             assertThat(result.items()).isEmpty();
@@ -258,7 +268,7 @@ public class TagPersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should respect pagination parameters")
         void findAll_withPagination_shouldReturnCorrectPage() {
-            SearchQuery query = new SearchQuery(Page.of(0, 2, "name", "asc"), "");
+            SearchQuery query = new SearchQuery(Page.of(0, 2, "name", "asc"), Map.of());
 
             Pagination<Tag> result = tagPersistence.findAll(query);
 
@@ -267,7 +277,7 @@ public class TagPersistenceTest extends AbstractRepositoryTest {
             assertThat(result.perPage()).isEqualTo(2);
             assertThat(result.total()).isEqualTo(3);
 
-            SearchQuery queryPage2 = new SearchQuery(Page.of(1, 2, "name", "asc"), "");
+            SearchQuery queryPage2 = new SearchQuery(Page.of(1, 2, "name", "asc"), Map.of());
             Pagination<Tag> result2 = tagPersistence.findAll(queryPage2);
             assertThat(result2.items()).hasSize(1);
         }
@@ -280,7 +290,7 @@ public class TagPersistenceTest extends AbstractRepositoryTest {
             entityPersist(appleTagJpa); // Persisted "Apple"
 
             // Now we have "Java", "Spring", "Testing", "Apple"
-            SearchQuery query = new SearchQuery(Page.of(0, 10, "name", "asc"), "");
+            SearchQuery query = new SearchQuery(Page.of(0, 10, "name", "asc"), Map.of());
             Pagination<Tag> result = tagPersistence.findAll(query);
 
             List<String> names = result.items().stream().map(Tag::getName).toList();

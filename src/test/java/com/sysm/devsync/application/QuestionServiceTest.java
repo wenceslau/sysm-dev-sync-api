@@ -22,6 +22,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -379,7 +380,7 @@ class QuestionServiceTest {
     @DisplayName("getAllQuestions with SearchQuery should return page from persistence")
     void getAllQuestions_withSearchQuery_shouldReturnPageFromPersistence() {
         // Arrange
-        SearchQuery query = new SearchQuery(new Page(0, 10, "createdAt", "desc"), "title");
+        SearchQuery query = new SearchQuery(new Page(0, 10, "createdAt", "desc"), Map.of());
         Pagination<Question> expectedPagination = new Pagination<>(0, 10, 0L, Collections.emptyList());
         when(questionPersistence.findAll(query)).thenReturn(expectedPagination);
 

@@ -20,6 +20,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -389,7 +390,7 @@ class CommentServiceTest {
         @DisplayName("should return page from persistence")
         void getAllComments_withSearchQuery_success() {
             // Arrange
-            SearchQuery query = new SearchQuery(new Page(1, 10, "id", "desc"), "content");
+            SearchQuery query = new SearchQuery(new Page(1, 10, "id", "desc"),  Map.of());
             Pagination<Comment> expectedPagination = new Pagination<>(0, 10, 0L, Collections.emptyList());
             when(commentPersistence.findAll(query)).thenReturn(expectedPagination);
 

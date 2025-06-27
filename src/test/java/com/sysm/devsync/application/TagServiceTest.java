@@ -19,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -256,7 +257,7 @@ class TagServiceTest {
     @DisplayName("getAllTags should return pagination result from repository")
     void searchTags_shouldReturnPaginationResult_fromRepository() {
         // Arrange
-        SearchQuery query = new SearchQuery(new Page(1, 10,  "asc", "search"), "name");
+        SearchQuery query = new SearchQuery(new Page(1, 10,  "asc", "search"), Map.of());
         Pagination<Tag> expectedPagination = new Pagination<>(1, 10, 0,  Collections.emptyList());
         when(tagPersistence.findAll(query)).thenReturn(expectedPagination);
 

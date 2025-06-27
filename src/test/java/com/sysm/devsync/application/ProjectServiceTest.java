@@ -19,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -255,7 +256,7 @@ class ProjectServiceTest {
     @DisplayName("getAllProjects should return pagination result from persistence port")
     void getAllProjects_shouldReturnPaginationResult_fromPersistence() {
         // Arrange
-        SearchQuery query = new SearchQuery(new Page(1,10,  "asc", "search"), "name");
+        SearchQuery query = new SearchQuery(new Page(1,10,  "asc", "search"),  Map.of());
         Pagination<Project> expectedPagination = new Pagination<>(1, 10, 0, Collections.emptyList());
         when(projectPersistencePort.findAll(query)).thenReturn(expectedPagination);
 

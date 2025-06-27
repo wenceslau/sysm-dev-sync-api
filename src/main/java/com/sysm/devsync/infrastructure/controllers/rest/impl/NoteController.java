@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.Map;
 
 @RestController
 public class NoteController implements NoteAPI {
@@ -46,7 +47,7 @@ public class NoteController implements NoteAPI {
     @Override
     public Pagination<NoteResponse> searchNotes(int pageNumber, int pageSize, String sort, String direction, String terms) {
         var page = Page.of(pageNumber, pageSize, sort, direction);
-        var query = new SearchQuery(page, terms);
+        var query = new SearchQuery(page, Map.of());
         return noteService.getAllNotes(query).map(NoteResponse::from);
     }
 

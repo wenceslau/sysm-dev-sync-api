@@ -93,6 +93,18 @@ public class Tag extends AbstractModel {
         );
     }
 
+    public static Tag create(String name, String color, String category) {
+        String id = java.util.UUID.randomUUID().toString();
+        return new Tag(
+                id,
+                name,
+                color,
+                null,
+                category,
+                0
+        );
+    }
+
     public static Tag build(String id, String name, String color,
                             String description, String category, int countUsage) {
         return new Tag(

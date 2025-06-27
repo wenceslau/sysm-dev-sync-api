@@ -21,6 +21,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -340,7 +341,7 @@ class NoteServiceTest {
     @DisplayName("getAllNotes with SearchQuery should return page from persistence")
     void getAllNotes_withSearchQuery_shouldReturnPageFromPersistence() {
         // Arrange
-        SearchQuery query = new SearchQuery(new Page(0, 10, "createdAt", "DESC"),"search term");
+        SearchQuery query = new SearchQuery(new Page(0, 10, "createdAt", "DESC"), Map.of());
         Pagination<Note> expectedPagination = new Pagination<>(0, 10, 0L, Collections.emptyList());
         when(notePersistence.findAll(query)).thenReturn(expectedPagination);
 

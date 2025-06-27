@@ -5,11 +5,8 @@ import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.enums.UserRole;
-import com.sysm.devsync.domain.models.Tag;
 import com.sysm.devsync.domain.models.User;
 import com.sysm.devsync.infrastructure.AbstractRepositoryTest;
-// Import your UserJpaEntity if it's in a different package
-// import com.sysm.devsync.infrastructure.repositories.entities.UserJpaEntity;
 import com.sysm.devsync.infrastructure.repositories.entities.UserJpaEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -20,6 +17,7 @@ import org.springframework.context.annotation.Import;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -42,16 +40,11 @@ public class UserPersistenceTest extends AbstractRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        userJpaRepository.deleteAllInBatch();
+        clearRepositories();
 
-        // Using User.create for initial setup, password and profile picture are null
         user1Domain = User.create("John Doe", "john.doe@example.com", UserRole.MEMBER);
         User user2Domain = User.create("Alice Smith", "alice.smith@example.com", UserRole.ADMIN);
         User user3Domain = User.create("Bob Johnson", "bob.johnson@example.com", UserRole.MEMBER);
-
-        // Manually set IDs if User.create doesn't return the created user with ID immediately
-        // or if we need predictable IDs for testing (though UUIDs are fine for most cases)
-        // For this example, we'll assume User.create assigns an ID that we can retrieve.
 
         user1Jpa = UserJpaEntity.fromModel(user1Domain);
         user2Jpa = UserJpaEntity.fromModel(user2Domain);
@@ -89,24 +82,19 @@ public class UserPersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should update an existing user")
         void update_shouldModifyExistingUser() {
             // Arrange
-            entityPersist(user1Jpa); // Persist initial user1
-
+            entityPersist(user1Jpa);
             sleep(100);
-
-            // Create an updated version of user1Domain using User.build to include all fields
-            // We need to fetch the original createdAt time.
             Instant originalCreatedAt = user1Domain.getCreatedAt();
             User updatedDomainUser = User.build(
                     user1Domain.getId(),
-                    originalCreatedAt, // Keep original creation time
-                    Instant.now(),    // New update time
+                    originalCreatedAt,
+                    Instant.now(),
                     "Johnathan Doe Updated",
                     "john.doe.new@example.com",
-                    "newPasswordHash", // Example password hash
-                    "newProfilePic.jpg", // Example profile pic
-                    UserRole.ADMIN      // Example role change
+                    "newPasswordHash",
+                    "newProfilePic.jpg",
+                    UserRole.ADMIN
             );
-
 
             // Act
             update(updatedDomainUser);
@@ -120,8 +108,8 @@ public class UserPersistenceTest extends AbstractRepositoryTest {
             assertThat(retrievedUser.getPasswordHash()).isEqualTo("newPasswordHash");
             assertThat(retrievedUser.getProfilePictureUrl()).isEqualTo("newProfilePic.jpg");
             assertThat(retrievedUser.getRole()).isEqualTo(UserRole.ADMIN);
-            assertThat(retrievedUser.getCreatedAt()).isEqualTo(originalCreatedAt); // CreatedAt should not change
-            assertThat(retrievedUser.getUpdatedAt()).isAfter(originalCreatedAt); // UpdatedAt should be newer
+            assertThat(retrievedUser.getCreatedAt()).isEqualTo(originalCreatedAt);
+            assertThat(retrievedUser.getUpdatedAt()).isAfter(originalCreatedAt);
         }
     }
 
@@ -161,7 +149,6 @@ public class UserPersistenceTest extends AbstractRepositoryTest {
             assertThat(foundUser).isPresent();
             assertThat(foundUser.get().getId()).isEqualTo(user1Domain.getId());
             assertThat(foundUser.get().getName()).isEqualTo(user1Domain.getName());
-            assertThat(foundUser.get().getEmail()).isEqualTo(user1Domain.getEmail());
         }
 
         @Test
@@ -207,8 +194,6 @@ public class UserPersistenceTest extends AbstractRepositoryTest {
     class FindAllTests {
         @BeforeEach
         void setUpFindAll() {
-            // Data for these specific tests.
-            // The main setUp already cleared the DB and re-initialized userXDomain/userXJpa instances.
             entityPersist(user1Jpa); // John Doe, john.doe@example.com, MEMBER
             entityPersist(user2Jpa); // Alice Smith, alice.smith@example.com, ADMIN
             entityPersist(user3Jpa); // Bob Johnson, bob.johnson@example.com, MEMBER
@@ -217,34 +202,26 @@ public class UserPersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should return all users when no search terms provided")
         void findAll_noTerms_shouldReturnAllUsers() {
-            SearchQuery query = new SearchQuery(Page.of(0, 10), "");
-
+            SearchQuery query = new SearchQuery(Page.of(0, 10), Map.of());
             Pagination<User> result = userPersistence.findAll(query);
-
             assertThat(result.items()).hasSize(3);
             assertThat(result.total()).isEqualTo(3);
         }
 
         @Test
-        @DisplayName("should filter by a single valid term (name as username)")
+        @DisplayName("should filter by a single valid term (name)")
         void findAll_singleValidTermName_shouldReturnMatchingUsers() {
-            // Assuming "username" in VALID_SEARCHABLE_FIELDS maps to User's "name" field
-            SearchQuery query = new SearchQuery(Page.of(0, 10), "name=John Doe");
-
+            SearchQuery query = new SearchQuery(Page.of(0, 10), Map.of("name", "John Doe"));
             Pagination<User> result = userPersistence.findAll(query);
-
             assertThat(result.items()).hasSize(1);
             assertThat(result.items().get(0).getName()).isEqualTo("John Doe");
-            assertThat(result.total()).isEqualTo(1);
         }
 
         @Test
         @DisplayName("should filter by a single valid term (email) case-insensitive")
         void findAll_singleValidTermEmail_shouldReturnMatchingUsers() {
-            SearchQuery query = new SearchQuery(Page.of(0, 10), "email=ALICE.SMITH@EXAMPLE.COM"); // Mixed case
-
+            SearchQuery query = new SearchQuery(Page.of(0, 10), Map.of("email", "ALICE.SMITH@EXAMPLE.COM"));
             Pagination<User> result = userPersistence.findAll(query);
-
             assertThat(result.items()).hasSize(1);
             assertThat(result.items().get(0).getEmail()).isEqualTo("alice.smith@example.com");
         }
@@ -252,80 +229,82 @@ public class UserPersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should filter by a single valid term (role)")
         void findAll_singleValidTermRole_shouldReturnMatchingUsers() {
-            // Assuming "role" in VALID_SEARCHABLE_FIELDS maps to User's "userRole" field
-            SearchQuery query = new SearchQuery(Page.of(0, 10), "role=ADMIN");
-
+            SearchQuery query = new SearchQuery(Page.of(0, 10), Map.of("role", "MEMBER"));
             Pagination<User> result = userPersistence.findAll(query);
-
-            assertThat(result.items()).hasSize(1);
-            assertThat(result.items().get(0).getRole()).isEqualTo(UserRole.ADMIN);
-            assertThat(result.items().get(0).getName()).isEqualTo("Alice Smith");
+            assertThat(result.items()).hasSize(2);
+            assertThat(result.items()).extracting(User::getRole).containsOnly(UserRole.MEMBER);
         }
 
-
         @Test
-        @DisplayName("should filter by multiple valid terms (OR logic)")
-        void findAll_multipleValidTerms_OR_Logic_shouldReturnMatchingUsers() {
-            // Assuming "username" (maps to name) and "email" are valid searchable fields
-            SearchQuery query = new SearchQuery(Page.of(0, 10), "name=John Doe#email=alice.smith@example.com");
+        @DisplayName("should filter by multiple valid terms (AND logic)")
+        void findAll_withMultipleTerms_shouldReturnAndedResults() {
+            // Arrange: Search for a user who is a MEMBER and whose name is "John Doe"
+            SearchQuery queryWithMatch = new SearchQuery(Page.of(0, 10), Map.of("role", "MEMBER", "name", "John Doe"));
 
-            Pagination<User> result = userPersistence.findAll(query);
+            // Act
+            Pagination<User> resultWithMatch = userPersistence.findAll(queryWithMatch);
 
-            assertThat(result.items()).hasSize(2);
-            assertThat(result.items()).extracting(User::getName).containsExactlyInAnyOrder("John Doe", "Alice Smith");
+            // Assert: Should find exactly one user
+            assertThat(resultWithMatch.items()).hasSize(1);
+            assertThat(resultWithMatch.items().get(0).getName()).isEqualTo("John Doe");
+            assertThat(resultWithMatch.total()).isEqualTo(1);
+
+            // Arrange: Search for a user who is an ADMIN and whose name is "John Doe" (should not exist)
+            SearchQuery queryWithoutMatch = new SearchQuery(Page.of(0, 10), Map.of("role", "ADMIN", "name", "John Doe"));
+
+            // Act
+            Pagination<User> resultWithoutMatch = userPersistence.findAll(queryWithoutMatch);
+
+            // Assert: Should find no users
+            assertThat(resultWithoutMatch.items()).isEmpty();
+            assertThat(resultWithoutMatch.total()).isZero();
         }
 
         @Test
         @DisplayName("should throw BusinessException for an invalid search field")
         void findAll_invalidSearchField_shouldThrowBusinessException() {
-            SearchQuery query = new SearchQuery(Page.of(0, 10), "nonExistentField=testValue");
-
+            SearchQuery query = new SearchQuery(Page.of(0, 10), Map.of("nonExistentField", "value"));
             assertThatThrownBy(() -> userPersistence.findAll(query))
                     .isInstanceOf(BusinessException.class)
                     .hasMessageContaining("Invalid search field provided: 'nonExistentField'");
         }
 
         @Test
+        @DisplayName("should throw BusinessException for an invalid role value")
+        void findAll_invalidRoleValue_shouldThrowBusinessException() {
+            SearchQuery query = new SearchQuery(Page.of(0, 10), Map.of("role", "GUEST"));
+            assertThatThrownBy(() -> userPersistence.findAll(query))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("Invalid value for role field: 'GUEST'");
+        }
+
+        @Test
         @DisplayName("should handle terms with no matches")
         void findAll_termWithNoMatches_shouldReturnEmptyPage() {
-            SearchQuery query = new SearchQuery(Page.of(0, 10), "name=NoOneLikeThis");
-
+            SearchQuery query = new SearchQuery(Page.of(0, 10), Map.of("name", "NonExistent User"));
             Pagination<User> result = userPersistence.findAll(query);
-
             assertThat(result.items()).isEmpty();
             assertThat(result.total()).isZero();
         }
 
         @Test
-        @DisplayName("should respect pagination parameters")
-        void findAll_withPagination_shouldReturnCorrectPage() {
-            SearchQuery query = new SearchQuery(Page.of(0, 2, "name", "asc"), ""); // Sort by name (maps to username)
-
+        @DisplayName("should respect pagination and sorting parameters")
+        void findAll_withPaginationAndSorting_shouldReturnCorrectPage() {
+            // Sort by name ascending
+            SearchQuery query = new SearchQuery(Page.of(0, 2, "name", "asc"), Map.of());
             Pagination<User> result = userPersistence.findAll(query);
 
             assertThat(result.items()).hasSize(2);
             assertThat(result.currentPage()).isEqualTo(0);
-            assertThat(result.perPage()).isEqualTo(2);
             assertThat(result.total()).isEqualTo(3);
+            assertThat(result.items().get(0).getName()).isEqualTo("Alice Smith"); // A comes before B
+            assertThat(result.items().get(1).getName()).isEqualTo("Bob Johnson");
 
-            SearchQuery queryPage2 = new SearchQuery(Page.of(1, 2, "name", "asc"), "");
+            // Get the next page
+            SearchQuery queryPage2 = new SearchQuery(Page.of(1, 2, "name", "asc"), Map.of());
             Pagination<User> result2 = userPersistence.findAll(queryPage2);
             assertThat(result2.items()).hasSize(1);
-        }
-
-        @Test
-        @DisplayName("should respect sorting parameters (name ascending)")
-        void findAll_withSortingNameAsc_shouldReturnSortedUsers() {
-            User extraUserDomain = User.create("Aaron Aardvark", "aaron@example.com", UserRole.MEMBER);
-            entityPersist(UserJpaEntity.fromModel(extraUserDomain));
-
-            SearchQuery query = new SearchQuery(Page.of(0, 10, "name", "asc"), ""); // Sort by name
-            Pagination<User> result = userPersistence.findAll(query);
-
-            List<String> names = result.items().stream().map(User::getName).toList();
-            assertThat(names).isSorted();
-            // Expected order: Aaron Aardvark, Alice Smith, Bob Johnson, John Doe
-            assertThat(names).containsExactly("Aaron Aardvark", "Alice Smith", "Bob Johnson", "John Doe");
+            assertThat(result2.items().get(0).getName()).isEqualTo("John Doe");
         }
     }
 

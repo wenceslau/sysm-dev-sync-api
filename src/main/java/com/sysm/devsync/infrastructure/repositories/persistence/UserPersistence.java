@@ -3,6 +3,7 @@ package com.sysm.devsync.infrastructure.repositories.persistence;
 import com.sysm.devsync.domain.BusinessException;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
+import com.sysm.devsync.domain.enums.UserRole;
 import com.sysm.devsync.domain.models.User;
 import com.sysm.devsync.domain.persistence.UserPersistencePort;
 import com.sysm.devsync.infrastructure.repositories.entities.UserJpaEntity;
@@ -90,7 +91,14 @@ public class UserPersistence extends AbstractPersistence<UserJpaEntity> implemen
         return switch (key) {
             case "name", "email" -> crBuilder.like(crBuilder.lower(root.get(key)), like(value));
 
-            case "role" -> crBuilder.equal(crBuilder.lower(root.get(key)), value.toLowerCase());
+            case "role" -> {
+                try {
+                    UserRole roleValue = UserRole.valueOf(value.toUpperCase());
+                    yield crBuilder.equal(root.get("role"), roleValue);
+                } catch (IllegalArgumentException e) {
+                    throw new BusinessException("Invalid value for role field: '" + value + "'. Expected ADMIN or MEMBER.");
+                }
+            }
 
             default -> throw new BusinessException("Invalid search field provided: '" + key + "'");
         };

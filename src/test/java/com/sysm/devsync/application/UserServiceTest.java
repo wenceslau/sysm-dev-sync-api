@@ -21,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 // import org.springframework.util.StringUtils;
 
 import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -414,7 +415,7 @@ class UserServiceTest {
     @DisplayName("getAllUsers should return pagination result from repository")
     void searchUsers_shouldReturnPaginationResult_fromRepository() {
         // Arrange
-        SearchQuery query = new SearchQuery(new Page(1, 10,  "asc", "search"), "name");
+        SearchQuery query = new SearchQuery(new Page(1, 10,  "asc", "search"),  Map.of());
         Pagination<User> expectedPagination = new Pagination<>(1, 10, 0L, Collections.emptyList()); // Ensure totalElements is Long
         when(userPersistence.findAll(query)).thenReturn(expectedPagination);
 

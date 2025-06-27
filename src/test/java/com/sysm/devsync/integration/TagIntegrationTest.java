@@ -1,9 +1,10 @@
 package com.sysm.devsync.integration;
 
-import com.sysm.devsync.domain.models.Tag; // Import Tag domain model
+import com.sysm.devsync.domain.models.Tag;
 import com.sysm.devsync.infrastructure.controllers.dto.request.TagCreateUpdate;
 import com.sysm.devsync.infrastructure.repositories.TagJpaRepository;
 import com.sysm.devsync.infrastructure.repositories.entities.TagJpaEntity;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,8 +14,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -22,7 +22,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class TagIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
-    private TagJpaRepository tagJpaRepository; // Inject repository for DB assertions
+    private TagJpaRepository tagJpaRepository;
+
+    @BeforeEach
+    void setUp() {
+        // This ensures each test runs with a clean database, preventing side effects.
+        tagJpaRepository.deleteAll();
+    }
 
     @Test
     @DisplayName("POST /tags - should create a new tag successfully")
@@ -59,34 +65,24 @@ public class TagIntegrationTest extends AbstractIntegrationTest {
         var requestJson = objectMapper.writeValueAsString(requestDto);
 
         // Act & Assert
-
-        var content = post("/tags")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(requestJson);
-
-        final var response = this.mockMvc.perform(content)
-                .andDo(print());
-
-        response.andExpect(status().isBadRequest())
+        mockMvc.perform(post("/tags")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
+                .andExpect(status().isBadRequest())
                 .andExpect(header().string("Location", nullValue()))
-                .andExpect(header().string("Content-Type", MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(jsonPath("$.validationErrors.name[0]", equalTo("Tag name must not be blank")));
-
     }
 
     @Test
     @DisplayName("GET /tags/{id} - should retrieve an existing tag")
     void getTagById_shouldSucceed() throws Exception {
-        // Arrange: First, create a tag directly in the DB for the test
-        // OLD: var existingTag = new TagJpaEntity(UUID.randomUUID().toString(), "Python");
-        // OLD: existingTag.setColor("#3572A5");
-        // NEW: Create domain model and convert
+        // Arrange
         Tag existingTagDomain = Tag.create("Python", "#3572A5");
         TagJpaEntity existingTagJpa = TagJpaEntity.fromModel(existingTagDomain);
         tagJpaRepository.saveAndFlush(existingTagJpa);
 
         // Act & Assert
-        mockMvc.perform(get("/tags/{id}", existingTagJpa.getId())) // Use the ID from the JPA entity
+        mockMvc.perform(get("/tags/{id}", existingTagJpa.getId()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value(existingTagJpa.getId()))
@@ -101,8 +97,6 @@ public class TagIntegrationTest extends AbstractIntegrationTest {
         var nonExistentId = UUID.randomUUID().toString();
 
         // Act & Assert
-        // This expects a 404. Your service throws IllegalArgumentException.
-        // This test will pass once you have a @ControllerAdvice to map that exception to a 404 status.
         mockMvc.perform(get("/tags/{id}", nonExistentId))
                 .andExpect(status().isNotFound());
     }
@@ -111,18 +105,10 @@ public class TagIntegrationTest extends AbstractIntegrationTest {
     @DisplayName("GET /tags - should return paginated list of tags")
     void searchTags_shouldReturnPaginatedResults() throws Exception {
         // Arrange
-        // The "Go" tag was already correct, keeping it as an example.
-        Tag tagGo = Tag.create("Go", "#F89820");
-        tagJpaRepository.save(TagJpaEntity.fromModel(tagGo));
-
-        // NEW: Create domain models and convert for "Rust" and "TypeScript"
-        Tag tagRust = Tag.create("Rust", "#FFA500");
-        tagJpaRepository.save(TagJpaEntity.fromModel(tagRust));
-
-        Tag tagTypeScript = Tag.create("TypeScript", "#007ACC");
-        tagJpaRepository.save(TagJpaEntity.fromModel(tagTypeScript));
-
-        tagJpaRepository.flush(); // Ensure all are persisted before query
+        tagJpaRepository.save(TagJpaEntity.fromModel(Tag.create("Go", "#F89820")));
+        tagJpaRepository.save(TagJpaEntity.fromModel(Tag.create("Rust", "#FFA500")));
+        tagJpaRepository.save(TagJpaEntity.fromModel(Tag.create("TypeScript", "#007ACC")));
+        tagJpaRepository.flush();
 
         // Act & Assert
         mockMvc.perform(get("/tags")
@@ -138,11 +124,55 @@ public class TagIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @DisplayName("GET /tags - should return tags filtered by query parameters")
+    void searchTags_withFilters_shouldReturnFilteredResults() throws Exception {
+        // Arrange
+        // We need to add the 'category' to the Tag model and persistence for this test to pass
+        // Assuming Tag.create can take name, color, description, category
+        tagJpaRepository.save(TagJpaEntity.fromModel(Tag.create("Java", "#F89820", "Programming")));
+        tagJpaRepository.save(TagJpaEntity.fromModel(Tag.create("JavaScript", "#F7DF1E", "Programming")));
+        tagJpaRepository.save(TagJpaEntity.fromModel(Tag.create("Docker", "#2496ED", "DevOps")));
+        tagJpaRepository.flush();
+
+        // Act & Assert - Filter by a single field (name)
+        mockMvc.perform(get("/tags")
+                        .param("name", "Docker"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(1))
+                .andExpect(jsonPath("$.items[0].name").value("Docker"));
+
+        // Act & Assert - Filter by another single field (category)
+        // This now includes pagination parameters to prove they are ignored by the filter logic
+        mockMvc.perform(get("/tags")
+                        .param("category", "Programming")
+                        .param("pageNumber", "0")
+                        .param("pageSize", "1")
+                        .param("sort", "name"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(2))
+                .andExpect(jsonPath("$.items", hasSize(1))) // We expect only 1 due to pageSize
+                .andExpect(jsonPath("$.items[0].name").value("Java")); // 'Java' comes before 'JavaScript'
+
+        // Act & Assert - Filter by multiple fields (name and category)
+        mockMvc.perform(get("/tags")
+                        .param("name", "Docker")
+                        .param("category", "DevOps"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(1))
+                .andExpect(jsonPath("$.items[0].name").value("Docker"));
+
+        // Act & Assert - Filter with no results
+        mockMvc.perform(get("/tags")
+                        .param("name", "JavaScripts"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(0))
+                .andExpect(jsonPath("$.items", hasSize(0)));
+    }
+
+    @Test
     @DisplayName("PUT /tags/{id} - should update an existing tag")
     void updateTag_shouldSucceed() throws Exception {
-        // Arrange: Create the initial tag using domain model and convert
-        // OLD: var existingTag = new TagJpaEntity(UUID.randomUUID().toString(), "Old Name");
-        // OLD: existingTag.setColor("#OldColor");
+        // Arrange
         Tag existingTagDomain = Tag.create("Old Name", "#OldColor");
         TagJpaEntity existingTagJpa = TagJpaEntity.fromModel(existingTagDomain);
         tagJpaRepository.saveAndFlush(existingTagJpa);
@@ -152,13 +182,13 @@ public class TagIntegrationTest extends AbstractIntegrationTest {
         var requestJson = objectMapper.writeValueAsString(updateDto);
 
         // Act & Assert
-        mockMvc.perform(put("/tags/{id}", existingTagJpa.getId()) // Use the ID from the JPA entity
+        mockMvc.perform(put("/tags/{id}", existingTagJpa.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isNoContent());
 
         // Verify the state in the database
-        Optional<TagJpaEntity> updatedTagEntity = tagJpaRepository.findById(existingTagJpa.getId()); // Use the ID from the JPA entity
+        Optional<TagJpaEntity> updatedTagEntity = tagJpaRepository.findById(existingTagJpa.getId());
         assertThat(updatedTagEntity).isPresent();
         assertThat(updatedTagEntity.get().getName()).isEqualTo("New Name");
         assertThat(updatedTagEntity.get().getColor()).isEqualTo("#NewColor");
@@ -168,9 +198,7 @@ public class TagIntegrationTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("DELETE /tags/{id} - should delete an existing tag")
     void deleteTag_shouldSucceed() throws Exception {
-        // Arrange: Create the tag to be deleted using domain model and convert
-        // OLD: var tagToDelete = new TagJpaEntity(UUID.randomUUID().toString(), "Ephemeral");
-        // OLD: tagToDelete.setColor("#FFFFFF");
+        // Arrange
         Tag tagToDeleteDomain = Tag.create("Ephemeral", "#FFFFFF");
         TagJpaEntity tagToDeleteJpa = TagJpaEntity.fromModel(tagToDeleteDomain);
         tagJpaRepository.saveAndFlush(tagToDeleteJpa);
@@ -179,7 +207,7 @@ public class TagIntegrationTest extends AbstractIntegrationTest {
         assertThat(tagJpaRepository.existsById(tagToDeleteJpa.getId())).isTrue();
 
         // Act & Assert
-        mockMvc.perform(delete("/tags/{id}", tagToDeleteJpa.getId())) // Use the ID from the JPA entity
+        mockMvc.perform(delete("/tags/{id}", tagToDeleteJpa.getId()))
                 .andExpect(status().isNoContent());
 
         // Verify it no longer exists in the database

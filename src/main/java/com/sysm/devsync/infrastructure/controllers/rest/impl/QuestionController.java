@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.Map;
 
 @RestController
 public class QuestionController implements QuestionAPI {
@@ -47,7 +48,7 @@ public class QuestionController implements QuestionAPI {
     @Override
     public Pagination<QuestionResponse> searchQuestions(int pageNumber, int pageSize, String sort, String direction, String terms) {
         var page = Page.of(pageNumber, pageSize, sort, direction);
-        var query = new SearchQuery(page, terms);
+        var query = new SearchQuery(page, Map.of());
         return questionService.getAllQuestions(query).map(QuestionResponse::from);
     }
 

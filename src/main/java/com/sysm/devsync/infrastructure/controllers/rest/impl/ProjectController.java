@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.Map;
 
 @RestController
 public class ProjectController implements ProjectAPI {
@@ -45,7 +46,7 @@ public class ProjectController implements ProjectAPI {
     @Override
     public Pagination<ProjectResponse> searchProjects(int pageNumber, int pageSize, String sort, String direction, String terms) {
         var page = Page.of(pageNumber, pageSize, sort, direction);
-        var searchQuery = new SearchQuery(page, terms);
+        var searchQuery = new SearchQuery(page, Map.of());
         return projectService.getAllProjects(searchQuery)
                 .map(ProjectResponse::from);
     }

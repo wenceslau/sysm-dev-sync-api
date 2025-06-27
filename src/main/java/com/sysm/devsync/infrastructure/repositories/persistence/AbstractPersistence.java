@@ -15,34 +15,11 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 import static com.sysm.devsync.infrastructure.Utils.like;
 
 public abstract class AbstractPersistence<T> {
-
-    protected HashMap<String, String> buildTerms(String terms) {
-
-        var mapTerms = new HashMap<String, String>();
-        if (terms != null && !terms.trim().isEmpty()) {
-            var termsList = terms.split("#");
-
-            for (String term : termsList) {
-                String trimmedTerm = term.trim();
-
-                if (!trimmedTerm.contains("=")) {
-                    continue;
-                }
-                var split = trimmedTerm.split("=", 2);
-                var key = split[0].trim();
-                var value = split[1].trim();
-
-                if (!key.isEmpty() && !value.isEmpty()) {
-                    mapTerms.put(key, value);
-                }
-            }
-        }
-        return mapTerms;
-    }
 
     protected PageRequest buildPageRequest(Page page) {
         if (page == null) {
@@ -106,11 +83,20 @@ public abstract class AbstractPersistence<T> {
 
     protected Specification<T> buildSpecification(SearchQuery searchQuery) {
 
+
         Specification<T> spec = (root, query, criteriaBuilder) -> {
             var predicates = new ArrayList<Predicate>();
-            var mapTerms = buildTerms(searchQuery.terms());
 
-            mapTerms.forEach((key, value) -> {
+            // 1. Create a mutable copy to avoid changing the original input.
+            Map<String, String> filterTerms = new HashMap<>(searchQuery.terms());
+
+            // 2. Clean the *copy* of the map.
+            filterTerms.remove("pageNumber");
+            filterTerms.remove("pageSize");
+            filterTerms.remove("sort");
+            filterTerms.remove("direction");
+
+            filterTerms.forEach((key, value) -> {
                 // Delegate predicate creation to the concrete subclass
                 Predicate fieldPredicate = createPredicateForField(root, criteriaBuilder, key, value);
                 if (fieldPredicate != null) { // Ensure the subclass returned a predicate
@@ -121,7 +107,7 @@ public abstract class AbstractPersistence<T> {
             if (predicates.isEmpty()) {
                 return criteriaBuilder.conjunction();  // Represents a TRUE predicate (matches all)
             }
-            return criteriaBuilder.or(predicates.toArray(new Predicate[0]));
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
 
         return spec;

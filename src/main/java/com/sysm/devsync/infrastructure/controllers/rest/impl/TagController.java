@@ -9,9 +9,11 @@ import com.sysm.devsync.infrastructure.controllers.dto.response.TagResponse;
 import com.sysm.devsync.infrastructure.controllers.rest.TagAPI;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
+import java.util.Map;
 
 @RestController
 public class TagController implements TagAPI {
@@ -27,9 +29,13 @@ public class TagController implements TagAPI {
 
         var response = tagService.createTag(request);
 
-        return ResponseEntity
-                .created(URI.create(String.format("/tags/%s", response.id())))
-                .body(response);
+        URI location = org.springframework.web.servlet.support.ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(response.id())
+                .toUri();
+
+        return ResponseEntity.created(location).body(response);
     }
 
     @Override
@@ -56,9 +62,10 @@ public class TagController implements TagAPI {
     }
 
     @Override
-    public Pagination<TagResponse> searchTags(int pageNumber, int pageSize, String sort, String direction, String terms) {
+    public Pagination<TagResponse> searchTags(int pageNumber, int pageSize, String sort,
+                                              String direction,  @RequestParam Map<String, String> filters ) {
         var page = Page.of(pageNumber, pageSize, sort, direction);
-        var searchQuery = new SearchQuery(page, terms);
+        var searchQuery = new SearchQuery(page, filters);
 
         var pagination = tagService.searchTags(searchQuery);
 

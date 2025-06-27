@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.Map;
 
 @RestController
 public class CommentController implements CommentAPI {
@@ -49,7 +50,7 @@ public class CommentController implements CommentAPI {
                                                       String direction, String terms) {
 
         var page = Page.of(pageNumber, pageSize, sort, direction);
-        var query = new SearchQuery(page, terms);
+        var query = new SearchQuery(page, Map.of());
 
         // This single service call now handles all search/filter scenarios,
         // including by target, thanks to our persistence layer update.

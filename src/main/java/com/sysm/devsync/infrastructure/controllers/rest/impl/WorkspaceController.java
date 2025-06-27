@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.Map;
 
 @RestController
 public class WorkspaceController implements WorkspaceAPI {
@@ -47,7 +48,7 @@ public class WorkspaceController implements WorkspaceAPI {
     @Override
     public Pagination<WorkspaceResponse> search(int pageNumber, int pageSize, String sort, String direction, String terms) {
         var page = Page.of(pageNumber, pageSize, sort, direction);
-        var searchQuery = new SearchQuery(page, terms);
+        var searchQuery = new SearchQuery(page, Map.of());
         return workspaceService.getAllWorkspaces(searchQuery).map(WorkspaceResponse::from);
     }
 

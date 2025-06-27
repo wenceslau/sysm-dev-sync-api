@@ -18,11 +18,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.Collections;
+import java.util.*;
 
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -364,7 +360,7 @@ class WorkspaceServiceTest {
     @DisplayName("getAllWorkspaces should return pagination result from repository")
     void getAllWorkspaces_shouldReturnPaginationResult_fromRepository() {
         // Arrange
-        SearchQuery query = new SearchQuery(new Page(1, 10, "asc", "search"), "name");
+        SearchQuery query = new SearchQuery(new Page(1, 10, "asc", "search"),  Map.of());
         Pagination<Workspace> expectedPagination = new Pagination<>(1, 10, 0, Collections.emptyList());
         when(workspacePersistence.findAll(query)).thenReturn(expectedPagination);
 

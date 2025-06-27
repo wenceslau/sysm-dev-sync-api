@@ -87,7 +87,7 @@ public class ProjectPersistence extends AbstractPersistence<ProjectJpaEntity> im
 
     protected Predicate createPredicateForField(Root<ProjectJpaEntity> root, CriteriaBuilder crBuilder, String key, String value) {
         return switch (key) {
-            case "name", "description", "category" -> crBuilder.like(crBuilder.lower(root.get(key)), like(value));
+            case "name", "description" -> crBuilder.like(crBuilder.lower(root.get(key)), like(value));
 
             case "workspaceId" -> crBuilder.equal(root.get("workspace").get("id"), value);
 
