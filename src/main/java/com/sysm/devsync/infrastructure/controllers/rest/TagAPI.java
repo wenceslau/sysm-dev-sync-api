@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -16,6 +18,7 @@ import java.util.Map;
 @Tag(name = "Tags")
 public interface TagAPI {
 
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @PostMapping(
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
@@ -27,6 +30,7 @@ public interface TagAPI {
             @RequestBody TagCreateUpdate request
     );
 
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @PutMapping(value = "/{id}",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
@@ -39,6 +43,7 @@ public interface TagAPI {
             @RequestBody TagCreateUpdate request
     );
 
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @DeleteMapping(value = "/{id}")
     @Operation(summary = "Delete a tag by its ID")
     @ApiResponse(responseCode = "204", description = "Tag deleted successfully")
@@ -47,6 +52,7 @@ public interface TagAPI {
             @PathVariable("id") String id
     );
 
+    @PreAuthorize("hasAnyRole('MEMBER', 'ADMIN')")
     @GetMapping(value = "/{id}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
@@ -57,6 +63,7 @@ public interface TagAPI {
             @PathVariable("id") String id
     );
 
+    @PreAuthorize("hasAnyRole('MEMBER', 'ADMIN')")
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Search for tags with pagination")
     Pagination<TagResponse> searchTags(

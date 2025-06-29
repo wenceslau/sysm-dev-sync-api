@@ -14,6 +14,10 @@ web-server:
   undertow_threads_worker: 32
   undertow_threads_io: 2
 
+keycloak:
+  realm: ${KEYCLOAK_REALM}
+  host: ${KEYCLOAK_HOST}
+
 log:
   level_root: ${LOG_LEVEL_ROOT:INFO}
 

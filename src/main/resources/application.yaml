@@ -41,6 +41,18 @@ spring:
       "[hibernate.generate_statistics]": false
       "[hibernate.connection.provider_disables_autocommit]": true
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Spring on start get the Keycloak public certificates and put it in cache.
+          # Each request check if the token is signed and its signature match to the public certificate
+          jwk-set-uri: ${keycloak.host}/realms/${keycloak.realm}/protocol/openid-connect/certs # url to get the public certificates
+          issuer-uri: ${keycloak.host}/realms/${keycloak.realm}
+
+          # In case of URL is not working, you can use the public key directly
+          #public-key-location: classpath:key/kc-public-key.pem
+
 logging:
   level:
     root: ${log.level_root}
