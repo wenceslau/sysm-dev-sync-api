@@ -46,10 +46,13 @@ public class QuestionController implements QuestionAPI {
     }
 
     @Override
-    public Pagination<QuestionResponse> searchQuestions(int pageNumber, int pageSize, String sort, String direction, String terms) {
+    public Pagination<QuestionResponse> searchQuestions(int pageNumber, int pageSize, String sort,
+                                                        String direction, Map<String, String> filters) {
+
         var page = Page.of(pageNumber, pageSize, sort, direction);
-        var query = new SearchQuery(page, Map.of());
-        return questionService.getAllQuestions(query).map(QuestionResponse::from);
+        var searchQuery = new SearchQuery(page, filters);
+
+        return questionService.getAllQuestions(searchQuery).map(QuestionResponse::from);
     }
 
     @Override

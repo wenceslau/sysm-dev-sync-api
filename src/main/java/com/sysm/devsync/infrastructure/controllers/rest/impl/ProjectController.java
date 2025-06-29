@@ -44,9 +44,11 @@ public class ProjectController implements ProjectAPI {
     }
 
     @Override
-    public Pagination<ProjectResponse> searchProjects(int pageNumber, int pageSize, String sort, String direction, String terms) {
+    public Pagination<ProjectResponse> searchProjects(int pageNumber, int pageSize, String sort,
+                                                      String direction, Map<String, String> filters) {
+
         var page = Page.of(pageNumber, pageSize, sort, direction);
-        var searchQuery = new SearchQuery(page, Map.of());
+        var searchQuery = new SearchQuery(page, filters);
         return projectService.getAllProjects(searchQuery)
                 .map(ProjectResponse::from);
     }

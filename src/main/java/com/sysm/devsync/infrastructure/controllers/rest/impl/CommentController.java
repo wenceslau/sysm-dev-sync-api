@@ -47,14 +47,12 @@ public class CommentController implements CommentAPI {
 
     @Override
     public Pagination<CommentResponse> searchComments(int pageNumber, int pageSize, String sort,
-                                                      String direction, String terms) {
+                                                      String direction, Map<String, String> filters) {
 
         var page = Page.of(pageNumber, pageSize, sort, direction);
-        var query = new SearchQuery(page, Map.of());
+        var searchQuery = new SearchQuery(page, filters);
 
-        // This single service call now handles all search/filter scenarios,
-        // including by target, thanks to our persistence layer update.
-        return commentService.getAllComments(query)
+        return commentService.getAllComments(searchQuery)
                 .map(CommentResponse::from);
     }
 

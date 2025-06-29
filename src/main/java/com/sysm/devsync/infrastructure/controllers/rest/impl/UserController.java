@@ -9,6 +9,7 @@ import com.sysm.devsync.infrastructure.controllers.dto.response.UserResponse;
 import com.sysm.devsync.infrastructure.controllers.rest.UserAPI;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -70,9 +71,11 @@ public class UserController implements UserAPI {
     }
 
     @Override
-    public Pagination<UserResponse> search(int pageNumber, int pageSize, String sort, String direction, String terms) {
+    public Pagination<UserResponse> search(int pageNumber, int pageSize, String sort,
+                                           String direction, Map<String, String> filters) {
+
         var page = Page.of(pageNumber, pageSize, sort, direction);
-        var searchQuery = new SearchQuery(page, Map.of());
+        var searchQuery = new SearchQuery(page, filters);
 
         var pagination = userService.searchUsers(searchQuery);
         return pagination.map(UserResponse::from);

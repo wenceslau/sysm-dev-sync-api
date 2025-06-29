@@ -46,9 +46,12 @@ public class WorkspaceController implements WorkspaceAPI {
     }
 
     @Override
-    public Pagination<WorkspaceResponse> search(int pageNumber, int pageSize, String sort, String direction, String terms) {
+    public Pagination<WorkspaceResponse> search(int pageNumber, int pageSize, String sort,
+                                                String direction, Map<String, String> filters) {
+
         var page = Page.of(pageNumber, pageSize, sort, direction);
-        var searchQuery = new SearchQuery(page, Map.of());
+        var searchQuery = new SearchQuery(page, filters);
+
         return workspaceService.getAllWorkspaces(searchQuery).map(WorkspaceResponse::from);
     }
 
@@ -57,7 +60,6 @@ public class WorkspaceController implements WorkspaceAPI {
         workspaceService.updateWorkspace(id, request);
         return ResponseEntity.noContent().build();
     }
-
 
 
     @Override

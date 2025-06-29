@@ -9,6 +9,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RequestMapping("/notes")
 @Tag(name = "Notes")
 public interface NoteAPI {
@@ -28,7 +30,7 @@ public interface NoteAPI {
             @RequestParam(name = "pageSize", defaultValue = "10") int pageSize,
             @RequestParam(name = "sort", defaultValue = "updatedAt") String sort,
             @RequestParam(name = "direction", defaultValue = "desc") String direction,
-            @RequestParam(name = "terms", required = false) String terms
+            @RequestParam Map<String, String> filters
     );
 
     @PutMapping("/{id}")

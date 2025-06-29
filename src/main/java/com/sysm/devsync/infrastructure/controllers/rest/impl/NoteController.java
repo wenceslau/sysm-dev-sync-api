@@ -45,10 +45,13 @@ public class NoteController implements NoteAPI {
     }
 
     @Override
-    public Pagination<NoteResponse> searchNotes(int pageNumber, int pageSize, String sort, String direction, String terms) {
+    public Pagination<NoteResponse> searchNotes(int pageNumber, int pageSize, String sort,
+                                                String direction, Map<String, String> filters) {
+
         var page = Page.of(pageNumber, pageSize, sort, direction);
-        var query = new SearchQuery(page, Map.of());
-        return noteService.getAllNotes(query).map(NoteResponse::from);
+        var searchQuery = new SearchQuery(page, filters);
+
+        return noteService.getAllNotes(searchQuery).map(NoteResponse::from);
     }
 
     @Override

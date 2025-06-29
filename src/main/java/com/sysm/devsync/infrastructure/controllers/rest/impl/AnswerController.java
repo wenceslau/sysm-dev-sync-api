@@ -46,8 +46,11 @@ public class AnswerController implements AnswerAPI {
     }
 
     @Override
-    public Pagination<AnswerResponse> getAnswersByQuestionId(String questionId, int pageNumber, int pageSize, String sort, String direction) {
+    public Pagination<AnswerResponse> getAnswersByQuestionId(String questionId, int pageNumber, int pageSize,
+                                                             String sort, String direction) {
+
         var page = Page.of(pageNumber, pageSize, sort, direction);
+
         return answerService.getAllAnswers(page, questionId).map(AnswerResponse::from);
     }
 

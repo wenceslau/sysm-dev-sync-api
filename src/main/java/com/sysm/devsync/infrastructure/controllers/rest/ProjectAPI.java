@@ -9,6 +9,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RequestMapping("/projects")
 @Tag(name = "Projects")
 public interface ProjectAPI {
@@ -30,7 +32,7 @@ public interface ProjectAPI {
             @RequestParam(name = "pageSize", defaultValue = "10") int pageSize,
             @RequestParam(name = "sort", defaultValue = "name") String sort,
             @RequestParam(name = "direction", defaultValue = "asc") String direction,
-            @RequestParam(name = "terms", required = false) String terms
+            @RequestParam Map<String, String> filters
     );
 
     @PutMapping("/{id}")

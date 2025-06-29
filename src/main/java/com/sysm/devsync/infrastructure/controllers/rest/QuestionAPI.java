@@ -10,6 +10,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RequestMapping("/questions")
 @Tag(name = "Questions")
 public interface QuestionAPI {
@@ -29,7 +31,7 @@ public interface QuestionAPI {
             @RequestParam(name = "pageSize", defaultValue = "10") int pageSize,
             @RequestParam(name = "sort", defaultValue = "createdAt") String sort,
             @RequestParam(name = "direction", defaultValue = "desc") String direction,
-            @RequestParam(name = "terms", required = false) String terms
+            @RequestParam Map<String, String> filters
     );
 
     @PutMapping("/{id}")

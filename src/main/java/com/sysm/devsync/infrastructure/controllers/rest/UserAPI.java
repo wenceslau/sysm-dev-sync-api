@@ -10,6 +10,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RequestMapping(value = "users")
 @Tag(name = "Users")
 public interface UserAPI {
@@ -74,7 +76,7 @@ public interface UserAPI {
             @RequestParam(name = "pageSize", required = false, defaultValue = "10") int pageSize,
             @RequestParam(name = "sort", required = false, defaultValue = "name") String sort,
             @RequestParam(name = "direction", required = false, defaultValue = "asc") String direction,
-            @RequestParam(name = "terms", required = false, defaultValue = "") String terms
+            @RequestParam Map<String, String> filters
     );
 
 }
