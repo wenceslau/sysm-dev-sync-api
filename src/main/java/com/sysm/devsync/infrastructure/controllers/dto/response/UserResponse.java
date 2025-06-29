@@ -5,7 +5,7 @@ import com.sysm.devsync.domain.models.User;
 
 public record UserResponse(
         String id,
-        String username,
+        String name,
         String email,
         String profilePictureUrl,
         UserRole role

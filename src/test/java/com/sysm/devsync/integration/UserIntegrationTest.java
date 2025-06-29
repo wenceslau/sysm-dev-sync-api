@@ -5,6 +5,7 @@ import com.sysm.devsync.domain.models.User;
 import com.sysm.devsync.infrastructure.controllers.dto.request.UserCreateUpdate;
 import com.sysm.devsync.infrastructure.repositories.UserJpaRepository;
 import com.sysm.devsync.infrastructure.repositories.entities.UserJpaEntity;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,8 +15,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -24,6 +24,12 @@ public class UserIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private UserJpaRepository userJpaRepository;
+
+    @BeforeEach
+    void setUp() {
+        // This ensures each test runs with a clean database, preventing side effects.
+        userJpaRepository.deleteAll();
+    }
 
     @Test
     @DisplayName("POST /users - should create a new user successfully")
@@ -83,7 +89,7 @@ public class UserIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value(userJpa.getId()))
-                .andExpect(jsonPath("$.username").value("Alice"))
+                .andExpect(jsonPath("$.name").value("Alice"))
                 .andExpect(jsonPath("$.email").value("alice@example.com"))
                 .andExpect(jsonPath("$.role").value("ADMIN"));
     }
@@ -193,7 +199,47 @@ public class UserIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.total").value(3))
                 .andExpect(jsonPath("$.items.length()").value(2))
-                .andExpect(jsonPath("$.items[0].username").value("Aaron"))
-                .andExpect(jsonPath("$.items[1].username").value("Brian"));
+                .andExpect(jsonPath("$.items[0].name").value("Aaron"))
+                .andExpect(jsonPath("$.items[1].name").value("Brian"));
+    }
+
+    @Test
+    @DisplayName("GET /users - should return users filtered by query parameters")
+    void searchUsers_withFilters_shouldReturnFilteredResults() throws Exception {
+        // Arrange
+        userJpaRepository.save(UserJpaEntity.fromModel(User.create("Charles Admin", "charles@example.com", UserRole.ADMIN)));
+        userJpaRepository.save(UserJpaEntity.fromModel(User.create("Diana Member", "diana@example.com", UserRole.MEMBER)));
+        userJpaRepository.save(UserJpaEntity.fromModel(User.create("Charles Member", "charles.m@example.com", UserRole.MEMBER)));
+        userJpaRepository.flush();
+
+        // Act & Assert - Filter by name
+        mockMvc.perform(get("/users")
+                        .param("name", "Diana"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(1))
+                .andExpect(jsonPath("$.items[0].name").value("Diana Member"));
+
+        // Act & Assert - Filter by role
+        mockMvc.perform(get("/users")
+                        .param("role", "ADMIN"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(1))
+                .andExpect(jsonPath("$.items[0].name").value("Charles Admin"));
+
+        // Act & Assert - Filter by multiple fields (name and role)
+        mockMvc.perform(get("/users")
+                        .param("name", "Charles")
+                        .param("role", "MEMBER"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(1))
+                .andExpect(jsonPath("$.items[0].name").value("Charles Member"));
+
+        // Act & Assert - Filter with no results
+        mockMvc.perform(get("/users")
+                        .param("name", "Diana")
+                        .param("role", "ADMIN"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(0))
+                .andExpect(jsonPath("$.items", hasSize(0)));
     }
 }
