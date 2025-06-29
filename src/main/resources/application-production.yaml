@@ -1,11 +1,11 @@
 database:
-  url: ${DATABASE_URL:jdbc:h2:mem://dev:MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE}
+  url: ${DATABASE_URL:jdbc:h2:mem://prod:MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE}
   username: ${DATABASE_USERNAME:sa}
   password: ${DATABASE_PASSWORD:}
   jpa_show_sql: true
   jpa_defer_datasource_initialization: false
-  hibernate_ddl_auto: create-drop
-#  hibernate_dialect: ${DATABASE_DIALECT:org.hibernate.dialect.H2Dialect}
+  hibernate_ddl_auto: none
+  hibernate_dialect: ${DATABASE_DIALECT:org.hibernate.dialect.H2Dialect}
   driver_class_name: ${DATABASE_DRIVER_CLASS_NAME:org.h2.Driver}
 
 web-server:
