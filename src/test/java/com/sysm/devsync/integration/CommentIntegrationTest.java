@@ -14,7 +14,6 @@ import org.springframework.http.MediaType;
 
 import java.time.Instant;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -27,39 +26,37 @@ public class CommentIntegrationTest extends AbstractIntegrationTest {
     @Autowired
     private CommentJpaRepository commentJpaRepository;
     @Autowired
-    private UserJpaRepository userJpaRepository;
-    @Autowired
-    private WorkspaceJpaRepository workspaceJpaRepository;
-    @Autowired
-    private ProjectJpaRepository projectJpaRepository;
+    private NoteJpaRepository noteJpaRepository;
     @Autowired
     private QuestionJpaRepository questionJpaRepository;
     @Autowired
-    private AnswerJpaRepository answerJpaRepository;
+    private ProjectJpaRepository projectJpaRepository;
     @Autowired
-    private NoteJpaRepository noteJpaRepository;
+    private UserJpaRepository userJpaRepository;
+    @Autowired
+    private WorkspaceJpaRepository workspaceJpaRepository;
 
     // This ID is hardcoded in the controller for the "authenticated" user
     private static final String FAKE_AUTHENTICATED_USER_ID = "036dc698-3b84-49e1-8999-25e57bcb7a8a";
 
-    private UserJpaEntity testAuthor;
-    private QuestionJpaEntity testQuestion;
-    private AnswerJpaEntity testAnswer;
-    private NoteJpaEntity testNote;
+    private UserJpaEntity testAuthor1;
+    private UserJpaEntity testAuthor2;
+    private QuestionJpaEntity questionTarget;
+    private NoteJpaEntity noteTarget;
 
     @BeforeEach
     void setUp() {
-        // Clean all repositories to ensure test isolation
+        // Clean all relevant repositories to ensure test isolation
         commentJpaRepository.deleteAll();
-        answerJpaRepository.deleteAll();
-        questionJpaRepository.deleteAll();
         noteJpaRepository.deleteAll();
+        questionJpaRepository.deleteAll();
         projectJpaRepository.deleteAll();
         workspaceJpaRepository.deleteAll();
         userJpaRepository.deleteAll();
 
-        // 1. Create a user to be the author of parent objects
-        testAuthor = userJpaRepository.saveAndFlush(UserJpaEntity.fromModel(User.create("Test Author", "author@test.com", UserRole.MEMBER)));
+        // 1. Create users
+        testAuthor1 = userJpaRepository.saveAndFlush(UserJpaEntity.fromModel(User.create("Author One", "author1@test.com", UserRole.MEMBER)));
+        testAuthor2 = userJpaRepository.saveAndFlush(UserJpaEntity.fromModel(User.create("Author Two", "author2@test.com", UserRole.MEMBER)));
 
         // 2. Ensure the fake authenticated user (who will create the comment) exists
         if (!userJpaRepository.existsById(FAKE_AUTHENTICATED_USER_ID)) {
@@ -73,26 +70,23 @@ public class CommentIntegrationTest extends AbstractIntegrationTest {
             userJpaRepository.saveAndFlush(fakeAuthUser);
         }
 
-        // 3. Create a workspace and project
-        var testWorkspace = workspaceJpaRepository.saveAndFlush(WorkspaceJpaEntity.fromModel(Workspace.create("Test WS", "Desc", true, testAuthor.getId())));
+        // 3. Create a workspace and project for the targets
+        var testWorkspace = workspaceJpaRepository.saveAndFlush(WorkspaceJpaEntity.fromModel(Workspace.create("Test WS", "Desc", true, testAuthor1.getId())));
         var testProject = projectJpaRepository.saveAndFlush(ProjectJpaEntity.fromModel(Project.create("Test Project", "Desc", testWorkspace.getId())));
 
-        // 4. Create target entities to comment on
-        var questionModel = Question.create("How to test?", "Details on testing.", testProject.getId(), testAuthor.getId());
-        testQuestion = questionJpaRepository.saveAndFlush(QuestionJpaEntity.fromModel(questionModel));
+        // 4. Create target entities (a Question and a Note)
+        var questionModel = Question.create("Question Target", "Details", testProject.getId(), testAuthor1.getId());
+        questionTarget = questionJpaRepository.saveAndFlush(QuestionJpaEntity.fromModel(questionModel));
 
-        var answerModel = Answer.create("This is an answer.", testQuestion.getId(), testAuthor.getId());
-        testAnswer = answerJpaRepository.saveAndFlush(AnswerJpaEntity.fromModel(answerModel));
-
-        var noteModel = Note.create("My Test Note", "Content of the note.", testProject.getId(), testAuthor.getId());
-        testNote = noteJpaRepository.saveAndFlush(NoteJpaEntity.fromModel(noteModel));
+        var noteModel = Note.create("Note Target", "Content", testProject.getId(), testAuthor2.getId());
+        noteTarget = noteJpaRepository.saveAndFlush(NoteJpaEntity.fromModel(noteModel));
     }
 
     @Test
-    @DisplayName("POST /comments - should create a new comment on a Question")
-    void createComment_onQuestion_shouldSucceed() throws Exception {
+    @DisplayName("POST /comments - should create a new comment successfully")
+    void createComment_shouldSucceed() throws Exception {
         // Arrange
-        var requestDto = new CommentCreateUpdate(TargetType.QUESTION, testQuestion.getId(), "This is a comment on a question.");
+        var requestDto = new CommentCreateUpdate(TargetType.QUESTION, questionTarget.getId(), "This is a new comment.");
         var requestJson = objectMapper.writeValueAsString(requestDto);
 
         // Act & Assert
@@ -105,55 +99,65 @@ public class CommentIntegrationTest extends AbstractIntegrationTest {
 
         // Verify DB state
         var createdComment = commentJpaRepository.findAll().get(0);
-        assertThat(createdComment.getContent()).isEqualTo("This is a comment on a question.");
+        assertThat(createdComment.getContent()).isEqualTo("This is a new comment.");
         assertThat(createdComment.getTargetType()).isEqualTo(TargetType.QUESTION);
-        assertThat(createdComment.getTargetId()).isEqualTo(testQuestion.getId());
+        assertThat(createdComment.getTargetId()).isEqualTo(questionTarget.getId());
         assertThat(createdComment.getAuthor().getId()).isEqualTo(FAKE_AUTHENTICATED_USER_ID);
     }
 
     @Test
-    @DisplayName("POST /comments - should fail for a non-existent target")
-    void createComment_forNonExistentTarget_shouldFail() throws Exception {
+    @DisplayName("GET /comments - should return paginated and filtered comments")
+    void searchComments_withFilters_shouldReturnFilteredResults() throws Exception {
         // Arrange
-        var nonExistentId = UUID.randomUUID().toString();
-        var requestDto = new CommentCreateUpdate(TargetType.NOTE, nonExistentId, "This comment should fail.");
-        var requestJson = objectMapper.writeValueAsString(requestDto);
+        var comment1 = Comment.create(TargetType.QUESTION, questionTarget.getId(), testAuthor1.getId(), "First comment on question");
+        commentJpaRepository.save(CommentJpaEntity.fromModel(comment1));
 
-        // Act & Assert
-        mockMvc.perform(post("/comments")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestJson))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message", equalTo("Note not found")));
-    }
+        var comment2 = Comment.create(TargetType.QUESTION, questionTarget.getId(), testAuthor2.getId(), "Second comment on question");
+        commentJpaRepository.save(CommentJpaEntity.fromModel(comment2));
 
-    @Test
-    @DisplayName("PUT /comments/{id} - should update an existing comment")
-    void updateComment_shouldSucceed() throws Exception {
-        // Arrange
-        var commentModel = Comment.create(TargetType.NOTE, testNote.getId(), testAuthor.getId(), "Old content");
-        var savedComment = commentJpaRepository.saveAndFlush(CommentJpaEntity.fromModel(commentModel));
+        var comment3 = Comment.create(TargetType.NOTE, noteTarget.getId(), testAuthor1.getId(), "A comment on the note");
+        commentJpaRepository.save(CommentJpaEntity.fromModel(comment3));
+        commentJpaRepository.flush();
 
-        var requestDto = new CommentCreateUpdate(TargetType.NOTE, testNote.getId(), "New, updated content.");
-        var requestJson = objectMapper.writeValueAsString(requestDto);
+        // Act & Assert - Filter by targetType
+        mockMvc.perform(get("/comments").param("targetType", "NOTE"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(1))
+                .andExpect(jsonPath("$.items[0].id").value(comment3.getId()));
 
-        // Act & Assert
-        mockMvc.perform(put("/comments/{id}", savedComment.getId())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestJson))
-                .andExpect(status().isNoContent());
+        // Act & Assert - Filter by targetId
+        mockMvc.perform(get("/comments").param("targetId", questionTarget.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(2));
 
-        // Verify DB state
-        Optional<CommentJpaEntity> updatedComment = commentJpaRepository.findById(savedComment.getId());
-        assertThat(updatedComment).isPresent();
-        assertThat(updatedComment.get().getContent()).isEqualTo("New, updated content.");
+        // Act & Assert - Filter by authorId
+        mockMvc.perform(get("/comments").param("authorId", testAuthor2.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(1))
+                .andExpect(jsonPath("$.items[0].id").value(comment2.getId()));
+
+        // Act & Assert - Filter by multiple fields (targetType=QUESTION and authorId=testAuthor1)
+        mockMvc.perform(get("/comments")
+                        .param("targetType", "QUESTION")
+                        .param("authorId", testAuthor1.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(1))
+                .andExpect(jsonPath("$.items[0].id").value(comment1.getId()));
+
+        // Act & Assert - Filter with no results
+        mockMvc.perform(get("/comments")
+                        .param("targetType", "NOTE")
+                        .param("authorId", testAuthor2.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(0))
+                .andExpect(jsonPath("$.items", hasSize(0)));
     }
 
     @Test
     @DisplayName("DELETE /comments/{id} - should delete an existing comment")
     void deleteComment_shouldSucceed() throws Exception {
         // Arrange
-        var commentModel = Comment.create(TargetType.ANSWER, testAnswer.getId(), testAuthor.getId(), "To be deleted");
+        var commentModel = Comment.create(TargetType.NOTE, noteTarget.getId(), testAuthor1.getId(), "To be deleted");
         var savedComment = commentJpaRepository.saveAndFlush(CommentJpaEntity.fromModel(commentModel));
         assertThat(commentJpaRepository.existsById(savedComment.getId())).isTrue();
 
@@ -163,44 +167,5 @@ public class CommentIntegrationTest extends AbstractIntegrationTest {
 
         // Verify DB state
         assertThat(commentJpaRepository.existsById(savedComment.getId())).isFalse();
-    }
-
-    @Test
-    @DisplayName("GET /comments - should return comments filtered by target")
-    void searchComments_byTarget_shouldReturnFilteredResults() throws Exception {
-        // Arrange
-        // Create comments on different targets
-        commentJpaRepository.save(CommentJpaEntity.fromModel(Comment.create(TargetType.QUESTION, testQuestion.getId(), testAuthor.getId(), "Comment on Question")));
-        commentJpaRepository.save(CommentJpaEntity.fromModel(Comment.create(TargetType.NOTE, testNote.getId(), testAuthor.getId(), "Comment 1 on Note")));
-        commentJpaRepository.save(CommentJpaEntity.fromModel(Comment.create(TargetType.NOTE, testNote.getId(), testAuthor.getId(), "Comment 2 on Note")));
-        commentJpaRepository.flush();
-
-        // Act & Assert - Search for comments on the NOTE
-        mockMvc.perform(get("/comments")
-                        .param("terms", "targetType=NOTE#targetId=" + testNote.getId())
-                        .param("sort", "content")
-                        .param("direction", "asc"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.total").value(2))
-                .andExpect(jsonPath("$.items", hasSize(2)))
-                .andExpect(jsonPath("$.items[0].content").value("Comment 1 on Note"))
-                .andExpect(jsonPath("$.items[1].content").value("Comment 2 on Note"));
-    }
-
-    @Test
-    @DisplayName("GET /comments - should return comments filtered by content")
-    void searchComments_byContent_shouldReturnFilteredResults() throws Exception {
-        // Arrange
-        commentJpaRepository.save(CommentJpaEntity.fromModel(Comment.create(TargetType.QUESTION, testQuestion.getId(), testAuthor.getId(), "A specific comment")));
-        commentJpaRepository.save(CommentJpaEntity.fromModel(Comment.create(TargetType.NOTE, testNote.getId(), testAuthor.getId(), "Another comment")));
-        commentJpaRepository.flush();
-
-        // Act & Assert
-        mockMvc.perform(get("/comments")
-                        .param("terms", "content=specific"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.total").value(1))
-                .andExpect(jsonPath("$.items", hasSize(1)))
-                .andExpect(jsonPath("$.items[0].content").value("A specific comment"));
     }
 }

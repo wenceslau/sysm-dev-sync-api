@@ -16,8 +16,8 @@ import java.util.Map;
 @Tag(name = "Comments")
 public interface CommentAPI {
 
-    @PostMapping()
-    @Operation(summary = "Create a new comment")
+    @PostMapping
+    @Operation(summary = "Create a new comment on a target (Note, Question, or Answer)")
     @ApiResponse(responseCode = "201", description = "Comment created successfully")
     ResponseEntity<?> createComment(@RequestBody CommentCreateUpdate request);
 
@@ -25,8 +25,8 @@ public interface CommentAPI {
     @Operation(summary = "Get a comment by its ID")
     ResponseEntity<CommentResponse> getCommentById(@PathVariable("id") String id);
 
-    @GetMapping()
-    @Operation(summary = "Search for comments with pagination and filters")
+    @GetMapping
+    @Operation(summary = "Search for comments with various filters")
     Pagination<CommentResponse> searchComments(
             @RequestParam(name = "pageNumber", defaultValue = "0") int pageNumber,
             @RequestParam(name = "pageSize", defaultValue = "10") int pageSize,
@@ -35,12 +35,23 @@ public interface CommentAPI {
             @RequestParam Map<String, String> filters
     );
 
-    // The getCommentsByTarget endpoint is no longer needed and can be removed.
-    // Its functionality is now handled by searchComments.
+    @GetMapping("/target/{targetType}/{targetId}")
+    @Operation(summary = "Get all comments for a specific target")
+    Pagination<CommentResponse> getCommentsByTarget(
+            @PathVariable("targetType") TargetType targetType,
+            @PathVariable("targetId") String targetId,
+            @RequestParam(name = "pageNumber", defaultValue = "0") int pageNumber,
+            @RequestParam(name = "pageSize", defaultValue = "10") int pageSize,
+            @RequestParam(name = "sort", defaultValue = "createdAt") String sort,
+            @RequestParam(name = "direction", defaultValue = "asc") String direction
+    );
 
     @PutMapping("/{id}")
     @Operation(summary = "Update a comment's content")
-    ResponseEntity<?> updateComment(@PathVariable("id") String id, @RequestBody CommentCreateUpdate request);
+    ResponseEntity<?> updateComment(
+            @PathVariable("id") String id,
+            @RequestBody CommentCreateUpdate request
+    );
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete a comment")

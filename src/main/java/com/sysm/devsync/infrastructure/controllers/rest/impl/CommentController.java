@@ -5,9 +5,9 @@ import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.enums.TargetType;
-import com.sysm.devsync.infrastructure.controllers.rest.CommentAPI;
 import com.sysm.devsync.infrastructure.controllers.dto.request.CommentCreateUpdate;
 import com.sysm.devsync.infrastructure.controllers.dto.response.CommentResponse;
+import com.sysm.devsync.infrastructure.controllers.rest.CommentAPI;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -32,8 +32,8 @@ public class CommentController implements CommentAPI {
     public ResponseEntity<?> createComment(@Valid @RequestBody CommentCreateUpdate request) {
         var response = commentService.createComment(request, FAKE_AUTHENTICATED_USER_ID);
         URI location = ServletUriComponentsBuilder
-                .fromCurrentRequest()
-                .path("/{id}")
+                .fromCurrentContextPath()
+                .path("/comments/{id}")
                 .buildAndExpand(response.id())
                 .toUri();
         return ResponseEntity.created(location).body(response);
@@ -57,10 +57,13 @@ public class CommentController implements CommentAPI {
     }
 
     @Override
+    public Pagination<CommentResponse> getCommentsByTarget(TargetType targetType, String targetId, int pageNumber, int pageSize, String sort, String direction) {
+        var page = Page.of(pageNumber, pageSize, sort, direction);
+        return commentService.getAllComments(page, targetId, targetType).map(CommentResponse::from);
+    }
+
+    @Override
     public ResponseEntity<?> updateComment(String id, @Valid @RequestBody CommentCreateUpdate request) {
-        // For update, only content is relevant from the DTO
-        // The service method expects the full DTO, but only uses the content field.
-        // This aligns with your decision to reuse the DTO and not use @Valid on the service method.
         commentService.updateComment(id, request);
         return ResponseEntity.noContent().build();
     }

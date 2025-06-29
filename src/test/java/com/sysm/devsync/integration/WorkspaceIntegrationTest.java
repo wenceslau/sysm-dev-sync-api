@@ -18,7 +18,7 @@ import java.time.Instant;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -32,20 +32,23 @@ public class WorkspaceIntegrationTest extends AbstractIntegrationTest {
 
     // This ID is hardcoded in WorkspaceController, so we need a user with this ID for creation tests
     private static final String FAKE_AUTHENTICATED_USER_ID = "036dc698-3b84-49e1-8999-25e57bcb7a8a";
+    private UserJpaEntity ownerUser;
 
     @BeforeEach
     void setUp() {
+        // Clean repositories to ensure test isolation
+        workspaceJpaRepository.deleteAll();
+        userJpaRepository.deleteAll();
+
         // Ensure the fake authenticated user exists for tests that need it
-        if (!userJpaRepository.existsById(FAKE_AUTHENTICATED_USER_ID)) {
-            UserJpaEntity owner = new UserJpaEntity();
-            owner.setId(FAKE_AUTHENTICATED_USER_ID);
-            owner.setName("Fake Owner");
-            owner.setEmail("owner@fake.com");
-            owner.setRole(UserRole.ADMIN);
-            owner.setCreatedAt(Instant.now());
-            owner.setUpdatedAt(Instant.now());
-            userJpaRepository.saveAndFlush(owner);
-        }
+        ownerUser = new UserJpaEntity();
+        ownerUser.setId(FAKE_AUTHENTICATED_USER_ID);
+        ownerUser.setName("Fake Owner");
+        ownerUser.setEmail("owner@fake.com");
+        ownerUser.setRole(UserRole.ADMIN);
+        ownerUser.setCreatedAt(Instant.now());
+        ownerUser.setUpdatedAt(Instant.now());
+        userJpaRepository.saveAndFlush(ownerUser);
     }
 
     @Test
@@ -64,7 +67,9 @@ public class WorkspaceIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(header().exists("Location"));
 
         // Verify DB state
-        var createdWorkspace = workspaceJpaRepository.findAll().get(0);
+        var createdWorkspaces = workspaceJpaRepository.findAll();
+        assertThat(createdWorkspaces).hasSize(1);
+        var createdWorkspace = createdWorkspaces.get(0);
         assertThat(createdWorkspace.getName()).isEqualTo("DevSync Project");
         assertThat(createdWorkspace.getOwner().getId()).isEqualTo(FAKE_AUTHENTICATED_USER_ID);
     }
@@ -98,6 +103,96 @@ public class WorkspaceIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.name", equalTo("My Workspace")))
                 .andExpect(jsonPath("$.ownerId", equalTo(FAKE_AUTHENTICATED_USER_ID)));
     }
+
+    @Test
+    @DisplayName("GET /workspaces - should return paginated and sorted results")
+    void searchWorkspaces_shouldReturnPaginatedAndSortedResults() throws Exception {
+        // Arrange
+        workspaceJpaRepository.save(WorkspaceJpaEntity.fromModel(Workspace.create("Workspace C", "...", false, FAKE_AUTHENTICATED_USER_ID)));
+        workspaceJpaRepository.save(WorkspaceJpaEntity.fromModel(Workspace.create("Workspace A", "...", false, FAKE_AUTHENTICATED_USER_ID)));
+        workspaceJpaRepository.save(WorkspaceJpaEntity.fromModel(Workspace.create("Workspace B", "...", false, FAKE_AUTHENTICATED_USER_ID)));
+        workspaceJpaRepository.flush();
+
+        // Act & Assert
+        mockMvc.perform(get("/workspaces")
+                        .param("pageNumber", "0")
+                        .param("pageSize", "2")
+                        .param("sort", "name")
+                        .param("direction", "asc"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(3))
+                .andExpect(jsonPath("$.items", hasSize(2)))
+                .andExpect(jsonPath("$.items[0].name").value("Workspace A"))
+                .andExpect(jsonPath("$.items[1].name").value("Workspace B"));
+    }
+
+    @Test
+    @DisplayName("GET /workspaces - should return paginated and filtered results")
+    void searchWorkspaces_withFilters_shouldReturnFilteredResults() throws Exception {
+        // Arrange
+        UserJpaEntity anotherOwner = userJpaRepository.save(UserJpaEntity.fromModel(User.create("Another Owner", "another@owner.com", UserRole.ADMIN)));
+        UserJpaEntity memberUser = userJpaRepository.save(UserJpaEntity.fromModel(User.create("Member One", "member1@test.com", UserRole.MEMBER)));
+        userJpaRepository.flush();
+
+        Workspace ws1 = Workspace.create("Public Alpha", "Alpha Desc", false, ownerUser.getId());
+        workspaceJpaRepository.save(WorkspaceJpaEntity.fromModel(ws1));
+
+        Workspace ws2 = Workspace.create("Private Beta", "Beta Desc", true, ownerUser.getId());
+        workspaceJpaRepository.save(WorkspaceJpaEntity.fromModel(ws2));
+
+        Workspace ws3 = Workspace.create("Public Gamma", "Gamma Desc", false, anotherOwner.getId());
+        ws3.addMember(memberUser.getId());
+        workspaceJpaRepository.save(WorkspaceJpaEntity.fromModel(ws3));
+        workspaceJpaRepository.flush();
+
+        // Act & Assert - Filter by name
+        mockMvc.perform(get("/workspaces")
+                        .param("name", "Alpha"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(1))
+                .andExpect(jsonPath("$.items[0].name").value("Public Alpha"));
+
+        // Act & Assert - Filter by isPrivate
+        mockMvc.perform(get("/workspaces")
+                        .param("isPrivate", "true"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(1))
+                .andExpect(jsonPath("$.items[0].name").value("Private Beta"));
+
+        // Act & Assert - Filter by ownerId
+        mockMvc.perform(get("/workspaces")
+                        .param("ownerId", ownerUser.getId())
+                        .param("sort", "name"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(2))
+                .andExpect(jsonPath("$.items", hasSize(2)))
+                .andExpect(jsonPath("$.items[0].name").value("Private Beta"))
+                .andExpect(jsonPath("$.items[1].name").value("Public Alpha"));
+
+        // Act & Assert - Filter by memberId
+        mockMvc.perform(get("/workspaces")
+                        .param("memberId", memberUser.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(1))
+                .andExpect(jsonPath("$.items[0].name").value("Public Gamma"));
+
+        // Act & Assert - Filter by multiple fields (name and isPrivate)
+        mockMvc.perform(get("/workspaces")
+                        .param("name", "Gamma")
+                        .param("isPrivate", "false"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(1))
+                .andExpect(jsonPath("$.items[0].name").value("Public Gamma"));
+
+        // Act & Assert - Filter with no results
+        mockMvc.perform(get("/workspaces")
+                        .param("name", "Alpha")
+                        .param("isPrivate", "true"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(0))
+                .andExpect(jsonPath("$.items", hasSize(0)));
+    }
+
 
     @Test
     @DisplayName("PUT /workspaces/{id} - should update an existing workspace")
@@ -191,27 +286,5 @@ public class WorkspaceIntegrationTest extends AbstractIntegrationTest {
         Optional<WorkspaceJpaEntity> updatedWs = workspaceJpaRepository.findById(savedWs.getId());
         assertThat(updatedWs).isPresent();
         assertThat(updatedWs.get().getOwner().getId()).isEqualTo(newOwner.getId());
-    }
-
-    @Test
-    @DisplayName("GET /workspaces - should return paginated results")
-    void searchWorkspaces_shouldReturnPaginatedResults() throws Exception {
-        // Arrange
-        workspaceJpaRepository.save(WorkspaceJpaEntity.fromModel(Workspace.create("Workspace C", "...", false, FAKE_AUTHENTICATED_USER_ID)));
-        workspaceJpaRepository.save(WorkspaceJpaEntity.fromModel(Workspace.create("Workspace A", "...", false, FAKE_AUTHENTICATED_USER_ID)));
-        workspaceJpaRepository.save(WorkspaceJpaEntity.fromModel(Workspace.create("Workspace B", "...", false, FAKE_AUTHENTICATED_USER_ID)));
-        workspaceJpaRepository.flush();
-
-        // Act & Assert
-        mockMvc.perform(get("/workspaces")
-                        .param("pageNumber", "0")
-                        .param("pageSize", "2")
-                        .param("sort", "name")
-                        .param("direction", "asc"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.total").value(3))
-                .andExpect(jsonPath("$.items.length()").value(2))
-                .andExpect(jsonPath("$.items[0].name").value("Workspace A"))
-                .andExpect(jsonPath("$.items[1].name").value("Workspace B"));
     }
 }
