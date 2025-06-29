@@ -9,6 +9,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RequestMapping("answers")
 @Tag(name = "Answers")
 public interface AnswerAPI {
@@ -24,6 +26,17 @@ public interface AnswerAPI {
     @GetMapping("/{answerId}")
     @Operation(summary = "Get an answer by its ID")
     ResponseEntity<AnswerResponse> getAnswerById(@PathVariable("answerId") String answerId);
+
+
+    @GetMapping
+    @Operation(summary = "Search for answers with various filters")
+    Pagination<AnswerResponse> searchAnswers(
+            @RequestParam(name = "pageNumber", defaultValue = "0") int pageNumber,
+            @RequestParam(name = "pageSize", defaultValue = "10") int pageSize,
+            @RequestParam(name = "sort", defaultValue = "createdAt") String sort,
+            @RequestParam(name = "direction", defaultValue = "desc") String direction,
+            @RequestParam Map<String, String> filters
+    );
 
     @GetMapping("/questions/{questionId}")
     @Operation(summary = "Get all answers for a specific question")

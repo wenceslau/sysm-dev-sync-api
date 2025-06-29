@@ -3,6 +3,7 @@ package com.sysm.devsync.infrastructure.controllers.rest.impl;
 import com.sysm.devsync.application.AnswerService;
 import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.Pagination;
+import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.infrastructure.controllers.rest.AnswerAPI;
 import com.sysm.devsync.infrastructure.controllers.dto.request.AnswerCreateUpdate;
 import com.sysm.devsync.infrastructure.controllers.dto.response.AnswerResponse;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.Map;
 
 @RestController
 public class AnswerController implements AnswerAPI {
@@ -52,6 +54,15 @@ public class AnswerController implements AnswerAPI {
         var page = Page.of(pageNumber, pageSize, sort, direction);
 
         return answerService.getAllAnswers(page, questionId).map(AnswerResponse::from);
+    }
+
+    @Override
+    public Pagination<AnswerResponse> searchAnswers(int pageNumber, int pageSize, String sort,
+                                                    String direction, Map<String, String> filters) {
+        var page = Page.of(pageNumber, pageSize, sort, direction);
+        var searchQuery = new SearchQuery(page, filters);
+
+        return answerService.getAllAnswers(searchQuery).map(AnswerResponse::from);
     }
 
     @Override
