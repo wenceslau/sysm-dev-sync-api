@@ -1,6 +1,7 @@
 package com.sysm.devsync.infrastructure.controllers.rest;
 
 import com.sysm.devsync.domain.Pagination;
+import com.sysm.devsync.infrastructure.config.security.IsMemberOrAdmin;
 import com.sysm.devsync.infrastructure.controllers.dto.request.TagCreateUpdate;
 import com.sysm.devsync.infrastructure.controllers.dto.response.TagResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -52,7 +53,8 @@ public interface TagAPI {
             @PathVariable("id") String id
     );
 
-    @PreAuthorize("hasAnyRole('MEMBER', 'ADMIN')")
+
+    @IsMemberOrAdmin
     @GetMapping(value = "/{id}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
@@ -63,7 +65,7 @@ public interface TagAPI {
             @PathVariable("id") String id
     );
 
-    @PreAuthorize("hasAnyRole('MEMBER', 'ADMIN')")
+    @IsMemberOrAdmin
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Search for tags with pagination")
     Pagination<TagResponse> searchTags(

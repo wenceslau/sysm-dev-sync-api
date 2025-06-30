@@ -7,17 +7,17 @@ public class SecurityService {
     private final NotePersistencePort notePersistence;
     private final AnswerPersistencePort answerPersistence;
     private final QuestionPersistencePort questionPersistence;
-    private final WorkspacePersistencePort workspacePersistence;
+    private final CommentPersistencePort commentPersistence;
     // Add other persistence ports as needed
 
     public SecurityService(NotePersistencePort notePersistence,
                            AnswerPersistencePort answerPersistence,
                            QuestionPersistencePort questionPersistence,
-                           WorkspacePersistencePort workspacePersistence) {
+                           CommentPersistencePort commentPersistence) {
         this.notePersistence = notePersistence;
         this.answerPersistence = answerPersistence;
         this.questionPersistence = questionPersistence;
-        this.workspacePersistence = workspacePersistence;
+        this.commentPersistence = commentPersistence;
     }
 
     public boolean isAnswerOwner(String currentUserId, String answerId) {
@@ -35,6 +35,12 @@ public class SecurityService {
     public boolean isQuestionOwner(String currentUserId, String questionId) {
         return questionPersistence.findById(questionId)
                 .map(question -> currentUserId.equals(question.getAuthorId()))
+                .orElse(false);
+    }
+
+    public boolean isCommentOwner(String currentUserId, String commentId){
+        return commentPersistence.findById(commentId)
+                .map(comment -> currentUserId.equals(comment.getAuthorId()))
                 .orElse(false);
     }
 

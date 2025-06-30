@@ -1,6 +1,7 @@
 package com.sysm.devsync.infrastructure.controllers.rest;
 
 import com.sysm.devsync.domain.Pagination;
+import com.sysm.devsync.infrastructure.config.security.IsMemberOrAdmin;
 import com.sysm.devsync.infrastructure.controllers.dto.request.UserCreateUpdate;
 import com.sysm.devsync.infrastructure.controllers.dto.response.UserResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -64,10 +65,10 @@ public interface UserAPI {
             @PathVariable("id") String id
     );
 
+    @IsMemberOrAdmin
     @GetMapping(value = "/{id}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @PreAuthorize("hasAnyRole('MEMBER', 'ADMIN')")
     @Operation(summary = "Get a user by their ID")
     @ApiResponse(responseCode = "200", description = "User found")
     @ApiResponse(responseCode = "404", description = "User not found")
@@ -75,8 +76,8 @@ public interface UserAPI {
             @PathVariable("id") String id
     );
 
+    @IsMemberOrAdmin
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthorize("hasAnyRole('MEMBER', 'ADMIN')")
     @Operation(summary = "Search for users with pagination")
     Pagination<UserResponse> search(
             @RequestParam(name = "pageNumber", required = false, defaultValue = "0") int pageNumber,

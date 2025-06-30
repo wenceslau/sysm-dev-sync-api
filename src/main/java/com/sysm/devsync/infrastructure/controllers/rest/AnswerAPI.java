@@ -3,6 +3,7 @@ package com.sysm.devsync.infrastructure.controllers.rest;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.infrastructure.config.security.CanUserAcceptAnswer;
 import com.sysm.devsync.infrastructure.config.security.IsAnswerOwnerOrAdmin;
+import com.sysm.devsync.infrastructure.config.security.IsMemberOrAdmin;
 import com.sysm.devsync.infrastructure.controllers.dto.request.AnswerCreateUpdate;
 import com.sysm.devsync.infrastructure.controllers.dto.response.AnswerResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,8 +19,8 @@ import java.util.Map;
 @Tag(name = "Answers")
 public interface AnswerAPI {
 
+    @IsMemberOrAdmin
     @PostMapping("/questions/{questionId}")
-    @PreAuthorize("hasAnyRole('MEMBER', 'ADMIN')")
     @Operation(summary = "Create a new answer for a question")
     @ApiResponse(responseCode = "201", description = "Answer created successfully")
     ResponseEntity<?> createAnswer(
@@ -27,14 +28,14 @@ public interface AnswerAPI {
             @RequestBody AnswerCreateUpdate request
     );
 
+    @IsMemberOrAdmin
     @GetMapping("/{answerId}")
-    @PreAuthorize("hasAnyRole('MEMBER', 'ADMIN')")
     @Operation(summary = "Get an answer by its ID")
     ResponseEntity<AnswerResponse> getAnswerById(@PathVariable("answerId") String answerId);
 
 
+    @IsMemberOrAdmin
     @GetMapping
-    @PreAuthorize("hasAnyRole('MEMBER', 'ADMIN')")
     @Operation(summary = "Search for answers with various filters")
     Pagination<AnswerResponse> searchAnswers(
             @RequestParam(name = "pageNumber", defaultValue = "0") int pageNumber,
@@ -44,8 +45,8 @@ public interface AnswerAPI {
             @RequestParam Map<String, String> filters
     );
 
+    @IsMemberOrAdmin
     @GetMapping("/questions/{questionId}")
-    @PreAuthorize("hasAnyRole('MEMBER', 'ADMIN')")
     @Operation(summary = "Get all answers for a specific question")
     Pagination<AnswerResponse> getAnswersByQuestionId(
             @PathVariable("questionId") String questionId,

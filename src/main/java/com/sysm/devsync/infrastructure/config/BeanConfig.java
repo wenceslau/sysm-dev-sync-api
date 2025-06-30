@@ -73,11 +73,11 @@ public class BeanConfig {
     public SecurityService securityService(NotePersistencePort notePersistencePort,
                                            AnswerPersistencePort answerPersistencePort,
                                            QuestionPersistencePort questionPersistencePort,
-                                           WorkspacePersistencePort workspacePersistencePort){
+                                           CommentPersistencePort commentPersistencePort){
         return new SecurityService(notePersistencePort,
                 answerPersistencePort,
                 questionPersistencePort,
-                workspacePersistencePort);
+                commentPersistencePort);
     }
 
 }

@@ -1,6 +1,7 @@
 package com.sysm.devsync.infrastructure.controllers.rest;
 
 import com.sysm.devsync.domain.Pagination;
+import com.sysm.devsync.infrastructure.config.security.IsMemberOrAdmin;
 import com.sysm.devsync.infrastructure.controllers.dto.request.ProjectCreateUpdate;
 import com.sysm.devsync.infrastructure.controllers.dto.response.ProjectResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,21 +17,21 @@ import java.util.Map;
 @Tag(name = "Projects")
 public interface ProjectAPI {
 
+    @IsMemberOrAdmin
     @PostMapping
-    @PreAuthorize("hasAnyRole('MEMBER', 'ADMIN')")
     @Operation(summary = "Create a new project")
     @ApiResponse(responseCode = "201", description = "Project created successfully")
     @ApiResponse(responseCode = "400", description = "Invalid input data or workspace not found")
     ResponseEntity<?> createProject(@RequestBody ProjectCreateUpdate request);
 
+    @IsMemberOrAdmin
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('MEMBER', 'ADMIN')")
     @Operation(summary = "Get a project by its ID")
     @ApiResponse(responseCode = "200", description = "Project found")
     ResponseEntity<ProjectResponse> getProjectById(@PathVariable("id") String id);
 
+    @IsMemberOrAdmin
     @GetMapping
-    @PreAuthorize("hasAnyRole('MEMBER', 'ADMIN')")
     @Operation(summary = "Search for projects with pagination")
     @ApiResponse(responseCode = "200", description = "Projects found")
     Pagination<ProjectResponse> searchProjects(
@@ -41,8 +42,8 @@ public interface ProjectAPI {
             @RequestParam Map<String, String> filters
     );
 
+    @IsMemberOrAdmin
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('MEMBER', 'ADMIN')")
     @Operation(summary = "Update a project's details")
     @ApiResponse(responseCode = "204", description = "Project updated successfully")
     @ApiResponse(responseCode = "404", description = "Project not found")
@@ -56,7 +57,7 @@ public interface ProjectAPI {
     ResponseEntity<?> deleteProject(@PathVariable("id") String id);
 
     @PatchMapping("/{id}/workspace/{workspaceId}")
-    @PreAuthorize("hasAnyRole('MEMBER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @Operation(summary = "Change the workspace a project belongs to")
     @ApiResponse(responseCode = "204", description = "Workspace changed successfully")
     @ApiResponse(responseCode = "404", description = "Project or new Workspace not found")
