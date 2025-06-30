@@ -9,6 +9,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -21,6 +22,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 public class TagIntegrationTest extends AbstractIntegrationTest {
 
+    private static final String FAKE_AUTHENTICATED_USER_ID = "036dc698-3b84-49e1-8999-25e57bcb7a8a";
+
     @Autowired
     private TagJpaRepository tagJpaRepository;
 
@@ -31,6 +34,7 @@ public class TagIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN"})
     @DisplayName("POST /tags - should create a new tag successfully")
     void createTag_shouldSucceed() throws Exception {
         // Arrange
@@ -58,6 +62,7 @@ public class TagIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN"})
     @DisplayName("POST /tags - should fail with 400 Bad Request for invalid data")
     void createTag_withInvalidData_shouldFail() throws Exception {
         // Arrange: Name is blank, which violates the @NotBlank constraint
@@ -74,6 +79,7 @@ public class TagIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN", "MEMBER"})
     @DisplayName("GET /tags/{id} - should retrieve an existing tag")
     void getTagById_shouldSucceed() throws Exception {
         // Arrange
@@ -91,6 +97,7 @@ public class TagIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN", "MEMBER"})
     @DisplayName("GET /tags/{id} - should return 404 Not Found for non-existent tag")
     void getTagById_whenNotFound_shouldFail() throws Exception {
         // Arrange
@@ -102,6 +109,7 @@ public class TagIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN", "MEMBER"})
     @DisplayName("GET /tags - should return paginated list of tags")
     void searchTags_shouldReturnPaginatedResults() throws Exception {
         // Arrange
@@ -124,6 +132,7 @@ public class TagIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN", "MEMBER"})
     @DisplayName("GET /tags - should return tags filtered by query parameters")
     void searchTags_withFilters_shouldReturnFilteredResults() throws Exception {
         // Arrange
@@ -170,6 +179,7 @@ public class TagIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN"})
     @DisplayName("PUT /tags/{id} - should update an existing tag")
     void updateTag_shouldSucceed() throws Exception {
         // Arrange
@@ -196,6 +206,7 @@ public class TagIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN"})
     @DisplayName("DELETE /tags/{id} - should delete an existing tag")
     void deleteTag_shouldSucceed() throws Exception {
         // Arrange

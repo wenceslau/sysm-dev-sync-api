@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -20,6 +21,7 @@ public interface UserAPI {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @Operation(summary = "Create a new user")
     @ApiResponse(responseCode = "201", description = "User created successfully")
     @ApiResponse(responseCode = "400", description = "Invalid input data")
@@ -31,6 +33,7 @@ public interface UserAPI {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @Operation(summary = "Update a user's details (full update)")
     @ApiResponse(responseCode = "204", description = "User updated successfully")
     @ApiResponse(responseCode = "404", description = "User not found")
@@ -43,6 +46,7 @@ public interface UserAPI {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @Operation(summary = "Partially update a user's details")
     @ApiResponse(responseCode = "204", description = "User updated successfully")
     @ApiResponse(responseCode = "404", description = "User not found")
@@ -52,6 +56,7 @@ public interface UserAPI {
     );
 
     @DeleteMapping(value = "/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @Operation(summary = "Delete a user by their ID")
     @ApiResponse(responseCode = "204", description = "User deleted successfully")
     @ApiResponse(responseCode = "404", description = "User not found")
@@ -62,6 +67,7 @@ public interface UserAPI {
     @GetMapping(value = "/{id}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @PreAuthorize("hasAnyRole('MEMBER', 'ADMIN')")
     @Operation(summary = "Get a user by their ID")
     @ApiResponse(responseCode = "200", description = "User found")
     @ApiResponse(responseCode = "404", description = "User not found")
@@ -70,6 +76,7 @@ public interface UserAPI {
     );
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasAnyRole('MEMBER', 'ADMIN')")
     @Operation(summary = "Search for users with pagination")
     Pagination<UserResponse> search(
             @RequestParam(name = "pageNumber", required = false, defaultValue = "0") int pageNumber,

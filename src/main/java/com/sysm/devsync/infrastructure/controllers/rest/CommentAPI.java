@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -17,15 +18,18 @@ import java.util.Map;
 public interface CommentAPI {
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('MEMBER', 'ADMIN')")
     @Operation(summary = "Create a new comment on a target (Note, Question, or Answer)")
     @ApiResponse(responseCode = "201", description = "Comment created successfully")
     ResponseEntity<?> createComment(@RequestBody CommentCreateUpdate request);
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('MEMBER', 'ADMIN')")
     @Operation(summary = "Get a comment by its ID")
     ResponseEntity<CommentResponse> getCommentById(@PathVariable("id") String id);
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('MEMBER', 'ADMIN')")
     @Operation(summary = "Search for comments with various filters")
     Pagination<CommentResponse> searchComments(
             @RequestParam(name = "pageNumber", defaultValue = "0") int pageNumber,
@@ -36,6 +40,7 @@ public interface CommentAPI {
     );
 
     @GetMapping("/target/{targetType}/{targetId}")
+    @PreAuthorize("hasAnyRole('MEMBER', 'ADMIN')")
     @Operation(summary = "Get all comments for a specific target")
     Pagination<CommentResponse> getCommentsByTarget(
             @PathVariable("targetType") TargetType targetType,
@@ -47,6 +52,7 @@ public interface CommentAPI {
     );
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('MEMBER', 'ADMIN')")
     @Operation(summary = "Update a comment's content")
     ResponseEntity<?> updateComment(
             @PathVariable("id") String id,
@@ -54,6 +60,7 @@ public interface CommentAPI {
     );
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @Operation(summary = "Delete a comment")
     @ApiResponse(responseCode = "204", description = "Comment deleted successfully")
     ResponseEntity<?> deleteComment(@PathVariable("id") String id);

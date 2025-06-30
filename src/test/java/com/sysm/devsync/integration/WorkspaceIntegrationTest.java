@@ -13,6 +13,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -52,6 +53,7 @@ public class WorkspaceIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN", "MEMBER"})
     @DisplayName("POST /workspaces - should create a new workspace successfully")
     void createWorkspace_shouldSucceed() throws Exception {
         // Arrange
@@ -75,6 +77,7 @@ public class WorkspaceIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN", "MEMBER"})
     @DisplayName("POST /workspaces - should fail with 400 for invalid data")
     void createWorkspace_withInvalidData_shouldFail() throws Exception {
         // Arrange: Name is blank
@@ -90,6 +93,7 @@ public class WorkspaceIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN", "MEMBER"})
     @DisplayName("GET /workspaces/{id} - should retrieve an existing workspace")
     void getWorkspaceById_shouldSucceed() throws Exception {
         // Arrange
@@ -105,6 +109,7 @@ public class WorkspaceIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN", "MEMBER"})
     @DisplayName("GET /workspaces - should return paginated and sorted results")
     void searchWorkspaces_shouldReturnPaginatedAndSortedResults() throws Exception {
         // Arrange
@@ -127,6 +132,7 @@ public class WorkspaceIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN", "MEMBER"})
     @DisplayName("GET /workspaces - should return paginated and filtered results")
     void searchWorkspaces_withFilters_shouldReturnFilteredResults() throws Exception {
         // Arrange
@@ -193,8 +199,8 @@ public class WorkspaceIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.items", hasSize(0)));
     }
 
-
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN", "MEMBER"})
     @DisplayName("PUT /workspaces/{id} - should update an existing workspace")
     void updateWorkspace_shouldSucceed() throws Exception {
         // Arrange
@@ -217,6 +223,7 @@ public class WorkspaceIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN"})
     @DisplayName("DELETE /workspaces/{id} - should delete an existing workspace")
     void deleteWorkspace_shouldSucceed() throws Exception {
         // Arrange
@@ -233,6 +240,7 @@ public class WorkspaceIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN", "MEMBER"})
     @DisplayName("POST /workspaces/{id}/members/{memberId} - should add a member")
     void addMember_shouldSucceed() throws Exception {
         // Arrange
@@ -251,6 +259,7 @@ public class WorkspaceIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN", "MEMBER"})
     @DisplayName("DELETE /workspaces/{id}/members/{memberId} - should remove a member")
     void removeMember_shouldSucceed() throws Exception {
         // Arrange
@@ -271,6 +280,7 @@ public class WorkspaceIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN", "MEMBER"})
     @DisplayName("PATCH /workspaces/{id}/owner/{newOwnerId} - should change the owner")
     void changeOwner_shouldSucceed() throws Exception {
         // Arrange

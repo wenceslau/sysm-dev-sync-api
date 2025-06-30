@@ -10,6 +10,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -22,6 +23,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 public class UserIntegrationTest extends AbstractIntegrationTest {
 
+    private static final String FAKE_AUTHENTICATED_USER_ID = "036dc698-3b84-49e1-8999-25e57bcb7a8a";
+
     @Autowired
     private UserJpaRepository userJpaRepository;
 
@@ -32,6 +35,7 @@ public class UserIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN"})
     @DisplayName("POST /users - should create a new user successfully")
     void createUser_shouldSucceed() throws Exception {
         // Arrange
@@ -60,6 +64,7 @@ public class UserIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN"})
     @DisplayName("POST /users - should fail with 400 Bad Request for invalid data (blank email)")
     void createUser_withInvalidData_shouldFail() throws Exception {
         // Arrange: Email is blank, which violates the @NotBlank constraint
@@ -77,6 +82,7 @@ public class UserIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN", "MEMBER"})
     @DisplayName("GET /users/{id} - should retrieve an existing user")
     void getUserById_shouldSucceed() throws Exception {
         // Arrange: Create a user directly in the DB
@@ -95,6 +101,7 @@ public class UserIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN", "MEMBER"})
     @DisplayName("GET /users/{id} - should return 404 Not Found for non-existent user")
     void getUserById_whenNotFound_shouldFail() throws Exception {
         // Arrange
@@ -107,6 +114,7 @@ public class UserIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN"})
     @DisplayName("PUT /users/{id} - should update an existing user")
     void updateUser_shouldSucceed() throws Exception {
         // Arrange: Create the initial user
@@ -134,6 +142,7 @@ public class UserIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN"})
     @DisplayName("PATCH /users/{id} - should partially update an existing user's name")
     void updateUserPatch_shouldSucceed() throws Exception {
         // Arrange: Create the initial user
@@ -163,6 +172,7 @@ public class UserIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN"})
     @DisplayName("DELETE /users/{id} - should delete an existing user")
     void deleteUser_shouldSucceed() throws Exception {
         // Arrange: Create the user to be deleted
@@ -182,6 +192,7 @@ public class UserIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN", "MEMBER"})
     @DisplayName("GET /users - should return paginated list of users")
     void searchUsers_shouldReturnPaginatedResults() throws Exception {
         // Arrange
@@ -204,6 +215,7 @@ public class UserIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN", "MEMBER"})
     @DisplayName("GET /users - should return users filtered by query parameters")
     void searchUsers_withFilters_shouldReturnFilteredResults() throws Exception {
         // Arrange

@@ -9,6 +9,7 @@ import com.sysm.devsync.infrastructure.controllers.dto.request.AnswerCreateUpdat
 import com.sysm.devsync.infrastructure.controllers.dto.response.AnswerResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -17,11 +18,9 @@ import java.net.URI;
 import java.util.Map;
 
 @RestController
-public class AnswerController implements AnswerAPI {
+public class AnswerController extends AbstractController implements AnswerAPI {
 
     private final AnswerService answerService;
-    // In a real app, this would come from the Spring Security context
-    private static final String FAKE_AUTHENTICATED_USER_ID = "036dc698-3b84-49e1-8999-25e57bcb7a8a";
 
     public AnswerController(AnswerService answerService) {
         this.answerService = answerService;
@@ -30,8 +29,7 @@ public class AnswerController implements AnswerAPI {
     @Override
     public ResponseEntity<?> createAnswer(String questionId, @Valid @RequestBody AnswerCreateUpdate request) {
         // Note: We need to adapt the call to the service method
-        var createUpdateDto = new com.sysm.devsync.infrastructure.controllers.dto.request.AnswerCreateUpdate(request.content());
-        var response = answerService.createAnswer(createUpdateDto, questionId, FAKE_AUTHENTICATED_USER_ID);
+        var response = answerService.createAnswer(request, questionId, authenticatedUserId());
 
         URI location = ServletUriComponentsBuilder
                 .fromCurrentContextPath()
@@ -68,8 +66,7 @@ public class AnswerController implements AnswerAPI {
     @Override
     public ResponseEntity<?> updateAnswer(String answerId, @Valid @RequestBody AnswerCreateUpdate request) {
         // Note: We need to adapt the call to the service method
-        var createUpdateDto = new com.sysm.devsync.infrastructure.controllers.dto.request.AnswerCreateUpdate(request.content());
-        answerService.updateAnswer(answerId, createUpdateDto);
+        answerService.updateAnswer(answerId, request);
         return ResponseEntity.noContent().build();
     }
 

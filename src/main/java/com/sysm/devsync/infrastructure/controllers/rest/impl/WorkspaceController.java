@@ -17,12 +17,11 @@ import java.net.URI;
 import java.util.Map;
 
 @RestController
-public class WorkspaceController implements WorkspaceAPI {
+public class WorkspaceController extends AbstractController implements WorkspaceAPI {
 
     private final WorkspaceService workspaceService;
 
     // For now, we'll hardcode the ownerId. In a real app, this would come from security context.
-    private static final String FAKE_AUTHENTICATED_USER_ID = "036dc698-3b84-49e1-8999-25e57bcb7a8a";
 
     public WorkspaceController(WorkspaceService workspaceService) {
         this.workspaceService = workspaceService;
@@ -30,7 +29,7 @@ public class WorkspaceController implements WorkspaceAPI {
 
     @Override
     public ResponseEntity<?> create(@Valid @RequestBody WorkspaceCreateUpdate request) {
-        var response = workspaceService.createWorkspace(request, FAKE_AUTHENTICATED_USER_ID);
+        var response = workspaceService.createWorkspace(request, authenticatedUserId());
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
                 .path("/{id}")

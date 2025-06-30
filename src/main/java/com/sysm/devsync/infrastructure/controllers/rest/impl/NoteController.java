@@ -17,11 +17,10 @@ import java.net.URI;
 import java.util.Map;
 
 @RestController
-public class NoteController implements NoteAPI {
+public class NoteController extends AbstractController implements NoteAPI {
 
     private final NoteService noteService;
     // In a real app, this would come from the Spring Security context
-    private static final String FAKE_AUTHENTICATED_USER_ID = "036dc698-3b84-49e1-8999-25e57bcb7a8a";
 
     public NoteController(NoteService noteService) {
         this.noteService = noteService;
@@ -29,7 +28,7 @@ public class NoteController implements NoteAPI {
 
     @Override
     public ResponseEntity<?> createNote(@Valid @RequestBody NoteCreateUpdate request) {
-        var response = noteService.createNote(request, FAKE_AUTHENTICATED_USER_ID);
+        var response = noteService.createNote(request, authenticatedUserId());
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
                 .path("/{id}")

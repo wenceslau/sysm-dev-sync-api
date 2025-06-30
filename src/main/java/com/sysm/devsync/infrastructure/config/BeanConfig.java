@@ -1,8 +1,8 @@
 package com.sysm.devsync.infrastructure.config;
 
 import com.sysm.devsync.application.*;
+import com.sysm.devsync.application.security.SecurityService;
 import com.sysm.devsync.domain.persistence.*;
-import com.sysm.devsync.infrastructure.repositories.persistence.NotePersistence;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -67,6 +67,17 @@ public class BeanConfig {
                 questionPersistencePort,
                 answerPersistencePort,
                 userPersistencePort);
+    }
+
+    @Bean("securityService")
+    public SecurityService securityService(NotePersistencePort notePersistencePort,
+                                           AnswerPersistencePort answerPersistencePort,
+                                           QuestionPersistencePort questionPersistencePort,
+                                           WorkspacePersistencePort workspacePersistencePort){
+        return new SecurityService(notePersistencePort,
+                answerPersistencePort,
+                questionPersistencePort,
+                workspacePersistencePort);
     }
 
 }

@@ -16,7 +16,7 @@ import java.net.URI;
 import java.util.Map;
 
 @RestController
-public class TagController implements TagAPI {
+public class TagController extends AbstractController implements TagAPI {
 
     private final TagService tagService;
 

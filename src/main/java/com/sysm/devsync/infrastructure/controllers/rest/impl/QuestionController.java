@@ -18,11 +18,10 @@ import java.net.URI;
 import java.util.Map;
 
 @RestController
-public class QuestionController implements QuestionAPI {
+public class QuestionController extends AbstractController implements QuestionAPI {
 
     private final QuestionService questionService;
     // In a real app, this would come from the Spring Security context
-    private static final String FAKE_AUTHENTICATED_USER_ID = "036dc698-3b84-49e1-8999-25e57bcb7a8a";
 
     public QuestionController(QuestionService questionService) {
         this.questionService = questionService;
@@ -30,7 +29,7 @@ public class QuestionController implements QuestionAPI {
 
     @Override
     public ResponseEntity<?> createQuestion(@Valid @RequestBody QuestionCreateUpdate request) {
-        var response = questionService.createQuestion(request, FAKE_AUTHENTICATED_USER_ID);
+        var response = questionService.createQuestion(request, authenticatedUserId());
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
                 .path("/{id}")

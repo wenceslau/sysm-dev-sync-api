@@ -11,6 +11,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -83,6 +84,7 @@ public class CommentIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN", "MEMBER"})
     @DisplayName("POST /comments - should create a new comment successfully")
     void createComment_shouldSucceed() throws Exception {
         // Arrange
@@ -106,6 +108,7 @@ public class CommentIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN", "MEMBER"})
     @DisplayName("GET /comments - should return paginated and filtered comments")
     void searchComments_withFilters_shouldReturnFilteredResults() throws Exception {
         // Arrange
@@ -154,6 +157,7 @@ public class CommentIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN"})
     @DisplayName("DELETE /comments/{id} - should delete an existing comment")
     void deleteComment_shouldSucceed() throws Exception {
         // Arrange

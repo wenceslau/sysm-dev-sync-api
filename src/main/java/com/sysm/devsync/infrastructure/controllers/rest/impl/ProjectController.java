@@ -17,7 +17,7 @@ import java.net.URI;
 import java.util.Map;
 
 @RestController
-public class ProjectController implements ProjectAPI {
+public class ProjectController extends AbstractController implements ProjectAPI {
 
     private final ProjectService projectService;
 

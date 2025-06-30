@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -101,6 +102,27 @@ public class GlobalExceptionHandler {
                 status.value(),
                 status.getReasonPhrase(),
                 ex.getMessage(),
+                request.getRequestURI()
+        );
+        return new ResponseEntity<>(errorResponse, status);
+    }
+
+    /**
+     * A catch-all handler for any other unhandled exceptions.
+     * This prevents stack traces from being exposed to the client.
+     *
+     * @return ResponseEntity with status 500 (Internal Server Error).
+     */
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAuthorizationDeniedException(AuthorizationDeniedException ex, HttpServletRequest request) {
+
+        final HttpStatus status = HttpStatus.FORBIDDEN;
+
+        var errorResponse = new ErrorResponse(
+                Instant.now(),
+                status.value(),
+                "Forbidden",
+                "You do not have permission to access this resource.",
                 request.getRequestURI()
         );
         return new ResponseEntity<>(errorResponse, status);

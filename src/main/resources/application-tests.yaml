@@ -14,5 +14,9 @@ web-server:
   undertow_threads_worker: 32
   undertow_threads_io: 2
 
+keycloak:
+  realm: ${KEYCLOAK_REALM:sys-monkey}
+  host: ${KEYCLOAK_HOST:https://keycloak-8716024511.us-central1.run.app}
+
 log:
   level_root: INFO

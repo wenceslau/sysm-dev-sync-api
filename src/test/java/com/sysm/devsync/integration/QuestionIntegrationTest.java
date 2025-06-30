@@ -23,6 +23,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -90,6 +91,7 @@ public class QuestionIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN", "MEMBER"})
     @DisplayName("POST /questions - should create a new question successfully")
     void createQuestion_shouldSucceed() throws Exception {
         // Arrange
@@ -113,6 +115,7 @@ public class QuestionIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN", "MEMBER"})
     @DisplayName("GET /questions/{id} - should retrieve an existing question")
     void getQuestionById_shouldSucceed() throws Exception {
         // Arrange
@@ -129,6 +132,7 @@ public class QuestionIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN", "MEMBER"})
     @DisplayName("GET /questions - should return paginated list of questions")
     void searchQuestions_withoutFilters_shouldReturnPaginatedAndSortedResults() throws Exception {
         // Arrange
@@ -151,6 +155,7 @@ public class QuestionIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN", "MEMBER"})
     @DisplayName("GET /questions - should return questions filtered by query parameters")
     void searchQuestions_withFilters_shouldReturnFilteredResults() throws Exception {
         // Arrange
@@ -205,6 +210,7 @@ public class QuestionIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN", "MEMBER"})
     @DisplayName("PUT /questions/{id} - should update an existing question's title and description")
     void updateQuestion_shouldSucceed() throws Exception {
         // Arrange
@@ -228,6 +234,7 @@ public class QuestionIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN", "MEMBER"})
     @DisplayName("PATCH /questions/{id}/status - should update a question's status")
     void updateQuestionStatus_shouldSucceed() throws Exception {
         // Arrange
@@ -251,6 +258,7 @@ public class QuestionIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN", "MEMBER"})
     @DisplayName("DELETE /questions/{id} - should delete an existing question")
     void deleteQuestion_shouldSucceed() throws Exception {
         // Arrange
@@ -267,6 +275,7 @@ public class QuestionIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN", "MEMBER"})
     @DisplayName("POST /questions/{id}/tags/{tagId} - should add a tag to a question")
     void addTagToQuestion_shouldSucceed() throws Exception {
         // Arrange
@@ -286,6 +295,7 @@ public class QuestionIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN", "MEMBER"})
     @DisplayName("DELETE /questions/{id}/tags/{tagId} - should remove a tag from a question")
     void removeTagFromQuestion_shouldSucceed() throws Exception {
         // Arrange

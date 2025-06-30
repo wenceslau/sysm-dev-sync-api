@@ -18,11 +18,10 @@ import java.net.URI;
 import java.util.Map;
 
 @RestController
-public class CommentController implements CommentAPI {
+public class CommentController extends AbstractController implements CommentAPI {
 
     private final CommentService commentService;
     // In a real app, this would come from the Spring Security context
-    private static final String FAKE_AUTHENTICATED_USER_ID = "036dc698-3b84-49e1-8999-25e57bcb7a8a";
 
     public CommentController(CommentService commentService) {
         this.commentService = commentService;
@@ -30,7 +29,7 @@ public class CommentController implements CommentAPI {
 
     @Override
     public ResponseEntity<?> createComment(@Valid @RequestBody CommentCreateUpdate request) {
-        var response = commentService.createComment(request, FAKE_AUTHENTICATED_USER_ID);
+        var response = commentService.createComment(request, authenticatedUserId());
         URI location = ServletUriComponentsBuilder
                 .fromCurrentContextPath()
                 .path("/comments/{id}")

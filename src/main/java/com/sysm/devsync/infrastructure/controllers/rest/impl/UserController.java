@@ -17,7 +17,7 @@ import java.net.URI;
 import java.util.Map;
 
 @RestController
-public class UserController implements UserAPI {
+public class UserController extends AbstractController implements UserAPI {
 
     private final UserService userService;
 

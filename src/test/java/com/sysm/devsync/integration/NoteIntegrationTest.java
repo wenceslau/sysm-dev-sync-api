@@ -13,6 +13,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -79,6 +80,7 @@ public class NoteIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN", "MEMBER"})
     @DisplayName("POST /notes - should create a new note successfully")
     void createNote_shouldSucceed() throws Exception {
         // Arrange
@@ -102,6 +104,7 @@ public class NoteIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN", "MEMBER"})
     @DisplayName("PUT /notes/{id} - should update a note's title and content")
     void updateNote_shouldSucceed() throws Exception {
         // Arrange
@@ -126,6 +129,7 @@ public class NoteIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN", "MEMBER"})
     @DisplayName("PATCH /notes/{id}/content - should partially update a note's content")
     void updateNoteContent_shouldSucceed() throws Exception {
         // Arrange
@@ -151,6 +155,7 @@ public class NoteIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN"})
     @DisplayName("DELETE /notes/{id} - should delete an existing note")
     void deleteNote_shouldSucceed() throws Exception {
         // Arrange
@@ -167,6 +172,7 @@ public class NoteIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN", "MEMBER"})
     @DisplayName("POST /notes/{id}/tags/{tagId} - should add a tag to a note")
     void addTagToNote_shouldSucceed() throws Exception {
         // Arrange
@@ -186,6 +192,7 @@ public class NoteIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN", "MEMBER"})
     @DisplayName("DELETE /notes/{id}/tags/{tagId} - should remove a tag from a note")
     void removeTagFromNote_shouldSucceed() throws Exception {
         // Arrange
@@ -206,6 +213,7 @@ public class NoteIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN", "MEMBER"})
     @DisplayName("GET /notes - should return paginated list of notes")
     void searchNotes_shouldReturnPaginatedResults() throws Exception {
         // Arrange
@@ -228,6 +236,7 @@ public class NoteIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN", "MEMBER"})
     @DisplayName("GET /notes - should return notes filtered by query parameters")
     void searchNotes_withFilters_shouldReturnFilteredResults() throws Exception {
         // Arrange

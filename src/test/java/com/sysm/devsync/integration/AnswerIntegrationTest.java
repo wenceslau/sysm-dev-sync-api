@@ -1,6 +1,7 @@
 package com.sysm.devsync.integration;
 
 import com.sysm.devsync.domain.enums.UserRole;
+import com.sysm.devsync.domain.models.Answer;
 import com.sysm.devsync.domain.models.Project;
 import com.sysm.devsync.domain.models.Question;
 import com.sysm.devsync.domain.models.User;
@@ -10,19 +11,23 @@ import com.sysm.devsync.infrastructure.repositories.*;
 import com.sysm.devsync.infrastructure.repositories.entities.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import java.time.Instant;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+
 
 public class AnswerIntegrationTest extends AbstractIntegrationTest {
 
@@ -37,13 +42,14 @@ public class AnswerIntegrationTest extends AbstractIntegrationTest {
     @Autowired
     private WorkspaceJpaRepository workspaceJpaRepository;
 
-    // This ID is hardcoded in the controller, so we need a user with this ID for creation tests
-    private static final String FAKE_AUTHENTICATED_USER_ID = "036dc698-3b84-49e1-8999-25e57bcb7a8a";
+    // Define constant, predictable UUIDs for test users
+    private static final String QUESTION_OWNER_ID = "11111111-1111-1111-1111-111111111111";
+    private static final String ANSWER_OWNER_ID = "22222222-2222-2222-2222-222222222222";
+    private static final String ANOTHER_USER_ID = "33333333-3333-3333-3333-333333333333";
+    private static final String ADMIN_ID = "44444444-4444-4444-4444-444444444444";
 
-    private UserJpaEntity testAuthor1;
-    private UserJpaEntity testAuthor2;
-    private QuestionJpaEntity testQuestion1;
-    private QuestionJpaEntity testQuestion2;
+    private QuestionJpaEntity testQuestion;
+    private AnswerJpaEntity testAnswer;
 
     @BeforeEach
     void setUp() {
@@ -54,197 +60,237 @@ public class AnswerIntegrationTest extends AbstractIntegrationTest {
         workspaceJpaRepository.deleteAll();
         userJpaRepository.deleteAll();
 
-        // 1. Create users
-        testAuthor1 = userJpaRepository.saveAndFlush(UserJpaEntity.fromModel(User.create("Author One", "author1@test.com", UserRole.MEMBER)));
-        testAuthor2 = userJpaRepository.saveAndFlush(UserJpaEntity.fromModel(User.create("Author Two", "author2@test.com", UserRole.MEMBER)));
+        // 1. Create users for various test scenarios using the constant IDs
+        Instant now = Instant.now();
+        var questionOwner = User.build(QUESTION_OWNER_ID, now, now, "Question Owner", "q.owner@test.com", null, null, UserRole.MEMBER);
+        var answerOwner = User.build(ANSWER_OWNER_ID, now, now, "Answer Owner", "a.owner@test.com", null, null, UserRole.MEMBER);
+        var anotherUser = User.build(ANOTHER_USER_ID, now, now, "Another User", "another@test.com", null, null, UserRole.MEMBER);
+        var adminUser = User.build(ADMIN_ID, now, now, "Admin User", "admin@test.com", null, null, UserRole.ADMIN);
 
-        // 2. Ensure the fake authenticated user (who will create the answer) exists
-        if (!userJpaRepository.existsById(FAKE_AUTHENTICATED_USER_ID)) {
-            UserJpaEntity fakeAuthUser = new UserJpaEntity();
-            fakeAuthUser.setId(FAKE_AUTHENTICATED_USER_ID);
-            fakeAuthUser.setName("Controller User");
-            fakeAuthUser.setEmail("controller.user@example.com");
-            fakeAuthUser.setRole(UserRole.ADMIN);
-            fakeAuthUser.setCreatedAt(Instant.now());
-            fakeAuthUser.setUpdatedAt(Instant.now());
-            userJpaRepository.saveAndFlush(fakeAuthUser);
+        userJpaRepository.saveAndFlush(UserJpaEntity.fromModel(questionOwner));
+        userJpaRepository.saveAndFlush(UserJpaEntity.fromModel(answerOwner));
+        userJpaRepository.saveAndFlush(UserJpaEntity.fromModel(anotherUser));
+        userJpaRepository.saveAndFlush(UserJpaEntity.fromModel(adminUser));
+
+        // 2. Create a workspace and project
+        var testWorkspace = workspaceJpaRepository.saveAndFlush(WorkspaceJpaEntity.fromModel(Workspace.create("Test WS", "Desc", true, questionOwner.getId())));
+        var project = projectJpaRepository.saveAndFlush(ProjectJpaEntity.fromModel(Project.create("Test Project", "Desc", testWorkspace.getId())));
+
+        // 3. Create a question owned by 'questionOwner'
+        var questionModel = Question.create("How to test security?", "Details on testing.", project.getId(), questionOwner.getId());
+        testQuestion = questionJpaRepository.saveAndFlush(QuestionJpaEntity.fromModel(questionModel));
+
+        // 4. Create an answer owned by 'answerOwner'
+        var answerModel = Answer.create("This is the answer.", testQuestion.getId(), answerOwner.getId());
+        testAnswer = answerJpaRepository.saveAndFlush(AnswerJpaEntity.fromModel(answerModel));
+    }
+
+    @Nested
+    @DisplayName("General Functionality Tests")
+    class GeneralFunctionalityTests {
+
+        @Test
+        @WithMockUser(username = ANOTHER_USER_ID, roles = "MEMBER") // Any authenticated member can create
+        @DisplayName("POST /answers/questions/{qId} - should create a new answer successfully")
+        void createAnswer_shouldSucceed() throws Exception {
+            var requestDto = new AnswerCreateUpdate("This is a new answer from another user.");
+            var requestJson = objectMapper.writeValueAsString(requestDto);
+
+            mockMvc.perform(post("/answers/questions/{questionId}", testQuestion.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(requestJson))
+                    .andExpect(status().isCreated())
+                    .andExpect(header().exists("Location"));
+
+            // Verify DB state
+            var createdAnswer = answerJpaRepository.findByAuthorId(ANOTHER_USER_ID).get(0);
+            assertThat(createdAnswer.getContent()).isEqualTo("This is a new answer from another user.");
+            assertThat(createdAnswer.getQuestion().getId()).isEqualTo(testQuestion.getId());
+            assertThat(createdAnswer.getAuthor().getId()).isEqualTo(ANOTHER_USER_ID);
         }
 
-        // 3. Create a workspace and project for the questions
-        var testWorkspace = workspaceJpaRepository.saveAndFlush(WorkspaceJpaEntity.fromModel(Workspace.create("Test WS", "Desc", true, testAuthor1.getId())));
-        var testProject = projectJpaRepository.saveAndFlush(ProjectJpaEntity.fromModel(Project.create("Test Project", "Desc", testWorkspace.getId())));
+        @Test
+        @WithMockUser(username = ANOTHER_USER_ID, roles = "MEMBER") // Any authenticated member can read
+        @DisplayName("GET /answers/{id} - should retrieve an existing answer")
+        void getAnswerById_shouldSucceed() throws Exception {
+            // Act & Assert
+            mockMvc.perform(get("/answers/{answerId}", testAnswer.getId()))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.id", equalTo(testAnswer.getId())))
+                    .andExpect(jsonPath("$.content", equalTo("This is the answer.")))
+                    .andExpect(jsonPath("$.questionId", equalTo(testQuestion.getId())));
+        }
 
-        // 4. Create questions to be answered
-        var questionModel1 = Question.create("How to test?", "Details on testing.", testProject.getId(), testAuthor1.getId());
-        testQuestion1 = questionJpaRepository.saveAndFlush(QuestionJpaEntity.fromModel(questionModel1));
+        @Test
+        @WithMockUser(username = ANOTHER_USER_ID, roles = "MEMBER") // Any authenticated member can search
+        @DisplayName("GET /answers - should return paginated and filtered answers")
+        void searchAnswers_withFilters_shouldReturnFilteredResults() throws Exception {
+            // Arrange
+            var answer1 = Answer.create("First answer, not accepted", testQuestion.getId(), QUESTION_OWNER_ID);
+            answerJpaRepository.save(AnswerJpaEntity.fromModel(answer1));
 
-        var questionModel2 = Question.create("How to deploy?", "Details on deploying.", testProject.getId(), testAuthor2.getId());
-        testQuestion2 = questionJpaRepository.saveAndFlush(QuestionJpaEntity.fromModel(questionModel2));
+            var answer2 = Answer.create("Second answer, accepted", testQuestion.getId(), ANSWER_OWNER_ID);
+            answer2.accept();
+            answerJpaRepository.save(AnswerJpaEntity.fromModel(answer2));
+            answerJpaRepository.flush();
+
+            // Act & Assert - Filter by isAccepted=true
+            mockMvc.perform(get("/answers").param("isAccepted", "true"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.total").value(1))
+                    .andExpect(jsonPath("$.items[0].id").value(answer2.getId()));
+
+            // Act & Assert - Filter by authorId
+            mockMvc.perform(get("/answers").param("authorId", QUESTION_OWNER_ID))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.total").value(1))
+                    .andExpect(jsonPath("$.items[0].id").value(answer1.getId()));
+        }
+
+        @Test
+        @WithMockUser(username = ANOTHER_USER_ID, roles = "MEMBER") // Any authenticated member can read
+        @DisplayName("GET /answers/questions/{qId} - should return paginated answers")
+        void getAnswersByQuestionId_shouldReturnPaginatedResults() throws Exception {
+            // Arrange
+            answerJpaRepository.save(AnswerJpaEntity.fromModel(Answer.create("Answer C", testQuestion.getId(), QUESTION_OWNER_ID)));
+            answerJpaRepository.save(AnswerJpaEntity.fromModel(Answer.create("Answer A", testQuestion.getId(), QUESTION_OWNER_ID)));
+            // testAnswer is "Answer B"
+            answerJpaRepository.flush();
+
+            // Act & Assert
+            mockMvc.perform(get("/answers/questions/{questionId}", testQuestion.getId())
+                            .param("pageNumber", "0")
+                            .param("pageSize", "2")
+                            .param("sort", "content")
+                            .param("direction", "asc"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.total").value(3))
+                    .andExpect(jsonPath("$.items", hasSize(2)))
+                    .andExpect(jsonPath("$.items[0].content").value("Answer A"))
+                    .andExpect(jsonPath("$.items[1].content").value("Answer C"));
+        }
     }
 
-    @Test
-    @DisplayName("POST /answers/questions/{qId} - should create a new answer successfully")
-    void createAnswer_shouldSucceed() throws Exception {
-        // Arrange
-        var requestDto = new AnswerCreateUpdate("This is the correct way to test.");
-        var requestJson = objectMapper.writeValueAsString(requestDto);
+    @Nested
+    @DisplayName("Update Answer Security Tests")
+    class UpdateAnswerSecurity {
 
-        // Act & Assert
-        mockMvc.perform(post("/answers/questions/{questionId}", testQuestion1.getId())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestJson))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").isNotEmpty())
-                .andExpect(header().exists("Location"));
+        @Test
+        @DisplayName("PUT /answers/{id} - should succeed for the owner")
+        @WithMockUser(username = ANSWER_OWNER_ID, roles = "MEMBER") // Authenticated as the answer owner
+        void updateAnswer_asOwner_shouldSucceed() throws Exception {
+            var requestDto = new AnswerCreateUpdate("Updated content by owner.");
+            var requestJson = objectMapper.writeValueAsString(requestDto);
 
-        // Verify DB state
-        var createdAnswer = answerJpaRepository.findAll().get(0);
-        assertThat(createdAnswer.getContent()).isEqualTo("This is the correct way to test.");
-        assertThat(createdAnswer.getQuestion().getId()).isEqualTo(testQuestion1.getId());
-        assertThat(createdAnswer.getAuthor().getId()).isEqualTo(FAKE_AUTHENTICATED_USER_ID);
-        assertThat(createdAnswer.isAccepted()).isFalse();
+            mockMvc.perform(put("/answers/{answerId}", testAnswer.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(requestJson))
+                    .andExpect(status().isNoContent());
+
+            Optional<AnswerJpaEntity> updatedAnswer = answerJpaRepository.findById(testAnswer.getId());
+            assertThat(updatedAnswer).isPresent();
+            assertThat(updatedAnswer.get().getContent()).isEqualTo("Updated content by owner.");
+        }
+
+        @Test
+        @DisplayName("PUT /answers/{id} - should succeed for an admin")
+        @WithMockUser(username = ADMIN_ID, roles = "ADMIN") // Authenticated as an admin
+        void updateAnswer_asAdmin_shouldSucceed() throws Exception {
+            var requestDto = new AnswerCreateUpdate("Updated content by admin.");
+            var requestJson = objectMapper.writeValueAsString(requestDto);
+
+            mockMvc.perform(put("/answers/{answerId}", testAnswer.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(requestJson))
+                    .andExpect(status().isNoContent());
+        }
+
+        @Test
+        @DisplayName("PUT /answers/{id} - should fail with 403 for a different user")
+        @WithMockUser(username = ANOTHER_USER_ID, roles = "MEMBER") // Authenticated as a non-owner, non-admin
+        void updateAnswer_asDifferentUser_shouldFailWith403() throws Exception {
+            var requestDto = new AnswerCreateUpdate("This update should fail.");
+            var requestJson = objectMapper.writeValueAsString(requestDto);
+
+            mockMvc.perform(put("/answers/{answerId}", testAnswer.getId())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(requestJson))
+                    .andExpect(status().isForbidden());
+        }
     }
 
-    @Test
-    @DisplayName("GET /answers/{id} - should retrieve an existing answer")
-    void getAnswerById_shouldSucceed() throws Exception {
-        // Arrange
-        var answerModel = com.sysm.devsync.domain.models.Answer.create("My Answer", testQuestion1.getId(), testAuthor1.getId());
-        var savedAnswer = answerJpaRepository.saveAndFlush(AnswerJpaEntity.fromModel(answerModel));
+    @Nested
+    @DisplayName("Delete Answer Security Tests")
+    class DeleteAnswerSecurity {
+        @Test
+        @DisplayName("DELETE /answers/{id} - should succeed for the owner")
+        @WithMockUser(username = ANSWER_OWNER_ID, roles = "MEMBER")
+        void deleteAnswer_asOwner_shouldSucceed() throws Exception {
+            mockMvc.perform(delete("/answers/{answerId}", testAnswer.getId()))
+                    .andExpect(status().isNoContent());
 
-        // Act & Assert
-        mockMvc.perform(get("/answers/{answerId}", savedAnswer.getId()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", equalTo(savedAnswer.getId())))
-                .andExpect(jsonPath("$.content", equalTo("My Answer")))
-                .andExpect(jsonPath("$.questionId", equalTo(testQuestion1.getId())));
+            assertThat(answerJpaRepository.existsById(testAnswer.getId())).isFalse();
+        }
+
+        @Test
+        @DisplayName("DELETE /answers/{id} - should succeed for an admin")
+        @WithMockUser(username = ADMIN_ID, roles = "ADMIN")
+        void deleteAnswer_asAdmin_shouldSucceed() throws Exception {
+            mockMvc.perform(delete("/answers/{answerId}", testAnswer.getId()))
+                    .andExpect(status().isNoContent());
+
+            assertThat(answerJpaRepository.existsById(testAnswer.getId())).isFalse();
+        }
+
+        @Test
+        @DisplayName("DELETE /answers/{id} - should fail with 403 for a different user")
+        @WithMockUser(username = ANOTHER_USER_ID, roles = "MEMBER")
+        void deleteAnswer_asDifferentUser_shouldFailWith403() throws Exception {
+            mockMvc.perform(delete("/answers/{answerId}", testAnswer.getId()))
+                    .andExpect(status().isForbidden());
+
+            assertThat(answerJpaRepository.existsById(testAnswer.getId())).isTrue();
+        }
     }
 
-    @Test
-    @DisplayName("GET /answers - should return paginated and filtered answers")
-    void searchAnswers_withFilters_shouldReturnFilteredResults() throws Exception {
-        // Arrange
-        var answer1 = com.sysm.devsync.domain.models.Answer.create("First answer, not accepted", testQuestion1.getId(), testAuthor1.getId());
-        answerJpaRepository.save(AnswerJpaEntity.fromModel(answer1));
+    @Nested
+    @DisplayName("Accept/Reject Answer Security Tests")
+    class AcceptAnswerSecurity {
 
-        var answer2 = com.sysm.devsync.domain.models.Answer.create("Second answer, accepted", testQuestion1.getId(), testAuthor2.getId());
-        answer2.accept();
-        answerJpaRepository.save(AnswerJpaEntity.fromModel(answer2));
+        @Test
+        @DisplayName("PATCH /answers/{id}/accept - should succeed for the question owner")
+        @WithMockUser(username = QUESTION_OWNER_ID, roles = "MEMBER") // Authenticated as the question owner
+        void acceptAnswer_asQuestionOwner_shouldSucceed() throws Exception {
+            mockMvc.perform(patch("/answers/{answerId}/accept", testAnswer.getId()))
+                    .andExpect(status().isNoContent());
 
-        var answer3 = com.sysm.devsync.domain.models.Answer.create("Third answer, for question 2", testQuestion2.getId(), testAuthor1.getId());
-        answerJpaRepository.save(AnswerJpaEntity.fromModel(answer3));
-        answerJpaRepository.flush();
+            Optional<AnswerJpaEntity> updatedAnswer = answerJpaRepository.findById(testAnswer.getId());
+            assertThat(updatedAnswer).isPresent();
+            assertThat(updatedAnswer.get().isAccepted()).isTrue();
+        }
 
-        // Act & Assert - Filter by isAccepted=true
-        mockMvc.perform(get("/answers").param("isAccepted", "true"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.total").value(1))
-                .andExpect(jsonPath("$.items[0].id").value(answer2.getId()));
+        @Test
+        @DisplayName("PATCH /answers/{id}/accept - should succeed for an admin")
+        @WithMockUser(username = ADMIN_ID, roles = "ADMIN") // Authenticated as an admin
+        void acceptAnswer_asAdmin_shouldSucceed() throws Exception {
+            mockMvc.perform(patch("/answers/{answerId}/accept", testAnswer.getId()))
+                    .andExpect(status().isNoContent());
+        }
 
-        // Act & Assert - Filter by authorId
-        mockMvc.perform(get("/answers").param("authorId", testAuthor2.getId()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.total").value(1))
-                .andExpect(jsonPath("$.items[0].id").value(answer2.getId()));
+        @Test
+        @DisplayName("PATCH /answers/{id}/accept - should fail with 403 for the answer owner")
+        @WithMockUser(username = ANSWER_OWNER_ID, roles = "MEMBER") // The answer owner cannot accept their own answer
+        void acceptAnswer_asAnswerOwner_shouldFailWith403() throws Exception {
+            mockMvc.perform(patch("/answers/{answerId}/accept", testAnswer.getId()))
+                    .andExpect(status().isForbidden());
+        }
 
-        // Act & Assert - Filter by questionId
-        mockMvc.perform(get("/answers").param("questionId", testQuestion2.getId()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.total").value(1))
-                .andExpect(jsonPath("$.items[0].id").value(answer3.getId()));
-
-        // Act & Assert - Filter by multiple fields (isAccepted=false and questionId=testQuestion1)
-        mockMvc.perform(get("/answers")
-                        .param("isAccepted", "false")
-                        .param("questionId", testQuestion1.getId()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.total").value(1))
-                .andExpect(jsonPath("$.items[0].id").value(answer1.getId()));
-
-        // Act & Assert - Filter with no results
-        mockMvc.perform(get("/answers")
-                        .param("isAccepted", "true")
-                        .param("questionId", testQuestion2.getId()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.total").value(0))
-                .andExpect(jsonPath("$.items", hasSize(0)));
-    }
-
-    @Test
-    @DisplayName("PUT /answers/{id} - should update an existing answer")
-    void updateAnswer_shouldSucceed() throws Exception {
-        // Arrange
-        var answerModel = com.sysm.devsync.domain.models.Answer.create("Old Content", testQuestion1.getId(), testAuthor1.getId());
-        var savedAnswer = answerJpaRepository.saveAndFlush(AnswerJpaEntity.fromModel(answerModel));
-
-        var requestDto = new AnswerCreateUpdate("New, updated content.");
-        var requestJson = objectMapper.writeValueAsString(requestDto);
-
-        // Act & Assert
-        mockMvc.perform(put("/answers/{answerId}", savedAnswer.getId())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestJson))
-                .andExpect(status().isNoContent());
-
-        // Verify DB state
-        Optional<AnswerJpaEntity> updatedAnswer = answerJpaRepository.findById(savedAnswer.getId());
-        assertThat(updatedAnswer).isPresent();
-        assertThat(updatedAnswer.get().getContent()).isEqualTo("New, updated content.");
-    }
-
-    @Test
-    @DisplayName("PATCH /answers/{id}/accept - should mark an answer as accepted")
-    void acceptAnswer_shouldSucceed() throws Exception {
-        // Arrange
-        var answerModel = com.sysm.devsync.domain.models.Answer.create("A great answer", testQuestion1.getId(), testAuthor1.getId());
-        var savedAnswer = answerJpaRepository.saveAndFlush(AnswerJpaEntity.fromModel(answerModel));
-        assertThat(savedAnswer.isAccepted()).isFalse();
-
-        // Act & Assert
-        mockMvc.perform(patch("/answers/{answerId}/accept", savedAnswer.getId()))
-                .andExpect(status().isNoContent());
-
-        // Verify DB state
-        Optional<AnswerJpaEntity> updatedAnswer = answerJpaRepository.findById(savedAnswer.getId());
-        assertThat(updatedAnswer).isPresent();
-        assertThat(updatedAnswer.get().isAccepted()).isTrue();
-    }
-
-    @Test
-    @DisplayName("DELETE /answers/{id} - should delete an existing answer")
-    void deleteAnswer_shouldSucceed() throws Exception {
-        // Arrange
-        var answerModel = com.sysm.devsync.domain.models.Answer.create("To be deleted", testQuestion1.getId(), testAuthor1.getId());
-        var savedAnswer = answerJpaRepository.saveAndFlush(AnswerJpaEntity.fromModel(answerModel));
-        assertThat(answerJpaRepository.existsById(savedAnswer.getId())).isTrue();
-
-        // Act & Assert
-        mockMvc.perform(delete("/answers/{answerId}", savedAnswer.getId()))
-                .andExpect(status().isNoContent());
-
-        // Verify DB state
-        assertThat(answerJpaRepository.existsById(savedAnswer.getId())).isFalse();
-    }
-
-    @Test
-    @DisplayName("GET /answers/questions/{qId} - should return paginated answers")
-    void getAnswersByQuestionId_shouldReturnPaginatedResults() throws Exception {
-        // Arrange
-        answerJpaRepository.save(AnswerJpaEntity.fromModel(com.sysm.devsync.domain.models.Answer.create("Answer C", testQuestion1.getId(), testAuthor1.getId())));
-        answerJpaRepository.save(AnswerJpaEntity.fromModel(com.sysm.devsync.domain.models.Answer.create("Answer A", testQuestion1.getId(), testAuthor1.getId())));
-        answerJpaRepository.save(AnswerJpaEntity.fromModel(com.sysm.devsync.domain.models.Answer.create("Answer B", testQuestion1.getId(), testAuthor1.getId())));
-        answerJpaRepository.flush();
-
-        // Act & Assert
-        mockMvc.perform(get("/answers/questions/{questionId}", testQuestion1.getId())
-                        .param("pageNumber", "0")
-                        .param("pageSize", "2")
-                        .param("sort", "content")
-                        .param("direction", "asc"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.total").value(3))
-                .andExpect(jsonPath("$.items", hasSize(2)))
-                .andExpect(jsonPath("$.items[0].content").value("Answer A"))
-                .andExpect(jsonPath("$.items[1].content").value("Answer B"));
+        @Test
+        @DisplayName("PATCH /answers/{id}/accept - should fail with 403 for a different user")
+        @WithMockUser(username = ANOTHER_USER_ID, roles = "MEMBER") // A random user cannot accept
+        void acceptAnswer_asDifferentUser_shouldFailWith403() throws Exception {
+            mockMvc.perform(patch("/answers/{answerId}/accept", testAnswer.getId()))
+                    .andExpect(status().isForbidden());
+        }
     }
 }

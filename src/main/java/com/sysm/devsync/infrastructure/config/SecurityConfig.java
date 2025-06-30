@@ -48,8 +48,7 @@ import java.util.stream.Stream;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(securedEnabled = true, jsr250Enabled = true)
-@Profile({"production", "tests"}) //run in any profile different of this
+@EnableMethodSecurity(securedEnabled = true, jsr250Enabled = true) // CRITICAL: Enables @PreAuthorize
 public class SecurityConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
