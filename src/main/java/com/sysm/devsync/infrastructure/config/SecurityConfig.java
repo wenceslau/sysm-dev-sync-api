@@ -163,29 +163,42 @@ public class SecurityConfig {
                     }
              */
 
-            // Use getClaimAsMap for type safety
             Map<String, Object> resourceAccess = jwt.getClaimAsMap(RESOURCE_ACCESS);
             if (resourceAccess == null || resourceAccess.isEmpty()) {
                 return Stream.empty();
             }
 
             return resourceAccess.entrySet().stream()
+                    .filter(entry -> entry.getValue() instanceof Map)
                     .flatMap(entry -> {
-                        String resourceName = entry.getKey();
-                        // Safely check and cast the value
-                        if (entry.getValue() instanceof Map) {
-                            @SuppressWarnings("unchecked")
-                            Map<String, Object> resourceDetails = (Map<String, Object>) entry.getValue();
+                        final String resourceName = entry.getKey();
+                        final Map<String, Object> details = (Map<String, Object>) entry.getValue();
+                        final Object rolesClaim = details.get(ROLES);
 
-                            Object rolesClaim = resourceDetails.get(ROLES);
-                            if (rolesClaim instanceof Collection) {
-                                @SuppressWarnings("unchecked")
-                                Collection<String> roles = (Collection<String>) rolesClaim;
-                                return roles.stream().map(role -> resourceName.concat(SEPARATOR).concat(role));
-                            }
+                        if (rolesClaim instanceof Collection) {
+                            Collection<String> roles = (Collection<String>) rolesClaim;
+                            return roles.stream().map(role -> resourceName.concat(SEPARATOR).concat(role));
                         }
                         return Stream.empty();
                     });
+
+//            return resourceAccess.entrySet().stream()
+//                    .flatMap(entry -> {
+//                        String resourceName = entry.getKey();
+//                        // Safely check and cast the value
+//                        if (entry.getValue() instanceof Map) {
+//                            @SuppressWarnings("unchecked")
+//                            Map<String, Object> resourceDetails = (Map<String, Object>) entry.getValue();
+//
+//                            Object rolesClaim = resourceDetails.get(ROLES);
+//                            if (rolesClaim instanceof Collection) {
+//                                @SuppressWarnings("unchecked")
+//                                Collection<String> roles = (Collection<String>) rolesClaim;
+//                                return roles.stream().map(role -> resourceName.concat(SEPARATOR).concat(role));
+//                            }
+//                        }
+//                        return Stream.empty();
+//                    });
         }
 
         private Stream<String> extractRealmRoles(final Jwt jwt) {
