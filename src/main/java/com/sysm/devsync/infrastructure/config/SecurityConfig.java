@@ -1,6 +1,5 @@
 package com.sysm.devsync.infrastructure.config;
 
-import com.nimbusds.jose.shaded.gson.internal.LinkedTreeMap;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +23,6 @@ import org.springframework.security.oauth2.server.resource.web.BearerTokenResolv
 import org.springframework.security.web.SecurityFilterChain;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -54,8 +52,6 @@ import java.util.stream.Stream;
 public class SecurityConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
-    private static final String ROLE_ADMIN = "ADMIN";
-    private static final String ROLE_DEFAULT = "READER";
     private static final String[] AUTH_WHITELIST = {
             "/actuator/**",
     };
