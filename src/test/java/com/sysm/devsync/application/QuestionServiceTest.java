@@ -41,6 +41,8 @@ class QuestionServiceTest {
     private UserPersistencePort userPersistence;
     @Mock
     private CommentPersistencePort commentPersistence;
+    @Mock
+    private AnswerPersistencePort answerPersistence;
 
 
     @InjectMocks
@@ -291,6 +293,8 @@ class QuestionServiceTest {
     void deleteQuestion_shouldCallPersistenceDeleteById_whenQuestionExists() {
         // Arrange
         when(questionPersistence.existsById(questionId)).thenReturn(true);
+
+        doNothing().when(answerPersistence).deleteAllByQuestionId(anyString());
         doNothing().when(commentPersistence).deleteAllByTargetTypeAndTargetId(any(), anyString());
         doNothing().when(questionPersistence).deleteById(questionId);
 
@@ -413,6 +417,7 @@ class QuestionServiceTest {
         // Arrange
         when(questionPersistence.existsById(questionId)).thenReturn(true);
         // No need to mock doNothing, it's the default. This is just for clarity.
+        doNothing().when(answerPersistence).deleteAllByQuestionId(anyString());
         doNothing().when(commentPersistence).deleteAllByTargetTypeAndTargetId(any(), anyString());
         doNothing().when(questionPersistence).deleteById(questionId);
 
