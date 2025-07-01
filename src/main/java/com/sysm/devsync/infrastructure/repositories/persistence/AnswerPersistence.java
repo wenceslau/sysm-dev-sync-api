@@ -103,6 +103,14 @@ public class AnswerPersistence extends AbstractPersistence<AnswerJpaEntity> impl
         );
     }
 
+    @Override
+    public void deleteAllByQuestionId(String questionId) {
+        if (questionId == null){
+            throw new IllegalArgumentException("Question ID cannot be null");
+        }
+        repository.deleteAllByQuestion_Id(questionId);
+    }
+
     protected Predicate createPredicateForField(Root<AnswerJpaEntity> root, CriteriaBuilder crBuilder, String key, String value) {
         return switch (key){
             case "content" -> crBuilder.like(crBuilder.lower(root.get("content")), "%" + like(value) + "%");

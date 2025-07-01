@@ -1,5 +1,7 @@
 package com.sysm.devsync.application;
 
+import com.sysm.devsync.domain.enums.TargetType;
+import com.sysm.devsync.domain.persistence.*;
 import com.sysm.devsync.infrastructure.controllers.dto.response.CreateResponse;
 import com.sysm.devsync.infrastructure.controllers.dto.request.QuestionCreateUpdate;
 import com.sysm.devsync.domain.NotFoundException;
@@ -8,10 +10,6 @@ import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.enums.QuestionStatus;
 import com.sysm.devsync.domain.models.Question;
-import com.sysm.devsync.domain.persistence.ProjectPersistencePort;
-import com.sysm.devsync.domain.persistence.QuestionPersistencePort;
-import com.sysm.devsync.domain.persistence.TagPersistencePort;
-import com.sysm.devsync.domain.persistence.UserPersistencePort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -41,6 +39,9 @@ class QuestionServiceTest {
     private TagPersistencePort tagPersistence;
     @Mock
     private UserPersistencePort userPersistence;
+    @Mock
+    private CommentPersistencePort commentPersistence;
+
 
     @InjectMocks
     private QuestionService questionService;
@@ -290,6 +291,7 @@ class QuestionServiceTest {
     void deleteQuestion_shouldCallPersistenceDeleteById_whenQuestionExists() {
         // Arrange
         when(questionPersistence.existsById(questionId)).thenReturn(true);
+        doNothing().when(commentPersistence).deleteAllByTargetTypeAndTargetId(any(), anyString());
         doNothing().when(questionPersistence).deleteById(questionId);
 
         // Act
@@ -403,4 +405,26 @@ class QuestionServiceTest {
         assertEquals("Invalid query parameters", exception.getMessage());
         verify(questionPersistence, never()).findAll(any(SearchQuery.class));
     }
+
+
+    @Test
+    @DisplayName("deleteQuestion should delete comments and then the question itself")
+    void deleteQuestion_shouldCallPersistenceDeleteById_whenQuestionExists_2() {
+        // Arrange
+        when(questionPersistence.existsById(questionId)).thenReturn(true);
+        // No need to mock doNothing, it's the default. This is just for clarity.
+        doNothing().when(commentPersistence).deleteAllByTargetTypeAndTargetId(any(), anyString());
+        doNothing().when(questionPersistence).deleteById(questionId);
+
+        // Act
+        questionService.deleteQuestion(questionId);
+
+        // Assert
+        // Use an InOrder verifier to ensure comments are deleted BEFORE the question
+        var inOrder = inOrder(commentPersistence, questionPersistence);
+
+        inOrder.verify(commentPersistence).deleteAllByTargetTypeAndTargetId(TargetType.QUESTION, questionId);
+        inOrder.verify(questionPersistence).deleteById(questionId);
+    }
+
 }

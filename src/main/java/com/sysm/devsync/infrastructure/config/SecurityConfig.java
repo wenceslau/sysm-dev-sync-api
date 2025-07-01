@@ -46,8 +46,10 @@ import java.util.stream.Stream;
 
  */
 
+
 @Configuration
 @EnableWebSecurity
+@Profile("!development")
 @EnableMethodSecurity(securedEnabled = true, jsr250Enabled = true) // CRITICAL: Enables @PreAuthorize
 public class SecurityConfig {
 

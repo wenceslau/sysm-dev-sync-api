@@ -20,8 +20,10 @@ public class BeanConfig {
     }
 
     @Bean
-    public WorkspaceService workspaceService(WorkspacePersistencePort workspacePersistencePort, UserPersistencePort userPersistencePort) {
-        return new WorkspaceService(workspacePersistencePort, userPersistencePort);
+    public WorkspaceService workspaceService(WorkspacePersistencePort workspacePersistencePort,
+                                             UserPersistencePort userPersistencePort,
+                                             ProjectPersistencePort projectPersistencePort) {
+        return new WorkspaceService(workspacePersistencePort, userPersistencePort, projectPersistencePort);
     }
 
     @Bean
@@ -33,12 +35,15 @@ public class BeanConfig {
     public QuestionService questionService(QuestionPersistencePort questionPersistencePort,
                                            ProjectPersistencePort projectPersistencePort,
                                            TagPersistencePort tagPersistencePort,
-                                           UserPersistencePort userPersistencePort) {
+                                           UserPersistencePort userPersistencePort,
+                                           CommentPersistencePort commentPersistencePort,
+                                           AnswerPersistencePort answerPersistencePort) {
         return new QuestionService(questionPersistencePort,
                 projectPersistencePort,
                 tagPersistencePort,
-                userPersistencePort);
-
+                userPersistencePort,
+                commentPersistencePort,
+                answerPersistencePort);
     }
 
     @Bean

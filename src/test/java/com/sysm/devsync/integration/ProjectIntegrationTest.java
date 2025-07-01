@@ -206,9 +206,7 @@ public class ProjectIntegrationTest extends AbstractIntegrationTest {
 
         // Act & Assert
         mockMvc.perform(delete("/projects/{id}", projectId))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isBadRequest());
 
-        // Verify in DB
-        assertThat(projectJpaRepository.existsById(projectId)).isFalse();
     }
 }

@@ -1,11 +1,14 @@
 package com.sysm.devsync.integration;
 
 import com.sysm.devsync.domain.enums.UserRole;
+import com.sysm.devsync.domain.models.Project;
 import com.sysm.devsync.domain.models.User;
 import com.sysm.devsync.domain.models.Workspace;
 import com.sysm.devsync.infrastructure.controllers.dto.request.WorkspaceCreateUpdate;
+import com.sysm.devsync.infrastructure.repositories.ProjectJpaRepository;
 import com.sysm.devsync.infrastructure.repositories.UserJpaRepository;
 import com.sysm.devsync.infrastructure.repositories.WorkspaceJpaRepository;
+import com.sysm.devsync.infrastructure.repositories.entities.ProjectJpaEntity;
 import com.sysm.devsync.infrastructure.repositories.entities.UserJpaEntity;
 import com.sysm.devsync.infrastructure.repositories.entities.WorkspaceJpaEntity;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,6 +33,9 @@ public class WorkspaceIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private UserJpaRepository userJpaRepository;
+
+    @Autowired
+    private ProjectJpaRepository projectJpaRepository;
 
     // This ID is hardcoded in WorkspaceController, so we need a user with this ID for creation tests
     private static final String FAKE_AUTHENTICATED_USER_ID = "036dc698-3b84-49e1-8999-25e57bcb7a8a";
@@ -296,5 +302,43 @@ public class WorkspaceIntegrationTest extends AbstractIntegrationTest {
         Optional<WorkspaceJpaEntity> updatedWs = workspaceJpaRepository.findById(savedWs.getId());
         assertThat(updatedWs).isPresent();
         assertThat(updatedWs.get().getOwner().getId()).isEqualTo(newOwner.getId());
+    }
+
+    @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN"})
+    @DisplayName("DELETE /workspaces/{id} - should fail with 400 if workspace has members")
+    void deleteWorkspace_withMembers_shouldFail() throws Exception {
+        // Arrange: Create a workspace and add a member to it
+        Workspace ws = Workspace.create("Workspace With Members", "...", false, ownerUser.getId());
+        UserJpaEntity member = userJpaRepository.save(UserJpaEntity.fromModel(User.create("Member", "member@test.com", UserRole.MEMBER)));
+        ws.addMember(member.getId());
+        WorkspaceJpaEntity savedWs = workspaceJpaRepository.saveAndFlush(WorkspaceJpaEntity.fromModel(ws));
+
+        // Act & Assert
+        mockMvc.perform(delete("/workspaces/{id}", savedWs.getId()))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message", containsString("Cannot delete a workspace that has members")));
+
+        // Verify it was not deleted
+        assertThat(workspaceJpaRepository.existsById(savedWs.getId())).isTrue();
+    }
+
+    @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN"})
+    @DisplayName("DELETE /workspaces/{id} - should fail with 400 if workspace has projects")
+    void deleteWorkspace_withProjects_shouldFail() throws Exception {
+        // Arrange: Create a workspace and a project within it
+        Workspace ws = Workspace.create("Workspace With Projects", "...", false, ownerUser.getId());
+        WorkspaceJpaEntity savedWs = workspaceJpaRepository.saveAndFlush(WorkspaceJpaEntity.fromModel(ws));
+        Project project = Project.create("Child Project", "Desc", savedWs.getId());
+        projectJpaRepository.saveAndFlush(ProjectJpaEntity.fromModel(project));
+
+        // Act & Assert
+        mockMvc.perform(delete("/workspaces/{id}", savedWs.getId()))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message", containsString("Cannot delete a workspace that has associated projects")));
+
+        // Verify it was not deleted
+        assertThat(workspaceJpaRepository.existsById(savedWs.getId())).isTrue();
     }
 }

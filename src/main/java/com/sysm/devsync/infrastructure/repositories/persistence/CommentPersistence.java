@@ -106,6 +106,18 @@ public class CommentPersistence extends AbstractPersistence<CommentJpaEntity> im
         );
     }
 
+    @Override
+    @Transactional
+    public void deleteAllByTargetTypeAndTargetId(TargetType targetType, String targetId) {
+        if (targetType == null) {
+            throw new IllegalArgumentException("Target type must not be null");
+        }
+        if (targetId == null || targetId.isEmpty()) {
+            throw new IllegalArgumentException("Target ID must not be null or empty");
+        }
+        repository.deleteAllByTargetTypeAndTargetId(targetType, targetId);
+    }
+
     protected Predicate createPredicateForField(Root<CommentJpaEntity> root, CriteriaBuilder crBuilder, String key, String value) {
         return switch (key) {
             case "targetType" -> crBuilder.equal(root.get("targetType"), TargetType.valueOf(value));

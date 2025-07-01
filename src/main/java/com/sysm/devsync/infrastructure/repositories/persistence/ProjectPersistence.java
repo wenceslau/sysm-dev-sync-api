@@ -85,6 +85,14 @@ public class ProjectPersistence extends AbstractPersistence<ProjectJpaEntity> im
         );
     }
 
+    @Transactional(readOnly = true)
+    public boolean existsByWorkspaceId(String workspaceId) {
+        if (workspaceId == null || workspaceId.isBlank()) {
+            throw new IllegalArgumentException("Workspace ID cannot be null or blank");
+        }
+        return repository.existsByWorkspaceId(workspaceId);
+    }
+
     protected Predicate createPredicateForField(Root<ProjectJpaEntity> root, CriteriaBuilder crBuilder, String key, String value) {
         return switch (key) {
             case "name", "description" -> crBuilder.like(crBuilder.lower(root.get(key)), like(value));

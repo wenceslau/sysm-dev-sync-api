@@ -31,7 +31,7 @@ public class WorkspaceJpaEntity {
     @JoinColumn(name = "owner_id", nullable = false) // Foreign key column in the 'workspaces' table
     private UserJpaEntity owner;
 
-    @ManyToMany(fetch = FetchType.LAZY) // A workspace can have many members, and a user can be in many workspaces
+    @ManyToMany(fetch = FetchType.EAGER) // A workspace can have many members, and a user can be in many workspaces
     @JoinTable(
             name = "workspace_members", // Name of the intermediary join table
             joinColumns = @JoinColumn(name = "workspace_id"), // Foreign key for Workspace in the join table

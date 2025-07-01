@@ -10,4 +10,5 @@ public interface CommentPersistencePort extends PersistencePort<Comment> {
 
     Pagination<Comment> findAllByTargetId(Page page, TargetType targetType, String targetId);
 
+    void deleteAllByTargetTypeAndTargetId(TargetType targetType, String targetId);
 }

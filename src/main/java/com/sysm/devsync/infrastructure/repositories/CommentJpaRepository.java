@@ -15,4 +15,6 @@ public interface CommentJpaRepository extends JpaRepository<CommentJpaEntity, St
             TargetType targetType, String targetId, Pageable pageable
     );
 
+    void deleteAllByTargetTypeAndTargetId(TargetType targetType, String targetId);
+
 }

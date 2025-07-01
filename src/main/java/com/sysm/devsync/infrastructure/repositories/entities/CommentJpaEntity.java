@@ -8,7 +8,7 @@ import java.time.Instant;
 import java.util.Objects;
 
 @Entity(name = "Comment")
-@Table(name = "comment")
+@Table(name = "comments")
 public class CommentJpaEntity {
 
     @Id

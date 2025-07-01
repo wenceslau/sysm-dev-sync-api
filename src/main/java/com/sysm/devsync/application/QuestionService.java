@@ -1,5 +1,7 @@
 package com.sysm.devsync.application;
 
+import com.sysm.devsync.domain.enums.TargetType;
+import com.sysm.devsync.domain.persistence.*;
 import com.sysm.devsync.infrastructure.controllers.dto.response.CreateResponse;
 import com.sysm.devsync.infrastructure.controllers.dto.request.QuestionCreateUpdate;
 import com.sysm.devsync.domain.NotFoundException;
@@ -8,10 +10,6 @@ import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.enums.QuestionStatus;
 import com.sysm.devsync.domain.models.Question;
-import com.sysm.devsync.domain.persistence.ProjectPersistencePort;
-import com.sysm.devsync.domain.persistence.QuestionPersistencePort;
-import com.sysm.devsync.domain.persistence.TagPersistencePort;
-import com.sysm.devsync.domain.persistence.UserPersistencePort;
 
 public class QuestionService {
 
@@ -19,13 +17,18 @@ public class QuestionService {
     private final ProjectPersistencePort projectPersistence;
     private final TagPersistencePort tagPersistence;
     private final UserPersistencePort userPersistence;
+    private final CommentPersistencePort commentPersistence;
+    private final AnswerPersistencePort answerPersistence;
+
 
     public QuestionService(QuestionPersistencePort questionPersistence, ProjectPersistencePort projectPersistence,
-                           TagPersistencePort tagPersistence, UserPersistencePort userPersistence) {
+                           TagPersistencePort tagPersistence, UserPersistencePort userPersistence, CommentPersistencePort commentPersistence, AnswerPersistencePort answerPersistence) {
         this.questionPersistence = questionPersistence;
         this.projectPersistence = projectPersistence;
         this.tagPersistence = tagPersistence;
         this.userPersistence = userPersistence;
+        this.commentPersistence = commentPersistence;
+        this.answerPersistence = answerPersistence;
     }
 
     public CreateResponse createQuestion(QuestionCreateUpdate questionCreateUpdate, String authorId) {
@@ -102,6 +105,12 @@ public class QuestionService {
         if (!exist) {
             throw new NotFoundException("Question not found", questionId);
         }
+
+        //Explicitly delete associated Comments
+        commentPersistence.deleteAllByTargetTypeAndTargetId(TargetType.QUESTION, questionId);
+
+        //Explicitly delete associated Answers
+        answerPersistence.deleteAllByQuestionId(questionId);
 
         questionPersistence.deleteById(questionId);
     }

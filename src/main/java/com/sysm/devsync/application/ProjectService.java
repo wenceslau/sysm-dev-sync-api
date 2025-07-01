@@ -1,5 +1,6 @@
 package com.sysm.devsync.application;
 
+import com.sysm.devsync.domain.BusinessException;
 import com.sysm.devsync.domain.NotFoundException;
 import com.sysm.devsync.infrastructure.controllers.dto.response.CreateResponse;
 import com.sysm.devsync.infrastructure.controllers.dto.request.ProjectCreateUpdate;
@@ -65,7 +66,8 @@ public class ProjectService {
         if (!projectPersistence.existsById(projectId)) {
             throw new NotFoundException("Project not found", projectId);
         }
-        projectPersistence.deleteById(projectId);
+        throw new BusinessException("Project can not be deleted");
+        //projectPersistence.deleteById(projectId);
     }
 
     public Project getProjectById(String projectId) {

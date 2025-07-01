@@ -5,4 +5,5 @@ import com.sysm.devsync.domain.models.Project;
 
 public interface ProjectPersistencePort extends PersistencePort<Project> {
 
+    boolean existsByWorkspaceId(String workspaceId);
 }

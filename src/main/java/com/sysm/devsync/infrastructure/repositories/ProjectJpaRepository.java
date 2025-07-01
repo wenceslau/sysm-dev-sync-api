@@ -9,4 +9,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface ProjectJpaRepository extends JpaRepository<ProjectJpaEntity, String> {
 
     Page<ProjectJpaEntity> findAll(Specification<ProjectJpaEntity> whereClause, Pageable page);
+
+    boolean existsByWorkspaceId(String workspaceId);
 }

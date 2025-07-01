@@ -15,4 +15,7 @@ public interface AnswerJpaRepository extends JpaRepository<AnswerJpaEntity, Stri
     Page<AnswerJpaEntity> findAllByQuestion_Id(String questionId, Pageable page);
 
     List<AnswerJpaEntity> findByAuthorId(String authorId);
+
+    void deleteAllByQuestion_Id(String questionId);
+
 }

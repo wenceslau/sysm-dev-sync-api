@@ -5,4 +5,5 @@ import com.sysm.devsync.domain.models.Workspace;
 
 public interface WorkspacePersistencePort extends PersistencePort<Workspace> {
 
+    boolean hasMembers(String workspaceId);
 }

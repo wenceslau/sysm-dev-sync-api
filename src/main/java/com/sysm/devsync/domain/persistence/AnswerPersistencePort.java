@@ -9,4 +9,6 @@ public interface AnswerPersistencePort extends PersistencePort<Answer> {
 
     Pagination<Answer> findAllByQuestionId(Page page, String questionId);
 
+    void deleteAllByQuestionId(String questionId);
+
 }

@@ -85,6 +85,14 @@ public class WorkspacePersistence extends AbstractPersistence<WorkspaceJpaEntity
         );
     }
 
+    @Transactional(readOnly = true)
+    public boolean hasMembers(String workspaceId) {
+        if (workspaceId == null || workspaceId.isBlank()) {
+            throw new IllegalArgumentException("Workspace ID cannot be null or blank");
+        }
+        return repository.hasMembers(workspaceId);
+    }
+
     protected Predicate createPredicateForField(Root<WorkspaceJpaEntity> root, CriteriaBuilder crBuilder, String key, String value) {
 
         return switch (key) {

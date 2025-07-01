@@ -1,16 +1,15 @@
 package com.sysm.devsync.application;
 
-import com.sysm.devsync.domain.NotFoundException;
+import com.sysm.devsync.domain.*;
+import com.sysm.devsync.domain.persistence.ProjectPersistencePort;
 import com.sysm.devsync.infrastructure.controllers.dto.response.CreateResponse;
 import com.sysm.devsync.infrastructure.controllers.dto.request.WorkspaceCreateUpdate;
-import com.sysm.devsync.domain.Pagination;
-import com.sysm.devsync.domain.Page;
-import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.models.Workspace;
 import com.sysm.devsync.domain.persistence.UserPersistencePort;
 import com.sysm.devsync.domain.persistence.WorkspacePersistencePort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -33,6 +32,9 @@ class WorkspaceServiceTest {
 
     @Mock
     private UserPersistencePort userPersistence;
+
+    @Mock
+    private ProjectPersistencePort projectPersistence;
 
     @InjectMocks
     private WorkspaceService workspaceService;
@@ -315,6 +317,8 @@ class WorkspaceServiceTest {
     void deleteWorkspace_shouldCallRepositoryDeleteById() {
         // Arrange
         when(workspacePersistence.existsById(workspaceId)).thenReturn(true);
+        when(workspacePersistence.hasMembers(workspaceId)).thenReturn(false);
+        when(projectPersistence.existsByWorkspaceId(workspaceId)).thenReturn(false);
         doNothing().when(workspacePersistence).deleteById(workspaceId);
 
         // Act
@@ -371,5 +375,63 @@ class WorkspaceServiceTest {
         assertNotNull(actualPagination);
         assertSame(expectedPagination, actualPagination);
         verify(workspacePersistence, times(1)).findAll(query);
+    }
+
+    // In D:/.../application/WorkspaceServiceTest.java
+
+// ... other tests
+
+    @Nested
+    @DisplayName("deleteWorkspace Tests")
+    class DeleteWorkspaceTests {
+
+        @Test
+        @DisplayName("should throw BusinessException when workspace has members")
+        void deleteWorkspace_shouldThrowBusinessException_whenWorkspaceHasMembers() {
+            // Arrange
+            when(workspacePersistence.existsById(workspaceId)).thenReturn(true);
+            when(workspacePersistence.hasMembers(workspaceId)).thenReturn(true); // Simulate members exist
+
+            // Act & Assert
+            BusinessException exception = assertThrows(BusinessException.class, () -> {
+                workspaceService.deleteWorkspace(workspaceId);
+            });
+
+            assertEquals("Cannot delete a workspace that has members. Please remove all members first.", exception.getMessage());
+            verify(workspacePersistence, never()).deleteById(anyString()); // Ensure delete is never called
+        }
+
+        @Test
+        @DisplayName("should throw BusinessException when workspace has projects")
+        void deleteWorkspace_shouldThrowBusinessException_whenWorkspaceHasProjects() {
+            // Arrange
+            when(workspacePersistence.existsById(workspaceId)).thenReturn(true);
+            when(workspacePersistence.hasMembers(workspaceId)).thenReturn(false); // No members
+            when(projectPersistence.existsByWorkspaceId(workspaceId)).thenReturn(true); // Simulate projects exist
+
+            // Act & Assert
+            BusinessException exception = assertThrows(BusinessException.class, () -> {
+                workspaceService.deleteWorkspace(workspaceId);
+            });
+
+            assertEquals("Cannot delete a workspace that has associated projects. Please move or delete them first.", exception.getMessage());
+            verify(workspacePersistence, never()).deleteById(anyString()); // Ensure delete is never called
+        }
+
+        @Test
+        @DisplayName("should call repository deleteById when workspace is empty")
+        void deleteWorkspace_shouldCallRepositoryDeleteById_whenWorkspaceIsEmpty() {
+            // Arrange
+            when(workspacePersistence.existsById(workspaceId)).thenReturn(true);
+            when(workspacePersistence.hasMembers(workspaceId)).thenReturn(false);
+            when(projectPersistence.existsByWorkspaceId(workspaceId)).thenReturn(false);
+            doNothing().when(workspacePersistence).deleteById(workspaceId);
+
+            // Act
+            workspaceService.deleteWorkspace(workspaceId);
+
+            // Assert
+            verify(workspacePersistence, times(1)).deleteById(workspaceId);
+        }
     }
 }

@@ -1,29 +1,21 @@
 package com.sysm.devsync.integration;
 
+import com.sysm.devsync.application.AnswerService;
 import com.sysm.devsync.domain.enums.QuestionStatus;
+import com.sysm.devsync.domain.enums.TargetType;
 import com.sysm.devsync.domain.enums.UserRole;
-import com.sysm.devsync.domain.models.Project;
-import com.sysm.devsync.domain.models.Tag;
-import com.sysm.devsync.domain.models.User;
-import com.sysm.devsync.domain.models.Workspace;
+import com.sysm.devsync.domain.models.*;
 import com.sysm.devsync.infrastructure.controllers.dto.request.QuestionCreateUpdate;
 import com.sysm.devsync.infrastructure.controllers.dto.request.QuestionStatusUpdate;
-import com.sysm.devsync.infrastructure.repositories.ProjectJpaRepository;
-import com.sysm.devsync.infrastructure.repositories.QuestionJpaRepository;
-import com.sysm.devsync.infrastructure.repositories.TagJpaRepository;
-import com.sysm.devsync.infrastructure.repositories.UserJpaRepository;
-import com.sysm.devsync.infrastructure.repositories.WorkspaceJpaRepository;
-import com.sysm.devsync.infrastructure.repositories.entities.ProjectJpaEntity;
-import com.sysm.devsync.infrastructure.repositories.entities.QuestionJpaEntity;
-import com.sysm.devsync.infrastructure.repositories.entities.TagJpaEntity;
-import com.sysm.devsync.infrastructure.repositories.entities.UserJpaEntity;
-import com.sysm.devsync.infrastructure.repositories.entities.WorkspaceJpaEntity;
+import com.sysm.devsync.infrastructure.repositories.*;
+import com.sysm.devsync.infrastructure.repositories.entities.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -46,6 +38,13 @@ public class QuestionIntegrationTest extends AbstractIntegrationTest {
     private TagJpaRepository tagJpaRepository;
     @Autowired
     private WorkspaceJpaRepository workspaceJpaRepository;
+    @Autowired
+    private AnswerJpaRepository answerJpaRepository;
+    @Autowired
+    private CommentJpaRepository commentJpaRepository; // Use fully qualified name to avoid import ambiguity if any
+
+    @Autowired
+    private AnswerService answerService;
 
     // This ID is hardcoded in QuestionController, so we need a user with this ID for creation tests
     private static final String FAKE_AUTHENTICATED_USER_ID = "036dc698-3b84-49e1-8999-25e57bcb7a8a";
@@ -312,5 +311,43 @@ public class QuestionIntegrationTest extends AbstractIntegrationTest {
         Optional<QuestionJpaEntity> updatedQuestion = questionJpaRepository.findById(savedQuestion.getId());
         assertThat(updatedQuestion).isPresent();
         assertThat(updatedQuestion.get().getTags()).isEmpty();
+    }
+
+    @Test
+    @WithMockUser(username = FAKE_AUTHENTICATED_USER_ID, roles = {"ADMIN"})
+    @DisplayName("DELETE /questions/{id} - should delete question and its associated answers and comments")
+    void deleteQuestion_shouldCascadeDeleteToChildren() throws Exception {
+        // Arrange: Create a question with an answer and a comment
+        var questionModel = com.sysm.devsync.domain.models.Question.create("Question with Children", "Desc", testProject1.getId(), testAuthor.getId());
+        var savedQuestion = questionJpaRepository.saveAndFlush(QuestionJpaEntity.fromModel(questionModel));
+
+        var answerModel = com.sysm.devsync.domain.models.Answer.create("An answer to be deleted", savedQuestion.getId(), testAuthor.getId());
+        var savedAnswer = answerJpaRepository.saveAndFlush(AnswerJpaEntity.fromModel(answerModel));
+
+        var commentModel = com.sysm.devsync.domain.models.Comment.create(TargetType.QUESTION, savedQuestion.getId(), testAuthor.getId(), "A comment to be deleted");
+        var savedComment = commentJpaRepository.saveAndFlush(CommentJpaEntity.fromModel(commentModel));
+
+        // Verify everything exists before the test
+        assertThat(questionJpaRepository.existsById(savedQuestion.getId())).isTrue();
+        assertThat(answerJpaRepository.existsById(savedAnswer.getId())).isTrue();
+        assertThat(commentJpaRepository.existsById(savedComment.getId())).isTrue();
+
+        // Act & Assert
+        mockMvc.perform(delete("/questions/{id}", savedQuestion.getId()))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/questions/{id}", savedQuestion.getId()))
+                .andExpect(status().isNotFound());
+
+        mockMvc.perform(get("/answers/{id}", savedAnswer.getId()))
+                .andExpect(status().isNotFound());
+
+        mockMvc.perform(get("/comments/{id}", savedComment.getId()))
+                .andExpect(status().isNotFound());
+
+        assertThat(questionJpaRepository.existsById(savedQuestion.getId())).isFalse();
+        assertThat(answerJpaRepository.existsById(savedAnswer.getId())).isFalse();
+        assertThat(commentJpaRepository.existsById(savedComment.getId())).isFalse();
+
     }
 }
