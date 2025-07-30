@@ -58,7 +58,7 @@ public class AnswerController extends AbstractController implements AnswerAPI {
     public Pagination<AnswerResponse> searchAnswers(int pageNumber, int pageSize, String sort,
                                                     String direction, Map<String, String> filters) {
         var page = Page.of(pageNumber, pageSize, sort, direction);
-        var searchQuery = new SearchQuery(page, filters);
+        var searchQuery = SearchQuery.of(page, filters);
 
         return answerService.getAllAnswers(searchQuery).map(AnswerResponse::from);
     }

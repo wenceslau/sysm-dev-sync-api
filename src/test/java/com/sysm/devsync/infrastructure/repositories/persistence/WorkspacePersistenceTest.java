@@ -166,7 +166,7 @@ public class WorkspacePersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should return all workspaces when no search terms provided")
         void findAll_noTerms_shouldReturnAllWorkspaces() {
-            SearchQuery query = new SearchQuery(Page.of(0, 10), Map.of());
+            SearchQuery query = SearchQuery.of(Page.of(0, 10), Map.of());
             Pagination<Workspace> result = workspacePersistence.findAll(query);
             assertThat(result.total()).isEqualTo(3);
         }
@@ -175,7 +175,7 @@ public class WorkspacePersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should filter by 'isPrivate' correctly")
         void findAll_byIsPrivate_shouldReturnMatchingWorkspaces() {
             // Arrange: Search for private workspaces
-            SearchQuery queryTrue = new SearchQuery(Page.of(0, 10), Map.of("isPrivate", "true"));
+            SearchQuery queryTrue = SearchQuery.of(Page.of(0, 10), Map.of("isPrivate", "true"));
 
             // Act
             Pagination<Workspace> resultTrue = workspacePersistence.findAll(queryTrue);
@@ -185,7 +185,7 @@ public class WorkspacePersistenceTest extends AbstractRepositoryTest {
             assertThat(resultTrue.items().get(0).getName()).isEqualTo("Workspace Beta");
 
             // Arrange: Search for public workspaces
-            SearchQuery queryFalse = new SearchQuery(Page.of(0, 10), Map.of("isPrivate", "false"));
+            SearchQuery queryFalse = SearchQuery.of(Page.of(0, 10), Map.of("isPrivate", "false"));
 
             // Act
             Pagination<Workspace> resultFalse = workspacePersistence.findAll(queryFalse);
@@ -199,7 +199,7 @@ public class WorkspacePersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should filter by ownerId")
         void findAll_byOwnerId_shouldReturnMatchingWorkspaces() {
-            SearchQuery query = new SearchQuery(Page.of(0, 10), Map.of("ownerId", ownerUser.getId()));
+            SearchQuery query = SearchQuery.of(Page.of(0, 10), Map.of("ownerId", ownerUser.getId()));
             Pagination<Workspace> result = workspacePersistence.findAll(query);
 
             assertThat(result.total()).isEqualTo(2);
@@ -211,7 +211,7 @@ public class WorkspacePersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should filter by memberId")
         void findAll_byMemberId_shouldReturnMatchingWorkspaces() {
             // Arrange: Find workspaces where memberUser2 is a member
-            SearchQuery query = new SearchQuery(Page.of(0, 10), Map.of("memberId", memberUser2.getId()));
+            SearchQuery query = SearchQuery.of(Page.of(0, 10), Map.of("memberId", memberUser2.getId()));
 
             // Act
             Pagination<Workspace> result = workspacePersistence.findAll(query);
@@ -221,7 +221,7 @@ public class WorkspacePersistenceTest extends AbstractRepositoryTest {
             assertThat(result.items().get(0).getName()).isEqualTo("Workspace Beta");
 
             // Arrange: Find workspaces where memberUser1 is a member
-            SearchQuery query2 = new SearchQuery(Page.of(0, 10), Map.of("memberId", memberUser1.getId()));
+            SearchQuery query2 = SearchQuery.of(Page.of(0, 10), Map.of("memberId", memberUser1.getId()));
 
             // Act
             Pagination<Workspace> result2 = workspacePersistence.findAll(query2);
@@ -236,7 +236,7 @@ public class WorkspacePersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should filter by multiple valid terms using AND logic")
         void findAll_withMultipleTerms_shouldReturnAndedResults() {
             // Arrange: Search for a public workspace (isPrivate=false) owned by ownerUser
-            SearchQuery queryWithMatch = new SearchQuery(Page.of(0, 10), Map.of(
+            SearchQuery queryWithMatch = SearchQuery.of(Page.of(0, 10), Map.of(
                     "isPrivate", "false",
                     "ownerId", ownerUser.getId()
             ));
@@ -249,7 +249,7 @@ public class WorkspacePersistenceTest extends AbstractRepositoryTest {
             assertThat(resultWithMatch.items().get(0).getName()).isEqualTo("Workspace Alpha");
 
             // Arrange: Search for a private workspace (isPrivate=true) owned by memberUser1 (no such workspace)
-            SearchQuery queryWithoutMatch = new SearchQuery(Page.of(0, 10), Map.of(
+            SearchQuery queryWithoutMatch = SearchQuery.of(Page.of(0, 10), Map.of(
                     "isPrivate", "true",
                     "ownerId", memberUser1.getId()
             ));
@@ -264,7 +264,7 @@ public class WorkspacePersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should throw BusinessException for an invalid search field")
         void findAll_invalidSearchField_shouldThrowBusinessException() {
-            SearchQuery query = new SearchQuery(Page.of(0, 10), Map.of("invalidField", "value"));
+            SearchQuery query = SearchQuery.of(Page.of(0, 10), Map.of("invalidField", "value"));
 
             assertThatThrownBy(() -> workspacePersistence.findAll(query))
                     .isInstanceOf(BusinessException.class)
@@ -275,7 +275,7 @@ public class WorkspacePersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should respect pagination and sorting parameters")
         void findAll_withPaginationAndSorting_shouldReturnCorrectPage() {
             // Sort by name descending
-            SearchQuery query = new SearchQuery(Page.of(0, 2, "name", "desc"), Map.of());
+            SearchQuery query = SearchQuery.of(Page.of(0, 2, "name", "desc"), Map.of());
             Pagination<Workspace> result = workspacePersistence.findAll(query);
 
             assertThat(result.items()).hasSize(2);

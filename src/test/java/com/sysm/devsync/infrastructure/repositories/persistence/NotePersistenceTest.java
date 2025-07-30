@@ -205,7 +205,7 @@ public class NotePersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should filter by a single term (e.g., title)")
         void findAll_filterByTitle_shouldReturnMatching() {
-            SearchQuery query = new SearchQuery(Page.of(0, 10), Map.of("title", "Second Note"));
+            SearchQuery query = SearchQuery.of(Page.of(0, 10), Map.of("title", "Second Note"));
             Pagination<Note> result = notePersistence.findAll(query);
 
             assertThat(result.total()).isEqualTo(1);
@@ -216,7 +216,7 @@ public class NotePersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should filter by multiple terms using AND logic")
         void findAll_withMultipleTerms_shouldReturnAndedResults() {
             // Arrange: Search for a note with title "First" AND in project1
-            SearchQuery queryWithMatch = new SearchQuery(Page.of(0, 10), Map.of(
+            SearchQuery queryWithMatch = SearchQuery.of(Page.of(0, 10), Map.of(
                     "title", "First",
                     "projectId", project1Jpa.getId()
             ));
@@ -229,7 +229,7 @@ public class NotePersistenceTest extends AbstractRepositoryTest {
             assertThat(resultWithMatch.items().get(0).getId()).isEqualTo(note1Domain.getId());
 
             // Arrange: Search for a note with title "First" AND in project2 (should be none)
-            SearchQuery queryWithoutMatch = new SearchQuery(Page.of(0, 10), Map.of(
+            SearchQuery queryWithoutMatch = SearchQuery.of(Page.of(0, 10), Map.of(
                     "title", "First",
                     "projectId", project2Jpa.getId()
             ));
@@ -245,7 +245,7 @@ public class NotePersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should throw BusinessException for an invalid search field")
         void findAll_invalidSearchField_shouldThrowBusinessException() {
-            SearchQuery query = new SearchQuery(Page.of(0, 10), Map.of("invalidField", "value"));
+            SearchQuery query = SearchQuery.of(Page.of(0, 10), Map.of("invalidField", "value"));
 
             assertThatThrownBy(() -> notePersistence.findAll(query))
                     .isInstanceOf(BusinessException.class)
@@ -255,7 +255,7 @@ public class NotePersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should respect pagination and sorting parameters")
         void findAll_withPaginationAndSorting_shouldReturnCorrectPage() {
-            SearchQuery queryPage1 = new SearchQuery(Page.of(0, 2, "title", "asc"), Map.of());
+            SearchQuery queryPage1 = SearchQuery.of(Page.of(0, 2, "title", "asc"), Map.of());
             Pagination<Note> result1 = notePersistence.findAll(queryPage1);
 
             assertThat(result1.total()).isEqualTo(3);
@@ -263,7 +263,7 @@ public class NotePersistenceTest extends AbstractRepositoryTest {
             assertThat(result1.items()).extracting(Note::getTitle)
                     .containsExactly("First Note Title", "Note for Project Beta");
 
-            SearchQuery queryPage2 = new SearchQuery(Page.of(1, 2, "title", "asc"), Map.of());
+            SearchQuery queryPage2 = SearchQuery.of(Page.of(1, 2, "title", "asc"), Map.of());
             Pagination<Note> result2 = notePersistence.findAll(queryPage2);
             assertThat(result2.items()).hasSize(1);
             assertThat(result2.items().get(0).getTitle()).isEqualTo("Second Note Title");

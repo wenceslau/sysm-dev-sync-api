@@ -245,6 +245,7 @@ class QuestionServiceTest {
     void removeTagFromQuestion_shouldRemoveTagAndUpdateQuestion_whenAllExist() {
         // Arrange
         when(questionPersistence.findById(questionId)).thenReturn(Optional.of(mockQuestion));
+        when(mockQuestion.getTagsId()).thenReturn(Collections.singleton(tagId));
         when(tagPersistence.existsById(tagId)).thenReturn(true);
 
         // Act
@@ -386,7 +387,7 @@ class QuestionServiceTest {
     @DisplayName("getAllQuestions with SearchQuery should return page from persistence")
     void getAllQuestions_withSearchQuery_shouldReturnPageFromPersistence() {
         // Arrange
-        SearchQuery query = new SearchQuery(new Page(0, 10, "createdAt", "desc"), Map.of());
+        SearchQuery query = SearchQuery.of(new Page(0, 10, "createdAt", "desc"), Map.of());
         Pagination<Question> expectedPagination = new Pagination<>(0, 10, 0L, Collections.emptyList());
         when(questionPersistence.findAll(query)).thenReturn(expectedPagination);
 

@@ -4,6 +4,7 @@ import com.sysm.devsync.application.TagService;
 import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
+import com.sysm.devsync.domain.enums.QueryType;
 import com.sysm.devsync.infrastructure.controllers.dto.request.TagCreateUpdate;
 import com.sysm.devsync.infrastructure.controllers.dto.response.TagResponse;
 import com.sysm.devsync.infrastructure.controllers.rest.TagAPI;
@@ -63,9 +64,10 @@ public class TagController extends AbstractController implements TagAPI {
 
     @Override
     public Pagination<TagResponse> searchTags(int pageNumber, int pageSize, String sort,
-                                              String direction,  @RequestParam Map<String, String> filters ) {
+                                              String direction, String queryType,
+                                              @RequestParam Map<String, String> filters ) {
         var page = Page.of(pageNumber, pageSize, sort, direction);
-        var searchQuery = new SearchQuery(page, filters);
+        var searchQuery = SearchQuery.of(page, QueryType.valueOf(queryType.toUpperCase()), filters);
 
         var pagination = tagService.searchTags(searchQuery);
 

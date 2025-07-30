@@ -203,7 +203,7 @@ public class AnswerPersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should return all answers when no search terms provided")
         void findAll_noTerms_shouldReturnAllAnswers() {
-            SearchQuery query = new SearchQuery(Page.of(0, 10),  Map.of());
+            SearchQuery query = SearchQuery.of(Page.of(0, 10),  Map.of());
             Pagination<Answer> result = answerPersistence.findAll(query);
 
             assertThat(result.total()).isEqualTo(3);
@@ -212,7 +212,7 @@ public class AnswerPersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should filter by a single term (e.g., content)")
         void findAll_filterByContent_shouldReturnMatching() {
-            SearchQuery query = new SearchQuery(Page.of(0, 10), Map.of("content", "SECOND"));
+            SearchQuery query = SearchQuery.of(Page.of(0, 10), Map.of("content", "SECOND"));
             Pagination<Answer> result = answerPersistence.findAll(query);
 
             assertThat(result.total()).isEqualTo(1);
@@ -222,7 +222,7 @@ public class AnswerPersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should filter by a single term (e.g., isAccepted)")
         void findAll_filterByAcceptedStatus_shouldReturnMatching() {
-            SearchQuery query = new SearchQuery(Page.of(0, 10), Map.of("isAccepted", "true"));
+            SearchQuery query = SearchQuery.of(Page.of(0, 10), Map.of("isAccepted", "true"));
             Pagination<Answer> result = answerPersistence.findAll(query);
 
             assertThat(result.total()).isEqualTo(1);
@@ -233,7 +233,7 @@ public class AnswerPersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should filter by multiple terms using AND logic")
         void findAll_withMultipleTerms_shouldReturnAndedResults() {
             // Arrange: Search for an answer that is NOT accepted AND belongs to question1
-            SearchQuery queryWithMatch = new SearchQuery(Page.of(0, 10), Map.of(
+            SearchQuery queryWithMatch = SearchQuery.of(Page.of(0, 10), Map.of(
                     "isAccepted", "false",
                     "questionId", question1Jpa.getId()
             ));
@@ -247,7 +247,7 @@ public class AnswerPersistenceTest extends AbstractRepositoryTest {
                     .containsExactlyInAnyOrder(answer1Domain.getId(), answer2Domain.getId());
 
             // Arrange: Search for an answer that IS accepted AND belongs to question1 (should be none)
-            SearchQuery queryWithoutMatch = new SearchQuery(Page.of(0, 10), Map.of(
+            SearchQuery queryWithoutMatch = SearchQuery.of(Page.of(0, 10), Map.of(
                     "isAccepted", "true",
                     "questionId", question1Jpa.getId()
             ));
@@ -263,7 +263,7 @@ public class AnswerPersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should throw BusinessException for an invalid search field")
         void findAll_invalidSearchField_shouldThrowBusinessException() {
-            SearchQuery query = new SearchQuery(Page.of(0, 10), Map.of("invalidField", "value"));
+            SearchQuery query = SearchQuery.of(Page.of(0, 10), Map.of("invalidField", "value"));
             assertThatThrownBy(() -> answerPersistence.findAll(query))
                     .isInstanceOf(BusinessException.class)
                     .hasMessageContaining("Invalid search field provided: 'invalidField'");
@@ -273,7 +273,7 @@ public class AnswerPersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should respect pagination and sorting parameters")
         void findAll_withPaginationAndSorting_shouldReturnCorrectPage() {
             // Sort by content to ensure predictable pagination results
-            SearchQuery queryPage1 = new SearchQuery(Page.of(0, 2, "content", "asc"),  Map.of());
+            SearchQuery queryPage1 = SearchQuery.of(Page.of(0, 2, "content", "asc"),  Map.of());
 
             Pagination<Answer> result1 = answerPersistence.findAll(queryPage1);
 
@@ -282,7 +282,7 @@ public class AnswerPersistenceTest extends AbstractRepositoryTest {
             assertThat(result1.items()).extracting(Answer::getContent)
                     .containsExactly("This is an answer for question 2.", "This is the first answer for question 1.");
 
-            SearchQuery queryPage2 = new SearchQuery(Page.of(1, 2, "content", "asc"),  Map.of());
+            SearchQuery queryPage2 = SearchQuery.of(Page.of(1, 2, "content", "asc"),  Map.of());
             Pagination<Answer> result2 = answerPersistence.findAll(queryPage2);
             assertThat(result2.items()).hasSize(1);
             assertThat(result2.items().get(0).getContent()).isEqualTo("This is the second answer for question 1.");

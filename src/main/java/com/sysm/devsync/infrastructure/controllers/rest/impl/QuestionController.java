@@ -49,7 +49,7 @@ public class QuestionController extends AbstractController implements QuestionAP
                                                         String direction, Map<String, String> filters) {
 
         var page = Page.of(pageNumber, pageSize, sort, direction);
-        var searchQuery = new SearchQuery(page, filters);
+        var searchQuery = SearchQuery.of(page, filters);
 
         return questionService.getAllQuestions(searchQuery).map(QuestionResponse::from);
     }

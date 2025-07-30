@@ -75,7 +75,7 @@ public class UserController extends AbstractController implements UserAPI {
                                            String direction, Map<String, String> filters) {
 
         var page = Page.of(pageNumber, pageSize, sort, direction);
-        var searchQuery = new SearchQuery(page, filters);
+        var searchQuery = SearchQuery.of(page, filters);
 
         var pagination = userService.searchUsers(searchQuery);
         return pagination.map(UserResponse::from);

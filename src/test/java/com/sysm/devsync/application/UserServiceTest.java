@@ -415,7 +415,7 @@ class UserServiceTest {
     @DisplayName("getAllUsers should return pagination result from repository")
     void searchUsers_shouldReturnPaginationResult_fromRepository() {
         // Arrange
-        SearchQuery query = new SearchQuery(new Page(1, 10,  "asc", "search"),  Map.of());
+        SearchQuery query = SearchQuery.of(new Page(1, 10,  "asc", "search"),  Map.of());
         Pagination<User> expectedPagination = new Pagination<>(1, 10, 0L, Collections.emptyList()); // Ensure totalElements is Long
         when(userPersistence.findAll(query)).thenReturn(expectedPagination);
 
@@ -638,7 +638,7 @@ class UserServiceTest {
 //    @DisplayName("getAllUsers should return pagination result from repository")
 //    void getAllUsers_shouldReturnPaginationResult_fromRepository() {
 //        // Arrange
-//        SearchQuery query = new SearchQuery(new Pageable(1, 10) "name", "asc", "search");
+//        SearchQuery query = SearchQuery.of(new Pageable(1, 10) "name", "asc", "search");
 //        Pagination<User> expectedPagination = new Pagination<>(1, 10, 0, Collections.emptyList());
 //        when(userPersistence.findAll(query)).thenReturn(expectedPagination);
 //

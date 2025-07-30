@@ -7,16 +7,16 @@ public class Tag extends AbstractModel {
     private String color;
     private String description;
     private String category;
-    private int countUsage;
+    private int amountUsed;
 
     private Tag(String id, String name, String color,
-                String description, String category, int countUsage) {
+                String description, String category, int amountUsed) {
         this.id = id;
         this.name = name;
         this.color = color;
         this.description = description;
         this.category = category;
-        this.countUsage = countUsage;
+        this.amountUsed = amountUsed;
         validate();
     }
 
@@ -53,8 +53,8 @@ public class Tag extends AbstractModel {
         this.category = category;
     }
 
-    public void incrementUsage() {
-        this.countUsage++;
+    public void incrementUse() {
+        this.amountUsed++;
     }
 
     public String getId() {
@@ -77,8 +77,8 @@ public class Tag extends AbstractModel {
         return category;
     }
 
-    public int getCountUsage() {
-        return countUsage;
+    public int getAmountUsed() {
+        return amountUsed;
     }
 
     public static Tag create(String name, String color) {
@@ -106,14 +106,14 @@ public class Tag extends AbstractModel {
     }
 
     public static Tag build(String id, String name, String color,
-                            String description, String category, int countUsage) {
+                            String description, String category, int amountUsed) {
         return new Tag(
                 id,
                 name,
                 color,
                 description,
                 category,
-                countUsage
+                amountUsed
         );
     }
 }

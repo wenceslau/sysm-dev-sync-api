@@ -183,7 +183,7 @@ public class QuestionPersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should return all questions when no search terms provided")
         void findAll_noTerms_shouldReturnAllQuestions() {
-            SearchQuery query = new SearchQuery(Page.of(0, 10), Map.of());
+            SearchQuery query = SearchQuery.of(Page.of(0, 10), Map.of());
             Pagination<Question> result = questionPersistence.findAll(query);
             assertThat(result.total()).isEqualTo(3);
         }
@@ -191,7 +191,7 @@ public class QuestionPersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should filter by a single term (e.g., status)")
         void findAll_singleTerm_shouldReturnMatching() {
-            SearchQuery query = new SearchQuery(Page.of(0, 10), Map.of("status", "RESOLVED"));
+            SearchQuery query = SearchQuery.of(Page.of(0, 10), Map.of("status", "RESOLVED"));
             Pagination<Question> result = questionPersistence.findAll(query);
 
             assertThat(result.total()).isEqualTo(1);
@@ -201,7 +201,7 @@ public class QuestionPersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should filter by a joined term (e.g., tagsName)")
         void findAll_byJoinedTerm_shouldReturnMatching() {
-            SearchQuery query = new SearchQuery(Page.of(0, 10), Map.of("tagsName", "spring"));
+            SearchQuery query = SearchQuery.of(Page.of(0, 10), Map.of("tagsName", "spring"));
             Pagination<Question> result = questionPersistence.findAll(query);
 
             assertThat(result.total()).isEqualTo(2);
@@ -213,7 +213,7 @@ public class QuestionPersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should filter by multiple terms using AND logic")
         void findAll_withMultipleTerms_shouldReturnAndedResults() {
             // Arrange: Search for questions that are OPEN and have the 'java' tag
-            SearchQuery queryWithMatch = new SearchQuery(Page.of(0, 10), Map.of(
+            SearchQuery queryWithMatch = SearchQuery.of(Page.of(0, 10), Map.of(
                     "status", "OPEN",
                     "tagsName", "java"
             ));
@@ -226,7 +226,7 @@ public class QuestionPersistenceTest extends AbstractRepositoryTest {
             assertThat(resultWithMatch.items().get(0).getId()).isEqualTo(question1Domain.getId());
 
             // Arrange: Search for questions that are RESOLVED and have the 'spring' tag (should be none)
-            SearchQuery queryWithoutMatch = new SearchQuery(Page.of(0, 10), Map.of(
+            SearchQuery queryWithoutMatch = SearchQuery.of(Page.of(0, 10), Map.of(
                     "status", "RESOLVED",
                     "tagsName", "spring"
             ));
@@ -242,7 +242,7 @@ public class QuestionPersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should throw BusinessException for an invalid search field")
         void findAll_invalidSearchField_shouldThrowBusinessException() {
-            SearchQuery query = new SearchQuery(Page.of(0, 10), Map.of("invalidField", "value"));
+            SearchQuery query = SearchQuery.of(Page.of(0, 10), Map.of("invalidField", "value"));
 
             assertThatThrownBy(() -> questionPersistence.findAll(query))
                     .isInstanceOf(BusinessException.class)
@@ -252,7 +252,7 @@ public class QuestionPersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should respect pagination and sorting parameters")
         void findAll_withPaginationAndSorting_shouldReturnCorrectPage() {
-            SearchQuery queryPage1 = new SearchQuery(Page.of(0, 2, "title", "asc"), Map.of());
+            SearchQuery queryPage1 = SearchQuery.of(Page.of(0, 2, "title", "asc"), Map.of());
             Pagination<Question> result1 = questionPersistence.findAll(queryPage1);
 
             assertThat(result1.total()).isEqualTo(3);
@@ -260,7 +260,7 @@ public class QuestionPersistenceTest extends AbstractRepositoryTest {
             assertThat(result1.items().get(0).getTitle()).isEqualTo("Best practices for Spring Boot?");
             assertThat(result1.items().get(1).getTitle()).isEqualTo("How to test JPA ManyToMany?");
 
-            SearchQuery queryPage2 = new SearchQuery(Page.of(1, 2, "title", "asc"), Map.of());
+            SearchQuery queryPage2 = SearchQuery.of(Page.of(1, 2, "title", "asc"), Map.of());
             Pagination<Question> result2 = questionPersistence.findAll(queryPage2);
             assertThat(result2.items()).hasSize(1);
             assertThat(result2.items().get(0).getTitle()).isEqualTo("Understanding JPA Fetch Types");

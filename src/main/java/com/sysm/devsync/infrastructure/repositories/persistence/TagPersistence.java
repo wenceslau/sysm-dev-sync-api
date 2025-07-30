@@ -84,6 +84,16 @@ public class TagPersistence extends AbstractPersistence<TagJpaEntity> implements
         );
     }
 
+    @Transactional
+    public void incrementUse(String id) {
+        tagRepository.incrementUse(id);
+    }
+
+    @Transactional
+    public void decrementUse(String id) {
+        tagRepository.decrementUse(id);
+    }
+
     protected Predicate createPredicateForField(Root<TagJpaEntity> root, CriteriaBuilder crBuilder, String key, String value) {
         return switch (key) {
             case "name",
@@ -94,4 +104,5 @@ public class TagPersistence extends AbstractPersistence<TagJpaEntity> implements
             default -> throw new BusinessException("Invalid search field provided: '" + key + "'");
         };
     }
+
 }

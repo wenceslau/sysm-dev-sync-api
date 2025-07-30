@@ -251,7 +251,7 @@ class ProjectServiceTest {
     @DisplayName("getAllProjects should return pagination result from persistence port")
     void getAllProjects_shouldReturnPaginationResult_fromPersistence() {
         // Arrange
-        SearchQuery query = new SearchQuery(new Page(1,10,  "asc", "search"),  Map.of());
+        SearchQuery query = SearchQuery.of(new Page(1,10,  "asc", "search"),  Map.of());
         Pagination<Project> expectedPagination = new Pagination<>(1, 10, 0, Collections.emptyList());
         when(projectPersistencePort.findAll(query)).thenReturn(expectedPagination);
 

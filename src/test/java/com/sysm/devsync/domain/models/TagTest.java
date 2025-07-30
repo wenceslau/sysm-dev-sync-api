@@ -36,7 +36,7 @@ class TagTest {
         assertEquals(validColor, tag.getColor());
         assertNull(tag.getDescription(), "Description should be null on creation");
         assertNull(tag.getCategory(), "Category should be null on creation");
-        assertEquals(0, tag.getCountUsage(), "CountUsage should be 0 on creation");
+        assertEquals(0, tag.getAmountUsed(), "CountUsage should be 0 on creation");
     }
 
     @Test
@@ -91,7 +91,7 @@ class TagTest {
         assertEquals(validColor, tag.getColor());
         assertEquals(description, tag.getDescription());
         assertEquals(category, tag.getCategory());
-        assertEquals(countUsage, tag.getCountUsage());
+        assertEquals(countUsage, tag.getAmountUsed());
     }
 
     @Test
@@ -102,7 +102,7 @@ class TagTest {
 
         assertNull(tag.getDescription());
         assertNull(tag.getCategory());
-        assertEquals(0, tag.getCountUsage());
+        assertEquals(0, tag.getAmountUsed());
     }
 
 
@@ -148,7 +148,7 @@ class TagTest {
         assertEquals(newColor, tag.getColor());
         // Ensure other fields are not changed
         assertNull(tag.getDescription());
-        assertEquals(0, tag.getCountUsage());
+        assertEquals(0, tag.getAmountUsed());
     }
 
     @Test
@@ -240,15 +240,15 @@ class TagTest {
     // --- Instance Method: incrementUsage() ---
     @Test
     @DisplayName("incrementUsage() should increment countUsage")
-    void incrementUsage_shouldIncrementCountUsage() {
+    void incrementUsage_shouldIncrementCountUse() {
         Tag tag = Tag.create(validName, validColor);
-        assertEquals(0, tag.getCountUsage());
+        assertEquals(0, tag.getAmountUsed());
 
-        tag.incrementUsage();
-        assertEquals(1, tag.getCountUsage());
+        tag.incrementUse();
+        assertEquals(1, tag.getAmountUsed());
 
-        tag.incrementUsage();
-        assertEquals(2, tag.getCountUsage());
+        tag.incrementUse();
+        assertEquals(2, tag.getAmountUsed());
     }
 
     // --- Getters (Basic check, mostly covered by other tests) ---
@@ -269,6 +269,6 @@ class TagTest {
         assertEquals(color, tag.getColor());
         assertEquals(description, tag.getDescription());
         assertEquals(category, tag.getCategory());
-        assertEquals(countUsage, tag.getCountUsage());
+        assertEquals(countUsage, tag.getAmountUsed());
     }
 }

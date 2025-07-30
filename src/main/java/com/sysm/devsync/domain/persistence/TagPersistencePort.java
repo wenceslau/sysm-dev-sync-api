@@ -5,4 +5,7 @@ import com.sysm.devsync.domain.models.Tag;
 
 public interface TagPersistencePort extends PersistencePort<Tag> {
 
+    void incrementUse(String id);
+
+    void decrementUse(String id);
 }

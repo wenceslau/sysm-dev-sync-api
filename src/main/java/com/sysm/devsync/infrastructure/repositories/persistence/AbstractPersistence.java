@@ -3,6 +3,7 @@ package com.sysm.devsync.infrastructure.repositories.persistence;
 import com.sysm.devsync.domain.BusinessException;
 import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.SearchQuery;
+import com.sysm.devsync.domain.enums.QueryType;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
@@ -95,6 +96,7 @@ public abstract class AbstractPersistence<T> {
             filterTerms.remove("pageSize");
             filterTerms.remove("sort");
             filterTerms.remove("direction");
+            filterTerms.remove("queryType");
 
             filterTerms.forEach((key, value) -> {
                 // Delegate predicate creation to the concrete subclass
@@ -106,6 +108,9 @@ public abstract class AbstractPersistence<T> {
 
             if (predicates.isEmpty()) {
                 return criteriaBuilder.conjunction();  // Represents a TRUE predicate (matches all)
+            }
+            if (searchQuery.queryType().equals(QueryType.OR)) {
+                return criteriaBuilder.or(predicates.toArray(new Predicate[0]));
             }
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
@@ -145,7 +150,7 @@ public abstract class AbstractPersistence<T> {
             }
             case "numberField" -> {
                 try {
-                    yield  crBuilder.equal(root.get(key), Integer.parseInt(value));
+                    yield crBuilder.equal(root.get(key), Integer.parseInt(value));
                     //crBuilder.greaterThan(root.get(key), Integer.parseInt(value));
                 } catch (NumberFormatException e) {
                     throw new BusinessException("Invalid number format for field '" + key + "': '" + value + "'");

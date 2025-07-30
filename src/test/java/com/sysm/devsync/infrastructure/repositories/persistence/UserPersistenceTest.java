@@ -202,7 +202,7 @@ public class UserPersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should return all users when no search terms provided")
         void findAll_noTerms_shouldReturnAllUsers() {
-            SearchQuery query = new SearchQuery(Page.of(0, 10), Map.of());
+            SearchQuery query = SearchQuery.of(Page.of(0, 10), Map.of());
             Pagination<User> result = userPersistence.findAll(query);
             assertThat(result.items()).hasSize(3);
             assertThat(result.total()).isEqualTo(3);
@@ -211,7 +211,7 @@ public class UserPersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should filter by a single valid term (name)")
         void findAll_singleValidTermName_shouldReturnMatchingUsers() {
-            SearchQuery query = new SearchQuery(Page.of(0, 10), Map.of("name", "John Doe"));
+            SearchQuery query = SearchQuery.of(Page.of(0, 10), Map.of("name", "John Doe"));
             Pagination<User> result = userPersistence.findAll(query);
             assertThat(result.items()).hasSize(1);
             assertThat(result.items().get(0).getName()).isEqualTo("John Doe");
@@ -220,7 +220,7 @@ public class UserPersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should filter by a single valid term (email) case-insensitive")
         void findAll_singleValidTermEmail_shouldReturnMatchingUsers() {
-            SearchQuery query = new SearchQuery(Page.of(0, 10), Map.of("email", "ALICE.SMITH@EXAMPLE.COM"));
+            SearchQuery query = SearchQuery.of(Page.of(0, 10), Map.of("email", "ALICE.SMITH@EXAMPLE.COM"));
             Pagination<User> result = userPersistence.findAll(query);
             assertThat(result.items()).hasSize(1);
             assertThat(result.items().get(0).getEmail()).isEqualTo("alice.smith@example.com");
@@ -229,7 +229,7 @@ public class UserPersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should filter by a single valid term (role)")
         void findAll_singleValidTermRole_shouldReturnMatchingUsers() {
-            SearchQuery query = new SearchQuery(Page.of(0, 10), Map.of("role", "MEMBER"));
+            SearchQuery query = SearchQuery.of(Page.of(0, 10), Map.of("role", "MEMBER"));
             Pagination<User> result = userPersistence.findAll(query);
             assertThat(result.items()).hasSize(2);
             assertThat(result.items()).extracting(User::getRole).containsOnly(UserRole.MEMBER);
@@ -239,7 +239,7 @@ public class UserPersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should filter by multiple valid terms (AND logic)")
         void findAll_withMultipleTerms_shouldReturnAndedResults() {
             // Arrange: Search for a user who is a MEMBER and whose name is "John Doe"
-            SearchQuery queryWithMatch = new SearchQuery(Page.of(0, 10), Map.of("role", "MEMBER", "name", "John Doe"));
+            SearchQuery queryWithMatch = SearchQuery.of(Page.of(0, 10), Map.of("role", "MEMBER", "name", "John Doe"));
 
             // Act
             Pagination<User> resultWithMatch = userPersistence.findAll(queryWithMatch);
@@ -250,7 +250,7 @@ public class UserPersistenceTest extends AbstractRepositoryTest {
             assertThat(resultWithMatch.total()).isEqualTo(1);
 
             // Arrange: Search for a user who is an ADMIN and whose name is "John Doe" (should not exist)
-            SearchQuery queryWithoutMatch = new SearchQuery(Page.of(0, 10), Map.of("role", "ADMIN", "name", "John Doe"));
+            SearchQuery queryWithoutMatch = SearchQuery.of(Page.of(0, 10), Map.of("role", "ADMIN", "name", "John Doe"));
 
             // Act
             Pagination<User> resultWithoutMatch = userPersistence.findAll(queryWithoutMatch);
@@ -263,7 +263,7 @@ public class UserPersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should throw BusinessException for an invalid search field")
         void findAll_invalidSearchField_shouldThrowBusinessException() {
-            SearchQuery query = new SearchQuery(Page.of(0, 10), Map.of("nonExistentField", "value"));
+            SearchQuery query = SearchQuery.of(Page.of(0, 10), Map.of("nonExistentField", "value"));
             assertThatThrownBy(() -> userPersistence.findAll(query))
                     .isInstanceOf(BusinessException.class)
                     .hasMessageContaining("Invalid search field provided: 'nonExistentField'");
@@ -272,7 +272,7 @@ public class UserPersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should throw BusinessException for an invalid role value")
         void findAll_invalidRoleValue_shouldThrowBusinessException() {
-            SearchQuery query = new SearchQuery(Page.of(0, 10), Map.of("role", "GUEST"));
+            SearchQuery query = SearchQuery.of(Page.of(0, 10), Map.of("role", "GUEST"));
             assertThatThrownBy(() -> userPersistence.findAll(query))
                     .isInstanceOf(BusinessException.class)
                     .hasMessageContaining("Invalid value for role field: 'GUEST'");
@@ -281,7 +281,7 @@ public class UserPersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should handle terms with no matches")
         void findAll_termWithNoMatches_shouldReturnEmptyPage() {
-            SearchQuery query = new SearchQuery(Page.of(0, 10), Map.of("name", "NonExistent User"));
+            SearchQuery query = SearchQuery.of(Page.of(0, 10), Map.of("name", "NonExistent User"));
             Pagination<User> result = userPersistence.findAll(query);
             assertThat(result.items()).isEmpty();
             assertThat(result.total()).isZero();
@@ -291,7 +291,7 @@ public class UserPersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should respect pagination and sorting parameters")
         void findAll_withPaginationAndSorting_shouldReturnCorrectPage() {
             // Sort by name ascending
-            SearchQuery query = new SearchQuery(Page.of(0, 2, "name", "asc"), Map.of());
+            SearchQuery query = SearchQuery.of(Page.of(0, 2, "name", "asc"), Map.of());
             Pagination<User> result = userPersistence.findAll(query);
 
             assertThat(result.items()).hasSize(2);
@@ -301,7 +301,7 @@ public class UserPersistenceTest extends AbstractRepositoryTest {
             assertThat(result.items().get(1).getName()).isEqualTo("Bob Johnson");
 
             // Get the next page
-            SearchQuery queryPage2 = new SearchQuery(Page.of(1, 2, "name", "asc"), Map.of());
+            SearchQuery queryPage2 = SearchQuery.of(Page.of(1, 2, "name", "asc"), Map.of());
             Pagination<User> result2 = userPersistence.findAll(queryPage2);
             assertThat(result2.items()).hasSize(1);
             assertThat(result2.items().get(0).getName()).isEqualTo("John Doe");

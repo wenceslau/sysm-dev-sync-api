@@ -6,7 +6,9 @@ public record TagResponse(
         String id,
         String name,
         String color,
-        String description
+        String description,
+        String category,
+        int amountUsed
 ) {
 
     public static TagResponse from(Tag tag) {
@@ -14,7 +16,9 @@ public record TagResponse(
                 tag.getId(),
                 tag.getName(),
                 tag.getColor(),
-                tag.getDescription()
+                tag.getDescription(),
+                tag.getCategory(),
+                tag.getAmountUsed()
         );
     }
 }

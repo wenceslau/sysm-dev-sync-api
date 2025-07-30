@@ -221,7 +221,7 @@ public class CommentPersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should filter by a single term (e.g., content)")
         void findAll_filterByContent_shouldReturnMatching() {
-            SearchQuery query = new SearchQuery(Page.of(0, 10), Map.of("content", "another comment"));
+            SearchQuery query = SearchQuery.of(Page.of(0, 10), Map.of("content", "another comment"));
             Pagination<Comment> result = commentPersistence.findAll(query);
 
             assertThat(result.total()).isEqualTo(1);
@@ -232,7 +232,7 @@ public class CommentPersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should filter by multiple terms using AND logic")
         void findAll_withMultipleTerms_shouldReturnAndedResults() {
             // Arrange: Search for a comment with targetType "QUESTION" AND content containing "first"
-            SearchQuery queryWithMatch = new SearchQuery(Page.of(0, 10), Map.of(
+            SearchQuery queryWithMatch = SearchQuery.of(Page.of(0, 10), Map.of(
                     "targetType", "QUESTION",
                     "content", "first"
             ));
@@ -245,7 +245,7 @@ public class CommentPersistenceTest extends AbstractRepositoryTest {
             assertThat(resultWithMatch.items().get(0).getId()).isEqualTo(comment1OnQuestion.getId());
 
             // Arrange: Search for a comment with targetType "NOTE" AND content containing "first" (should be none)
-            SearchQuery queryWithoutMatch = new SearchQuery(Page.of(0, 10), Map.of(
+            SearchQuery queryWithoutMatch = SearchQuery.of(Page.of(0, 10), Map.of(
                     "targetType", "NOTE",
                     "content", "first"
             ));
@@ -261,7 +261,7 @@ public class CommentPersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should throw BusinessException for an invalid search field")
         void findAll_invalidSearchField_shouldThrowBusinessException() {
-            SearchQuery query = new SearchQuery(Page.of(0, 10), Map.of("invalidField", "value"));
+            SearchQuery query = SearchQuery.of(Page.of(0, 10), Map.of("invalidField", "value"));
 
             assertThatThrownBy(() -> commentPersistence.findAll(query))
                     .isInstanceOf(BusinessException.class)

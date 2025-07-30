@@ -341,7 +341,7 @@ class NoteServiceTest {
     @DisplayName("getAllNotes with SearchQuery should return page from persistence")
     void getAllNotes_withSearchQuery_shouldReturnPageFromPersistence() {
         // Arrange
-        SearchQuery query = new SearchQuery(new Page(0, 10, "createdAt", "DESC"), Map.of());
+        SearchQuery query = SearchQuery.of(new Page(0, 10, "createdAt", "DESC"), Map.of());
         Pagination<Note> expectedPagination = new Pagination<>(0, 10, 0L, Collections.emptyList());
         when(notePersistence.findAll(query)).thenReturn(expectedPagination);
 

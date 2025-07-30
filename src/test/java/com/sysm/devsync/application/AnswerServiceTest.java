@@ -300,7 +300,7 @@ class AnswerServiceTest {
     @DisplayName("getAllAnswers with SearchQuery should return page from persistence")
     void getAllAnswers_withSearchQuery_shouldReturnPageFromPersistence() {
         // Arrange
-        SearchQuery query = new SearchQuery(new Page(0, 0, "createdAt", "desc"),  Map.of());
+        SearchQuery query = SearchQuery.of(new Page(0, 0, "createdAt", "desc"),  Map.of());
         Pagination<Answer> expectedPagination = new Pagination<>(1, 10, 0L, Collections.emptyList());
         when(answerPersistence.findAll(query)).thenReturn(expectedPagination);
 

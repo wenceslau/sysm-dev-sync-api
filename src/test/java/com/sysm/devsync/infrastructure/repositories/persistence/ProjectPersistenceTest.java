@@ -165,7 +165,7 @@ public class ProjectPersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should return all projects when no search terms provided")
         void findAll_noTerms_shouldReturnAllProjects() {
-            SearchQuery query = new SearchQuery(Page.of(0, 10),  Map.of());
+            SearchQuery query = SearchQuery.of(Page.of(0, 10),  Map.of());
             Pagination<Project> result = projectPersistence.findAll(query);
 
             assertThat(result.items()).hasSize(3);
@@ -175,7 +175,7 @@ public class ProjectPersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should filter by project name")
         void findAll_filterByName_shouldReturnMatching() {
-            SearchQuery query = new SearchQuery(Page.of(0, 10), Map.of("name","Alpha"));
+            SearchQuery query = SearchQuery.of(Page.of(0, 10), Map.of("name","Alpha"));
             Pagination<Project> result = projectPersistence.findAll(query);
 
             assertThat(result.items()).hasSize(1);
@@ -185,7 +185,7 @@ public class ProjectPersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should filter by workspaceId")
         void findAll_filterByWorkspaceId_shouldReturnMatching() {
-            SearchQuery query = new SearchQuery(Page.of(0, 10), Map.of("workspaceId",workspace1Jpa.getId()));
+            SearchQuery query = SearchQuery.of(Page.of(0, 10), Map.of("workspaceId",workspace1Jpa.getId()));
             Pagination<Project> result = projectPersistence.findAll(query);
 
             assertThat(result.items()).hasSize(2);
@@ -197,7 +197,7 @@ public class ProjectPersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should filter by multiple valid terms using AND logic")
         void findAll_withMultipleTerms_shouldReturnAndedResults() {
             // Arrange: Search for a project named "Alpha" AND in workspace1
-            SearchQuery queryWithMatch = new SearchQuery(Page.of(0, 10), Map.of(
+            SearchQuery queryWithMatch = SearchQuery.of(Page.of(0, 10), Map.of(
                     "name", "Alpha",
                     "workspaceId", workspace1Jpa.getId()
             ));
@@ -210,7 +210,7 @@ public class ProjectPersistenceTest extends AbstractRepositoryTest {
             assertThat(resultWithMatch.items().get(0).getName()).isEqualTo("Project Alpha");
 
             // Arrange: Search for a project named "Alpha" AND in workspace2 (no such project)
-            SearchQuery queryWithoutMatch = new SearchQuery(Page.of(0, 10), Map.of(
+            SearchQuery queryWithoutMatch = SearchQuery.of(Page.of(0, 10), Map.of(
                     "name", "Alpha",
                     "workspaceId", workspace2Jpa.getId()
             ));
@@ -226,7 +226,7 @@ public class ProjectPersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should throw BusinessException for an invalid search field")
         void findAll_invalidSearchField_shouldThrowBusinessException() {
-            SearchQuery query = new SearchQuery(Page.of(0, 10), Map.of("invalidField", "value"));
+            SearchQuery query = SearchQuery.of(Page.of(0, 10), Map.of("invalidField", "value"));
 
             assertThatThrownBy(() -> projectPersistence.findAll(query))
                     .isInstanceOf(BusinessException.class)
@@ -236,7 +236,7 @@ public class ProjectPersistenceTest extends AbstractRepositoryTest {
         @Test
         @DisplayName("should respect pagination parameters")
         void findAll_withPagination_shouldReturnCorrectPage() {
-            SearchQuery queryPage1 = new SearchQuery(Page.of(0, 2, "name", "asc"),  Map.of());
+            SearchQuery queryPage1 = SearchQuery.of(Page.of(0, 2, "name", "asc"),  Map.of());
             Pagination<Project> result1 = projectPersistence.findAll(queryPage1);
 
             assertThat(result1.items()).hasSize(2);
@@ -245,7 +245,7 @@ public class ProjectPersistenceTest extends AbstractRepositoryTest {
             assertThat(result1.items().get(0).getName()).isEqualTo("Project Alpha");
             assertThat(result1.items().get(1).getName()).isEqualTo("Project Beta");
 
-            SearchQuery queryPage2 = new SearchQuery(Page.of(1, 2, "name", "asc"),  Map.of());
+            SearchQuery queryPage2 = SearchQuery.of(Page.of(1, 2, "name", "asc"),  Map.of());
             Pagination<Project> result2 = projectPersistence.findAll(queryPage2);
             assertThat(result2.items()).hasSize(1);
             assertThat(result2.items().get(0).getName()).isEqualTo("Project Gamma");

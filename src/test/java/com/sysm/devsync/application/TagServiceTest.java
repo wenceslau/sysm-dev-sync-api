@@ -5,7 +5,6 @@ import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.models.Tag;
-import com.sysm.devsync.domain.models.Workspace;
 import com.sysm.devsync.infrastructure.controllers.dto.response.CreateResponse;
 import com.sysm.devsync.infrastructure.controllers.dto.request.TagCreateUpdate;
 import com.sysm.devsync.domain.persistence.TagPersistencePort;
@@ -69,7 +68,7 @@ class TagServiceTest {
         assertEquals(validTagCreateUpdateDto.color(), capturedTag.getColor());
         assertEquals(validTagCreateUpdateDto.description(), capturedTag.getDescription());
         assertEquals(validTagCreateUpdateDto.category(), capturedTag.getCategory());
-        assertEquals(0, capturedTag.getCountUsage()); // Default from Tag.create
+        assertEquals(0, capturedTag.getAmountUsed()); // Default from Tag.create
         assertEquals(response.id(), capturedTag.getId());
     }
 
@@ -257,7 +256,7 @@ class TagServiceTest {
     @DisplayName("getAllTags should return pagination result from repository")
     void searchTags_shouldReturnPaginationResult_fromRepository() {
         // Arrange
-        SearchQuery query = new SearchQuery(new Page(1, 10,  "asc", "search"), Map.of());
+        SearchQuery query = SearchQuery.of(new Page(1, 10,  "asc", "search"), Map.of());
         Pagination<Tag> expectedPagination = new Pagination<>(1, 10, 0,  Collections.emptyList());
         when(tagPersistence.findAll(query)).thenReturn(expectedPagination);
 

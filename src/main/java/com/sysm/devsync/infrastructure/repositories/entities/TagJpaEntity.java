@@ -28,8 +28,8 @@ public class TagJpaEntity {
     @Column(length = 100)
     private String category;
 
-    @Column(name = "count_usage", nullable = false)
-    private int countUsage;
+    @Column(name = "amount_used", nullable = false)
+    private int amountUsed;
 
     public TagJpaEntity() {
     }
@@ -83,12 +83,12 @@ public class TagJpaEntity {
         this.category = category;
     }
 
-    public int getCountUsage() {
-        return countUsage;
+    public int getAmountUsed() {
+        return amountUsed;
     }
 
-    public void setCountUsage(int countUsage) {
-        this.countUsage = countUsage;
+    public void setAmountUsed(int amountUsed) {
+        this.amountUsed = amountUsed;
     }
 
     public final boolean equals(Object o) {
@@ -103,13 +103,13 @@ public class TagJpaEntity {
 
     public final String toString() {
         return "TagJpaEntity{" +
-                "id='" + id + '\'' +
-                ", name='" + name + '\'' +
-                ", color='" + color + '\'' +
-                ", description='" + description + '\'' +
-                ", category='" + category + '\'' +
-                ", countUsage=" + countUsage +
-                '}';
+               "id='" + id + '\'' +
+               ", name='" + name + '\'' +
+               ", color='" + color + '\'' +
+               ", description='" + description + '\'' +
+               ", category='" + category + '\'' +
+               ", countUsage=" + amountUsed +
+               '}';
     }
 
     public static TagJpaEntity fromModel(Tag tag) {
@@ -119,7 +119,7 @@ public class TagJpaEntity {
         tagJpaEntity.setColor(tag.getColor());
         tagJpaEntity.setDescription(tag.getDescription());
         tagJpaEntity.setCategory(tag.getCategory());
-        tagJpaEntity.setCountUsage(tag.getCountUsage());
+        tagJpaEntity.setAmountUsed(tag.getAmountUsed());
         return tagJpaEntity;
     }
 
@@ -130,7 +130,7 @@ public class TagJpaEntity {
                 tagJpaEntity.getColor(),
                 tagJpaEntity.getDescription(),
                 tagJpaEntity.getCategory(),
-                tagJpaEntity.getCountUsage()
+                tagJpaEntity.getAmountUsed()
         );
     }
 }

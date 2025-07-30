@@ -82,9 +82,13 @@ public class QuestionService {
         if (!tagExist) {
             throw new NotFoundException("Tag not found", tagId);
         }
+        if (question.getTagsId().contains(tagId)) {
+            return;
+        }
 
         question.addTag(tagId);
         questionPersistence.update(question);
+        tagPersistence.incrementUse(tagId);
     }
 
     public void removeTagFromQuestion(String questionId, String tagId) {
@@ -96,8 +100,13 @@ public class QuestionService {
             throw new NotFoundException("Tag not found", tagId);
         }
 
+        if (!question.getTagsId().contains(tagId)) {
+            return;
+        }
+
         question.removeTag(tagId);
         questionPersistence.update(question);
+        tagPersistence.decrementUse(tagId);
     }
 
     public void deleteQuestion(String questionId) {

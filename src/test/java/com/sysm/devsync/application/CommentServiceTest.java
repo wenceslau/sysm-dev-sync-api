@@ -390,7 +390,7 @@ class CommentServiceTest {
         @DisplayName("should return page from persistence")
         void getAllComments_withSearchQuery_success() {
             // Arrange
-            SearchQuery query = new SearchQuery(new Page(1, 10, "id", "desc"),  Map.of());
+            SearchQuery query = SearchQuery.of(new Page(1, 10, "id", "desc"),  Map.of());
             Pagination<Comment> expectedPagination = new Pagination<>(0, 10, 0L, Collections.emptyList());
             when(commentPersistence.findAll(query)).thenReturn(expectedPagination);
 

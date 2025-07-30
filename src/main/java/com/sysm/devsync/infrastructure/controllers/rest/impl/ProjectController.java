@@ -48,7 +48,7 @@ public class ProjectController extends AbstractController implements ProjectAPI 
                                                       String direction, Map<String, String> filters) {
 
         var page = Page.of(pageNumber, pageSize, sort, direction);
-        var searchQuery = new SearchQuery(page, filters);
+        var searchQuery = SearchQuery.of(page, filters);
         return projectService.getAllProjects(searchQuery)
                 .map(ProjectResponse::from);
     }

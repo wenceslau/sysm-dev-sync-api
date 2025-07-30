@@ -40,7 +40,7 @@ public class Main {
                                       CommentService commentService) {
         return args -> {
             // Check if data already exists to avoid re-populating on every restart
-            if (userService.searchUsers(new SearchQuery(Page.of(0, 1), Map.of())).total() > 0) {
+            if (userService.searchUsers(SearchQuery.of(Page.of(0, 1), Map.of())).total() > 0) {
                 log.info("--- Database already contains data. Skipping sample data initialization. ---");
                 return;
             }
@@ -57,10 +57,10 @@ public class Main {
 
             // 2. Create Tags
             log.info("Creating tags...");
-            var tagJavaResponse = tagService.createTag(new TagCreateUpdate("Java", "#B07219", "Java programming language", "Backend"));
-            var tagSpringResponse = tagService.createTag(new TagCreateUpdate("Spring Boot", "#6DB33F", "Spring Boot framework", "Backend"));
-            var tagReactResponse = tagService.createTag(new TagCreateUpdate("React", "#61DAFB", "React JavaScript library", "Frontend"));
-            var tagDockerResponse = tagService.createTag(new TagCreateUpdate("Docker", "#2496ED", "Containerization platform", "DevOps"));
+            var tagJavaResponse = tagService.createTag(new TagCreateUpdate("Java", "#000000", "Java programming language", "Backend"));
+            var tagSpringResponse = tagService.createTag(new TagCreateUpdate("Spring Boot", "#0000ff", "Spring Boot framework", "Backend"));
+            var tagReactResponse = tagService.createTag(new TagCreateUpdate("React", "#ff0000", "React JavaScript library", "Frontend"));
+            var tagDockerResponse = tagService.createTag(new TagCreateUpdate("Docker", "#ffffff", "Containerization platform", "DevOps"));
             String tagJavaId = tagJavaResponse.id();
             String tagSpringId = tagSpringResponse.id();
             String tagReactId = tagReactResponse.id();
