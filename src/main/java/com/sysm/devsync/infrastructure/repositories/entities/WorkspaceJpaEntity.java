@@ -132,7 +132,7 @@ public class WorkspaceJpaEntity {
                ", name='" + name + '\'' +
                ", description='" + description + '\'' +
                ", ownerId=" + (owner != null ? owner.getId() : "null") + // Avoid NPE and print owner ID
-               ", memberCount=" + (members != null ? members.size() : 0) + // Print member count
+               ", memberCount=" + (members != null ? members.size() : 0) + // Print member projectCount
                ", isPrivate=" + isPrivate +
                ", createdAt=" + createdAt +
                ", updatedAt=" + updatedAt +

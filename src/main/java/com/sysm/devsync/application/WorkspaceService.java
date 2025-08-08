@@ -10,6 +10,10 @@ import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.models.Workspace;
 import com.sysm.devsync.domain.persistence.UserPersistencePort;
 import com.sysm.devsync.domain.persistence.WorkspacePersistencePort;
+import com.sysm.devsync.infrastructure.controllers.dto.response.WorkspaceResponse;
+import com.sysm.devsync.infrastructure.repositories.objects.CountProject;
+
+import java.util.List;
 
 public class WorkspaceService {
 
@@ -119,13 +123,36 @@ public class WorkspaceService {
         workspacePersistence.deleteById(workspaceId);
     }
 
+    public List<CountProject> countProjects(List<String> workspaceIds) {
+        return projectPersistence.countProjectsByWorkspaceIdIn(workspaceIds);
+    }
+
     public Workspace getWorkspaceById(String workspaceId) {
         return workspacePersistence.findById(workspaceId)
                 .orElseThrow(() -> new NotFoundException("Workspace not found", workspaceId));
     }
 
-    public Pagination<Workspace> getAllWorkspaces(SearchQuery query) {
-        return workspacePersistence.findAll(query);
-    }
+    public Pagination<WorkspaceResponse> getAllWorkspaces(SearchQuery query) {
+        var workspacePage = workspacePersistence.findAll(query);
 
+        if (workspacePage.items().isEmpty()) {
+            return workspacePage.map(ws -> WorkspaceResponse.from(ws, 0));
+        }
+
+        var workspaceIds = workspacePage.items().stream()
+                .map(Workspace::getId)
+                .toList();
+
+        var mapProjectCounts = projectPersistence.countProjectsByWorkspaceIdIn(workspaceIds);
+
+        return workspacePage.map(ws -> {
+            var count = mapProjectCounts.stream()
+                    .filter(x->x.workspaceId().equals(ws.getId()))
+                    .findFirst()
+                    .map(CountProject::projectCount)
+                    .orElse(0L);
+            return WorkspaceResponse.from(ws, count);
+        });
+
+    }
 }

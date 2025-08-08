@@ -12,6 +12,7 @@ public record WorkspaceResponse(
         boolean isPrivate,
         String ownerId,
         Set<String> membersId,
+        long projectCount,
         Instant createdAt,
         Instant updatedAt
 ) {
@@ -23,6 +24,20 @@ public record WorkspaceResponse(
                 workspace.isPrivate(),
                 workspace.getOwnerId(),
                 workspace.getMembersId(),
+                0,
+                workspace.getCreatedAt(),
+                workspace.getUpdatedAt()
+        );
+    }
+    public static WorkspaceResponse from(Workspace workspace, long projectCount) {
+        return new WorkspaceResponse(
+                workspace.getId(),
+                workspace.getName(),
+                workspace.getDescription(),
+                workspace.isPrivate(),
+                workspace.getOwnerId(),
+                workspace.getMembersId(),
+                projectCount,
                 workspace.getCreatedAt(),
                 workspace.getUpdatedAt()
         );

@@ -96,7 +96,8 @@ public class TagPersistence extends AbstractPersistence<TagJpaEntity> implements
 
     protected Predicate createPredicateForField(Root<TagJpaEntity> root, CriteriaBuilder crBuilder, String key, String value) {
         return switch (key) {
-            case "name",
+            case "id",
+                 "name",
                  "color",
                  "description",
                  "category"  -> crBuilder.like(crBuilder.lower(root.get(key)), like(value));

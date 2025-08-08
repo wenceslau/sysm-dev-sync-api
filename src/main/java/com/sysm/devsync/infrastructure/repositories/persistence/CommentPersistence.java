@@ -120,6 +120,7 @@ public class CommentPersistence extends AbstractPersistence<CommentJpaEntity> im
 
     protected Predicate createPredicateForField(Root<CommentJpaEntity> root, CriteriaBuilder crBuilder, String key, String value) {
         return switch (key) {
+            case "id" -> crBuilder.equal(root.get("id"), value);
             case "targetType" -> crBuilder.equal(root.get("targetType"), TargetType.valueOf(value));
             case "targetId" -> crBuilder.equal(root.get("targetId"), value);
             case "content" -> crBuilder.like(crBuilder.lower(root.get("content")), like(value));

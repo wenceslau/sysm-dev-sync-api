@@ -7,6 +7,7 @@ import com.sysm.devsync.domain.models.Project;
 import com.sysm.devsync.domain.persistence.ProjectPersistencePort;
 import com.sysm.devsync.infrastructure.repositories.ProjectJpaRepository;
 import com.sysm.devsync.infrastructure.repositories.entities.ProjectJpaEntity;
+import com.sysm.devsync.infrastructure.repositories.objects.CountProject;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
@@ -14,6 +15,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static com.sysm.devsync.infrastructure.Utils.like;
@@ -93,9 +96,14 @@ public class ProjectPersistence extends AbstractPersistence<ProjectJpaEntity> im
         return repository.existsByWorkspaceId(workspaceId);
     }
 
+    @Override
+    public List<CountProject> countProjectsByWorkspaceIdIn(List<String> workspaceIds) {
+        return repository.countProjectsByWorkspaceIdIn(workspaceIds);
+    }
+
     protected Predicate createPredicateForField(Root<ProjectJpaEntity> root, CriteriaBuilder crBuilder, String key, String value) {
         return switch (key) {
-            case "name", "description" -> crBuilder.like(crBuilder.lower(root.get(key)), like(value));
+            case "id", "name", "description" -> crBuilder.like(crBuilder.lower(root.get(key)), like(value));
 
             case "workspaceId" -> crBuilder.equal(root.get("workspace").get("id"), value);
 

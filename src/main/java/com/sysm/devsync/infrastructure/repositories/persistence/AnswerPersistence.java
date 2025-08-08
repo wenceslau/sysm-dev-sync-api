@@ -113,7 +113,8 @@ public class AnswerPersistence extends AbstractPersistence<AnswerJpaEntity> impl
 
     protected Predicate createPredicateForField(Root<AnswerJpaEntity> root, CriteriaBuilder crBuilder, String key, String value) {
         return switch (key){
-            case "content" -> crBuilder.like(crBuilder.lower(root.get("content")), "%" + like(value) + "%");
+            case "id" -> crBuilder.equal(root.get("id"), value);
+            case "content" -> crBuilder.like(crBuilder.lower(root.get("content")), like(value));
             case "isAccepted" -> {
                 if ("true".equalsIgnoreCase(value)) {
                     yield crBuilder.isTrue(root.get("isAccepted"));

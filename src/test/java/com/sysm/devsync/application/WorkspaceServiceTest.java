@@ -7,6 +7,8 @@ import com.sysm.devsync.infrastructure.controllers.dto.request.WorkspaceCreateUp
 import com.sysm.devsync.domain.models.Workspace;
 import com.sysm.devsync.domain.persistence.UserPersistencePort;
 import com.sysm.devsync.domain.persistence.WorkspacePersistencePort;
+import com.sysm.devsync.infrastructure.controllers.dto.response.WorkspaceResponse;
+import com.sysm.devsync.infrastructure.repositories.objects.CountProject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -17,6 +19,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
 import java.util.*;
 
 
@@ -369,17 +372,97 @@ class WorkspaceServiceTest {
         when(workspacePersistence.findAll(query)).thenReturn(expectedPagination);
 
         // Act
-        Pagination<Workspace> actualPagination = workspaceService.getAllWorkspaces(query);
+        Pagination<WorkspaceResponse> actualPagination = workspaceService.getAllWorkspaces(query);
 
         // Assert
         assertNotNull(actualPagination);
-        assertSame(expectedPagination, actualPagination);
+        assertEquals(expectedPagination.total(), actualPagination.total());
         verify(workspacePersistence, times(1)).findAll(query);
     }
 
-    // In D:/.../application/WorkspaceServiceTest.java
+    @Test
+    @DisplayName("getWorkspaceById should return workspace when found")
+    void getWorkspaceById_shouldReturnWorkspace_whenFound() {
 
-// ... other tests
+        workspaceId = UUID.randomUUID().toString();
+        var workspace = Workspace.build(workspaceId, Instant.now(), Instant.now(), "Test Workspace", "A test workspace", false, "owner123", Collections.emptySet());
+
+        // Arrange
+        when(workspacePersistence.findById(workspaceId)).thenReturn(Optional.of(workspace));
+
+        // Act
+        Workspace foundWorkspace = workspaceService.getWorkspaceById(workspaceId);
+
+        // Assert
+        assertNotNull(foundWorkspace);
+        assertEquals(workspaceId, foundWorkspace.getId());
+        assertEquals("Test Workspace", foundWorkspace.getName());
+        verify(workspacePersistence, times(1)).findById(workspaceId);
+    }
+
+    @Test
+    @DisplayName("getWorkspaceById should throw NotFoundException when not found")
+    void getWorkspaceById_shouldThrowNotFoundException_whenNotFound() {
+        // Arrange
+        String nonExistentId = UUID.randomUUID().toString();
+        when(workspacePersistence.findById(nonExistentId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> workspaceService.getWorkspaceById(nonExistentId));
+
+        assertEquals("Workspace not found", exception.getMessage());
+        assertEquals(nonExistentId, exception.getId());
+        verify(workspacePersistence, times(1)).findById(nonExistentId);
+    }
+
+    @Test
+    @DisplayName("getAllWorkspaces should return paginated workspaces with project counts")
+    void getAllWorkspaces_shouldReturnPaginatedWorkspaces_withProjectCounts() {
+        // Arrange
+        workspaceId = UUID.randomUUID().toString();
+        var workspace = Workspace.build(workspaceId, Instant.now(), Instant.now(), "Test Workspace", "A test workspace", false, "owner123", Collections.emptySet());
+
+        SearchQuery query = SearchQuery.of(Page.of(0, 10, "name", "asc"), Collections.emptyMap());
+        List<Workspace> workspaces = List.of(workspace);
+        Pagination<Workspace> workspacePage = new Pagination<>(0, 10, 1, workspaces);
+        List<CountProject> projectCounts = List.of(new CountProject(workspace.getId(), 5));
+
+
+        when(workspacePersistence.findAll(query)).thenReturn(workspacePage);
+        when(projectPersistence.countProjectsByWorkspaceIdIn(List.of(workspace.getId()))).thenReturn(projectCounts);
+
+        // Act
+        Pagination<WorkspaceResponse> result = workspaceService.getAllWorkspaces(query);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(1, result.total());
+        assertEquals(1, result.items().size());
+        assertEquals(5, result.items().get(0).projectCount());
+        assertEquals(workspace.getName(), result.items().get(0).name());
+
+        verify(workspacePersistence, times(1)).findAll(query);
+        verify(projectPersistence, times(1)).countProjectsByWorkspaceIdIn(List.of(workspace.getId()));
+    }
+
+    @Test
+    @DisplayName("getAllWorkspaces should return empty pagination and not query for counts when no workspaces are found")
+    void getAllWorkspaces_shouldReturnEmptyPagination_whenNoWorkspacesFound() {
+        // Arrange
+        SearchQuery query = SearchQuery.of(Page.of(0, 10, "name", "asc"), Collections.emptyMap());
+        Pagination<Workspace> emptyPage = new Pagination<>(0, 10, 0, Collections.emptyList());
+        when(workspacePersistence.findAll(query)).thenReturn(emptyPage);
+
+        // Act
+        Pagination<WorkspaceResponse> result = workspaceService.getAllWorkspaces(query);
+
+        // Assert
+        assertNotNull(result);
+        assertTrue(result.items().isEmpty());
+        verify(workspacePersistence, times(1)).findAll(query);
+        verify(projectPersistence, never()).countProjectsByWorkspaceIdIn(any());
+    }
+
 
     @Nested
     @DisplayName("deleteWorkspace Tests")

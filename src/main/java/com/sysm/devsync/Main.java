@@ -64,6 +64,9 @@ public class Main {
             String tagJavaId = tagJavaResponse.id();
             String tagSpringId = tagSpringResponse.id();
             String tagReactId = tagReactResponse.id();
+            for (int i = 0; i < 100; i++) {
+                tagService.createTag(new TagCreateUpdate("Tag " + i, "#" + Integer.toHexString(i).toUpperCase(), "Description Tag " + i, "Other" + (i % 3 == 0 ? " (DevOps)" : i % 2 == 0 ? " (Frontend)" : " (Backend)")));
+            }
             log.info("Tags created.");
 
             // 3. Create a Workspace
@@ -71,6 +74,9 @@ public class Main {
             var wsResponse = workspaceService.createWorkspace(new WorkspaceCreateUpdate("DevSync Main Workspace", "The primary workspace for all DevSync projects.", false), user1Id);
             String workspaceId = wsResponse.id();
             log.info("Workspace created: {}", workspaceId);
+            for (int i = 0; i < 100; i++) {
+                workspaceService.createWorkspace(new WorkspaceCreateUpdate("Workspace " + i, "Description Workspace " + i, i % 2 == 0), user1Id);
+            }
 
             // 4. Add members to the workspace
             log.info("Adding members to workspace...");

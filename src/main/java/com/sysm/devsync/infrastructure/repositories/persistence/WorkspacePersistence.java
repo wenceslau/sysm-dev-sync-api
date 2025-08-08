@@ -96,7 +96,7 @@ public class WorkspacePersistence extends AbstractPersistence<WorkspaceJpaEntity
     protected Predicate createPredicateForField(Root<WorkspaceJpaEntity> root, CriteriaBuilder crBuilder, String key, String value) {
 
         return switch (key) {
-            case "name", "description" -> crBuilder.like(crBuilder.lower(root.get(key)), like(value));
+            case "id", "name", "description" -> crBuilder.like(crBuilder.lower(root.get(key)), like(value));
 
             case "isPrivate" -> {
                 if ("true".equalsIgnoreCase(value)) {

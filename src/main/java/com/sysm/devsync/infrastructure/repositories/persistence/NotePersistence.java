@@ -104,6 +104,7 @@ public class NotePersistence extends AbstractPersistence<NoteJpaEntity> implemen
 
     protected Predicate createPredicateForField(Root<NoteJpaEntity> root, CriteriaBuilder crBuilder, String key, String value) {
         return switch (key) {
+            case "id" -> crBuilder.equal(root.get("id"), value);
             case "title" -> crBuilder.like(crBuilder.lower(root.get("title")), like(value));
             case "content" -> crBuilder.like(crBuilder.lower(root.get("content")), like(value));
             case "authorId" -> crBuilder.equal(root.get("author").get("id"), value);

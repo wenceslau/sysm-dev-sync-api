@@ -306,7 +306,7 @@ public class WorkspaceJpaRepositoryTest extends AbstractRepositoryTest {
 
         Specification<WorkspaceJpaEntity> spec = (root, query, cb) -> {
             Assertions.assertNotNull(query);
-            if (query.getResultType() != Long.class && query.getResultType() != long.class) { // Avoid fetching for count queries
+            if (query.getResultType() != Long.class && query.getResultType() != long.class) { // Avoid fetching for projectCount queries
                 // root.fetch("members", JoinType.LEFT); // Optional: Eager fetch if needed, can cause Cartesian product
                 query.distinct(true); // Crucial for ManyToMany joins to avoid duplicate root entities
             }

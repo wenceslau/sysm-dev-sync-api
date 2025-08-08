@@ -51,7 +51,7 @@ public class WorkspaceController extends AbstractController implements Workspace
         var page = Page.of(pageNumber, pageSize, sort, direction);
         var searchQuery = SearchQuery.of(page, filters);
 
-        return workspaceService.getAllWorkspaces(searchQuery).map(WorkspaceResponse::from);
+        return workspaceService.getAllWorkspaces(searchQuery);
     }
 
     @Override

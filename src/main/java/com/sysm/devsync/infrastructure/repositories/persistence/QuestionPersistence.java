@@ -105,6 +105,7 @@ public class QuestionPersistence extends AbstractPersistence<QuestionJpaEntity> 
 
     protected Predicate createPredicateForField(Root<QuestionJpaEntity> root, CriteriaBuilder crBuilder, String key, String value) {
         return switch (key) {
+            case "id" -> crBuilder.equal(root.get("id"), value);
             case "title" -> crBuilder.like(crBuilder.lower(root.get("title")), like(value));
             case "description" -> crBuilder.like(crBuilder.lower(root.get("description")), like(value));
             case "projectId" -> crBuilder.equal(root.get("project").get("id"), value);
