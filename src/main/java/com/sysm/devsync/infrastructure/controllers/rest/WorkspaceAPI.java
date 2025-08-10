@@ -37,6 +37,7 @@ public interface WorkspaceAPI {
             @RequestParam(name = "pageSize", defaultValue = "10") int pageSize,
             @RequestParam(name = "sort", defaultValue = "name") String sort,
             @RequestParam(name = "direction", defaultValue = "asc") String direction,
+            @RequestParam(name = "queryType", required = false, defaultValue = "or") String queryType,
             @RequestParam Map<String, String> filters
     );
 

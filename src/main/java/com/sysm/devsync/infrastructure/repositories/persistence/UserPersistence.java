@@ -8,6 +8,7 @@ import com.sysm.devsync.domain.models.User;
 import com.sysm.devsync.domain.persistence.UserPersistencePort;
 import com.sysm.devsync.infrastructure.repositories.entities.UserJpaEntity;
 import com.sysm.devsync.infrastructure.repositories.UserJpaRepository;
+import com.sysm.devsync.infrastructure.repositories.objects.KeyValue;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
@@ -15,6 +16,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 import static com.sysm.devsync.infrastructure.Utils.like;
@@ -89,8 +91,8 @@ public class UserPersistence extends AbstractPersistence<UserJpaEntity> implemen
 
     protected Predicate createPredicateForField(Root<UserJpaEntity> root, CriteriaBuilder crBuilder, String key, String value) {
         return switch (key) {
+            case "id" -> crBuilder.equal(root.get("id"), value);
             case "name", "email" -> crBuilder.like(crBuilder.lower(root.get(key)), like(value));
-
             case "role" -> {
                 try {
                     UserRole roleValue = UserRole.valueOf(value.toUpperCase());
@@ -99,9 +101,12 @@ public class UserPersistence extends AbstractPersistence<UserJpaEntity> implemen
                     throw new BusinessException("Invalid value for role field: '" + value + "'. Expected ADMIN or MEMBER.");
                 }
             }
-
             default -> throw new BusinessException("Invalid search field provided: '" + key + "'");
         };
     }
 
+    @Override
+    public List<KeyValue> userIdXUseName(List<String> userIds) {
+        return repository.userIdXUseName(userIds);
+    }
 }

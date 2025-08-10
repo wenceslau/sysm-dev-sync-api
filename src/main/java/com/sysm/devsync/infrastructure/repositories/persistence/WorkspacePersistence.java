@@ -96,8 +96,8 @@ public class WorkspacePersistence extends AbstractPersistence<WorkspaceJpaEntity
     protected Predicate createPredicateForField(Root<WorkspaceJpaEntity> root, CriteriaBuilder crBuilder, String key, String value) {
 
         return switch (key) {
-            case "id", "name", "description" -> crBuilder.like(crBuilder.lower(root.get(key)), like(value));
-
+            case "id" -> crBuilder.equal(root.get("id"), value);
+            case "name", "description" -> crBuilder.like(crBuilder.lower(root.get(key)), like(value));
             case "isPrivate" -> {
                 if ("true".equalsIgnoreCase(value)) {
                     yield crBuilder.isTrue(root.get("isPrivate"));
@@ -107,15 +107,10 @@ public class WorkspacePersistence extends AbstractPersistence<WorkspaceJpaEntity
                     throw new BusinessException("Invalid value for boolean field '" + key + "': '" + value + "'. Expected 'true' or 'false'.");
                 }
             }
-
             case "ownerId" -> crBuilder.equal(root.get("owner").get("id"), value);
-
             case "ownerName" -> crBuilder.like(crBuilder.lower(root.join("owner").get("name")), like(value));
-
             case "memberId" -> crBuilder.equal(root.join("members").get("id"), value);
-
             case "memberName" -> crBuilder.like(crBuilder.lower(root.join("members").get("name")), like(value));
-
             default -> throw new BusinessException("Invalid search field provided: '" + key + "'");
         };
     }

@@ -45,8 +45,8 @@ public class QuestionController extends AbstractController implements QuestionAP
     }
 
     @Override
-    public Pagination<QuestionResponse> searchQuestions(int pageNumber, int pageSize, String sort,
-                                                        String direction, Map<String, String> filters) {
+    public Pagination<QuestionResponse> searchQuestions(int pageNumber, int pageSize, String sort, String direction,
+                                                       String queryType, Map<String, String> filters) {
 
         var page = Page.of(pageNumber, pageSize, sort, direction);
         var searchQuery = SearchQuery.of(page, filters);

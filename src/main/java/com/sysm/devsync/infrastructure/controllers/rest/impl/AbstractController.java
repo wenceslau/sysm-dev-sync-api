@@ -1,11 +1,22 @@
 package com.sysm.devsync.infrastructure.controllers.rest.impl;
 
+import com.sysm.devsync.Main;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.AbstractEnvironment;
+import org.springframework.core.env.Environment;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 public abstract class AbstractController {
 
+    @Autowired
+    private Environment environment;
+
     protected String authenticatedUserId() {
+
+        if ("development".equals(this.environment.getDefaultProfiles()[0])){
+            return Main.userDevId;
+        }
         // SecurityContextHolder.getContext() will not be null.
         final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 

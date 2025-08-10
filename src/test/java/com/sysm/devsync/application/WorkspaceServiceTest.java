@@ -8,7 +8,7 @@ import com.sysm.devsync.domain.models.Workspace;
 import com.sysm.devsync.domain.persistence.UserPersistencePort;
 import com.sysm.devsync.domain.persistence.WorkspacePersistencePort;
 import com.sysm.devsync.infrastructure.controllers.dto.response.WorkspaceResponse;
-import com.sysm.devsync.infrastructure.repositories.objects.CountProject;
+import com.sysm.devsync.infrastructure.repositories.objects.KeyValue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -425,7 +425,7 @@ class WorkspaceServiceTest {
         SearchQuery query = SearchQuery.of(Page.of(0, 10, "name", "asc"), Collections.emptyMap());
         List<Workspace> workspaces = List.of(workspace);
         Pagination<Workspace> workspacePage = new Pagination<>(0, 10, 1, workspaces);
-        List<CountProject> projectCounts = List.of(new CountProject(workspace.getId(), 5));
+        List<KeyValue> projectCounts = List.of(new KeyValue(workspace.getId(), 5));
 
 
         when(workspacePersistence.findAll(query)).thenReturn(workspacePage);

@@ -63,9 +63,9 @@ public class TagController extends AbstractController implements TagAPI {
     }
 
     @Override
-    public Pagination<TagResponse> searchTags(int pageNumber, int pageSize, String sort,
-                                              String direction, String queryType,
-                                              @RequestParam Map<String, String> filters ) {
+    public Pagination<TagResponse> searchTags(int pageNumber, int pageSize, String sort, String direction,
+                                                    String queryType, Map<String, String> filters) {
+
         var page = Page.of(pageNumber, pageSize, sort, direction);
         var searchQuery = SearchQuery.of(page, QueryType.valueOf(queryType.toUpperCase()), filters);
 

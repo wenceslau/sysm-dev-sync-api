@@ -73,7 +73,7 @@ public interface TagAPI {
             @RequestParam(name = "pageSize", required = false, defaultValue = "10") int pageSize,
             @RequestParam(name = "sort", required = false, defaultValue = "name") String sort,
             @RequestParam(name = "direction", required = false, defaultValue = "asc") String direction,
-            @RequestParam(name = "queryType", required = false, defaultValue = "and") String queryType,
+            @RequestParam(name = "queryType", required = false, defaultValue = "or") String queryType,
             @RequestParam Map<String, String> filters
     );
 

@@ -44,8 +44,8 @@ public class ProjectController extends AbstractController implements ProjectAPI 
     }
 
     @Override
-    public Pagination<ProjectResponse> searchProjects(int pageNumber, int pageSize, String sort,
-                                                      String direction, Map<String, String> filters) {
+    public Pagination<ProjectResponse> searchProjects(int pageNumber, int pageSize, String sort, String direction,
+                                                      String queryType, Map<String, String> filters) {
 
         var page = Page.of(pageNumber, pageSize, sort, direction);
         var searchQuery = SearchQuery.of(page, filters);

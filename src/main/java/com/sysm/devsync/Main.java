@@ -21,6 +21,7 @@ import java.util.Map;
 @SpringBootApplication
 public class Main {
 
+    public static String userDevId;
     private static final Logger log = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) {
@@ -54,6 +55,7 @@ public class Main {
             String user1Id = user1Response.id();
             String user2Id = user2Response.id();
             log.info("Users created: {}, {}", user1Id, user2Id);
+            userDevId = user2Id;
 
             // 2. Create Tags
             log.info("Creating tags...");
@@ -90,6 +92,9 @@ public class Main {
             String project1Id = project1Response.id();
             String project2Id = project2Response.id();
             log.info("Projects created: {}, {}", project1Id, project2Id);
+            for (int i = 0; i < 100; i++) {
+                projectService.createProject(new ProjectCreateUpdate("Project " + i, "Description Project " + i, workspaceId));
+            }
 
             // 6. Create a Question
             log.info("Creating a question...");

@@ -71,8 +71,8 @@ public class UserController extends AbstractController implements UserAPI {
     }
 
     @Override
-    public Pagination<UserResponse> search(int pageNumber, int pageSize, String sort,
-                                           String direction, Map<String, String> filters) {
+    public Pagination<UserResponse> search(int pageNumber, int pageSize, String sort, String direction,
+                                           String queryType, Map<String, String> filters) {
 
         var page = Page.of(pageNumber, pageSize, sort, direction);
         var searchQuery = SearchQuery.of(page, filters);

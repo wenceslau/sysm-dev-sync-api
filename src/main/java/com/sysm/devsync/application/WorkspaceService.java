@@ -11,9 +11,10 @@ import com.sysm.devsync.domain.models.Workspace;
 import com.sysm.devsync.domain.persistence.UserPersistencePort;
 import com.sysm.devsync.domain.persistence.WorkspacePersistencePort;
 import com.sysm.devsync.infrastructure.controllers.dto.response.WorkspaceResponse;
-import com.sysm.devsync.infrastructure.repositories.objects.CountProject;
+import com.sysm.devsync.infrastructure.repositories.objects.KeyValue;
 
 import java.util.List;
+import java.util.Objects;
 
 public class WorkspaceService {
 
@@ -55,6 +56,10 @@ public class WorkspaceService {
         );
 
         workspacePersistence.update(workspace);
+
+        if (workspaceUpdate.isPrivate() != null && workspaceUpdate.isPrivate() != workspace.isPrivate()) {
+            changeWorkspacePrivacy(workspaceId, workspaceUpdate.isPrivate());
+        }
     }
 
     public void changeWorkspacePrivacy(String workspaceId, boolean isPrivate) {
@@ -123,7 +128,7 @@ public class WorkspaceService {
         workspacePersistence.deleteById(workspaceId);
     }
 
-    public List<CountProject> countProjects(List<String> workspaceIds) {
+    public List<KeyValue> countProjects(List<String> workspaceIds) {
         return projectPersistence.countProjectsByWorkspaceIdIn(workspaceIds);
     }
 
@@ -143,15 +148,30 @@ public class WorkspaceService {
                 .map(Workspace::getId)
                 .toList();
 
+        var ownerIds = workspacePage.items().stream()
+                .map(Workspace::getOwnerId)
+                .toList();
+
         var mapProjectCounts = projectPersistence.countProjectsByWorkspaceIdIn(workspaceIds);
+        var mapUserNames = userPersistence.userIdXUseName(ownerIds);
 
         return workspacePage.map(ws -> {
-            var count = mapProjectCounts.stream()
-                    .filter(x->x.workspaceId().equals(ws.getId()))
+            Object countValue = mapProjectCounts.stream()
+                    .filter(x->x.key().equals(ws.getId()))
                     .findFirst()
-                    .map(CountProject::projectCount)
+                    .map(KeyValue::value)
                     .orElse(0L);
-            return WorkspaceResponse.from(ws, count);
+
+            Object nameValue = mapUserNames.stream()
+                    .filter(x->x.key().equals(ws.getOwnerId()))
+                    .findFirst()
+                    .map(KeyValue::value)
+                    .orElse("");
+
+            var count = Long.parseLong(String.valueOf(countValue));
+            var name =  String.valueOf(nameValue);
+
+            return WorkspaceResponse.from(ws, count, name);
         });
 
     }

@@ -55,8 +55,8 @@ public class AnswerController extends AbstractController implements AnswerAPI {
     }
 
     @Override
-    public Pagination<AnswerResponse> searchAnswers(int pageNumber, int pageSize, String sort,
-                                                    String direction, Map<String, String> filters) {
+    public Pagination<AnswerResponse> searchAnswers(int pageNumber, int pageSize, String sort, String direction,
+                                                    String queryType, Map<String, String> filters) {
         var page = Page.of(pageNumber, pageSize, sort, direction);
         var searchQuery = SearchQuery.of(page, filters);
 
