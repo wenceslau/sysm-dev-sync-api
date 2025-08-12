@@ -4,6 +4,7 @@ import com.sysm.devsync.domain.BusinessException;
 import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
+import com.sysm.devsync.domain.enums.QueryType;
 import com.sysm.devsync.domain.models.Tag;
 import com.sysm.devsync.infrastructure.AbstractRepositoryTest;
 import com.sysm.devsync.infrastructure.repositories.entities.TagJpaEntity;
@@ -224,7 +225,7 @@ public class TagPersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should filter by multiple valid terms (AND logic)")
         void findAll_withMultipleTerms_shouldReturnAndedResults() {
             // Arrange: Search for a tag that is named "Java" AND is in the "Programming" category
-            SearchQuery queryWithMatch = SearchQuery.of(Page.of(0, 10), Map.of("name", "Java", "category", "Programming"));
+            SearchQuery queryWithMatch = SearchQuery.of(Page.of(0, 10), QueryType.AND, Map.of("name", "Java", "category", "Programming"));
 
             // Act
             Pagination<Tag> resultWithMatch = tagPersistence.findAll(queryWithMatch);
@@ -235,7 +236,7 @@ public class TagPersistenceTest extends AbstractRepositoryTest {
             assertThat(resultWithMatch.total()).isEqualTo(1);
 
             // Arrange: Search for a tag that is named "Java" AND is in the "Framework" category
-            SearchQuery queryWithoutMatch = SearchQuery.of(Page.of(0, 10), Map.of("name", "Java", "category", "Framework"));
+            SearchQuery queryWithoutMatch = SearchQuery.of(Page.of(0, 10), QueryType.AND, Map.of("name", "Java", "category", "Framework"));
 
             // Act
             Pagination<Tag> resultWithoutMatch = tagPersistence.findAll(queryWithoutMatch);

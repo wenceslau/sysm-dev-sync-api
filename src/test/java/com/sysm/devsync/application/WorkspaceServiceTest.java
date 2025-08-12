@@ -1,6 +1,7 @@
 package com.sysm.devsync.application;
 
 import com.sysm.devsync.domain.*;
+import com.sysm.devsync.domain.models.to.UserTO;
 import com.sysm.devsync.domain.persistence.ProjectPersistencePort;
 import com.sysm.devsync.infrastructure.controllers.dto.response.CreateResponse;
 import com.sysm.devsync.infrastructure.controllers.dto.request.WorkspaceCreateUpdate;
@@ -81,7 +82,7 @@ class WorkspaceServiceTest {
         assertEquals(validWorkspaceCreateUpdateDto.name(), capturedWorkspace.getName());
         assertEquals(validWorkspaceCreateUpdateDto.description(), capturedWorkspace.getDescription());
         assertEquals(validWorkspaceCreateUpdateDto.isPrivate(), capturedWorkspace.isPrivate());
-        assertEquals(ownerId, capturedWorkspace.getOwnerId());
+        assertEquals(ownerId, capturedWorkspace.getOwner().id());
         assertEquals(response.id(), capturedWorkspace.getId());
     }
 
@@ -115,12 +116,12 @@ class WorkspaceServiceTest {
         workspaceService.updateWorkspace(workspaceId, updateDto);
 
         // Assert
-        verify(workspacePersistence, times(1)).findById(workspaceId);
+        verify(workspacePersistence, times(2)).findById(workspaceId);
         verify(mockExistingWorkspace, times(1)).update(
                 updateDto.name(),
                 updateDto.description()
         );
-        verify(workspacePersistence, times(1)).update(mockExistingWorkspace);
+        verify(workspacePersistence, times(2)).update(mockExistingWorkspace);
     }
 
     @Test
@@ -340,11 +341,11 @@ class WorkspaceServiceTest {
         when(workspacePersistence.findById(workspaceId)).thenReturn(Optional.of(expectedWorkspace));
 
         // Act
-        Workspace actualWorkspace = workspaceService.getWorkspaceById(workspaceId);
+        var actualWorkspace = workspaceService.getWorkspaceById(workspaceId);
 
         // Assert
         assertNotNull(actualWorkspace);
-        assertSame(expectedWorkspace, actualWorkspace);
+        assertSame(expectedWorkspace.getId(), actualWorkspace.getId());
         verify(workspacePersistence, times(1)).findById(workspaceId);
     }
 
@@ -385,7 +386,7 @@ class WorkspaceServiceTest {
     void getWorkspaceById_shouldReturnWorkspace_whenFound() {
 
         workspaceId = UUID.randomUUID().toString();
-        var workspace = Workspace.build(workspaceId, Instant.now(), Instant.now(), "Test Workspace", "A test workspace", false, "owner123", Collections.emptySet());
+        var workspace = Workspace.build(workspaceId, Instant.now(), Instant.now(), "Test Workspace", "A test workspace", false, UserTO.of("owner123"), Collections.emptySet());
 
         // Arrange
         when(workspacePersistence.findById(workspaceId)).thenReturn(Optional.of(workspace));
@@ -420,7 +421,7 @@ class WorkspaceServiceTest {
     void getAllWorkspaces_shouldReturnPaginatedWorkspaces_withProjectCounts() {
         // Arrange
         workspaceId = UUID.randomUUID().toString();
-        var workspace = Workspace.build(workspaceId, Instant.now(), Instant.now(), "Test Workspace", "A test workspace", false, "owner123", Collections.emptySet());
+        var workspace = Workspace.build(workspaceId, Instant.now(), Instant.now(), "Test Workspace", "A test workspace", false, UserTO.of("owner123"), Collections.emptySet());
 
         SearchQuery query = SearchQuery.of(Page.of(0, 10, "name", "asc"), Collections.emptyMap());
         List<Workspace> workspaces = List.of(workspace);

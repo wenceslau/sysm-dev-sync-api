@@ -4,6 +4,7 @@ import com.sysm.devsync.application.NoteService;
 import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
+import com.sysm.devsync.domain.enums.QueryType;
 import com.sysm.devsync.infrastructure.controllers.rest.NoteAPI;
 import com.sysm.devsync.infrastructure.controllers.dto.request.NoteCreateUpdate;
 import com.sysm.devsync.infrastructure.controllers.dto.response.NoteResponse;
@@ -48,7 +49,7 @@ public class NoteController extends AbstractController implements NoteAPI {
                                                 String queryType, Map<String, String> filters) {
 
         var page = Page.of(pageNumber, pageSize, sort, direction);
-        var searchQuery = SearchQuery.of(page, filters);
+        var searchQuery = SearchQuery.of(page, QueryType.of(queryType), filters);
 
         return noteService.getAllNotes(searchQuery).map(NoteResponse::from);
     }

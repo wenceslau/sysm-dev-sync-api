@@ -4,6 +4,7 @@ import com.sysm.devsync.domain.BusinessException;
 import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
+import com.sysm.devsync.domain.enums.QueryType;
 import com.sysm.devsync.domain.enums.UserRole;
 import com.sysm.devsync.domain.models.Project;
 import com.sysm.devsync.domain.models.User; // For workspace owner setup
@@ -197,7 +198,7 @@ public class ProjectPersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should filter by multiple valid terms using AND logic")
         void findAll_withMultipleTerms_shouldReturnAndedResults() {
             // Arrange: Search for a project named "Alpha" AND in workspace1
-            SearchQuery queryWithMatch = SearchQuery.of(Page.of(0, 10), Map.of(
+            SearchQuery queryWithMatch = SearchQuery.of(Page.of(0, 10), QueryType.AND, Map.of(
                     "name", "Alpha",
                     "workspaceId", workspace1Jpa.getId()
             ));
@@ -210,7 +211,7 @@ public class ProjectPersistenceTest extends AbstractRepositoryTest {
             assertThat(resultWithMatch.items().get(0).getName()).isEqualTo("Project Alpha");
 
             // Arrange: Search for a project named "Alpha" AND in workspace2 (no such project)
-            SearchQuery queryWithoutMatch = SearchQuery.of(Page.of(0, 10), Map.of(
+            SearchQuery queryWithoutMatch = SearchQuery.of(Page.of(0, 10), QueryType.AND, Map.of(
                     "name", "Alpha",
                     "workspaceId", workspace2Jpa.getId()
             ));

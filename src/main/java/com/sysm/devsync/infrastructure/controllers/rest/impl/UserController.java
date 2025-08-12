@@ -4,6 +4,7 @@ import com.sysm.devsync.application.UserService;
 import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
+import com.sysm.devsync.domain.enums.QueryType;
 import com.sysm.devsync.infrastructure.controllers.dto.request.UserCreateUpdate;
 import com.sysm.devsync.infrastructure.controllers.dto.response.UserResponse;
 import com.sysm.devsync.infrastructure.controllers.rest.UserAPI;
@@ -75,7 +76,7 @@ public class UserController extends AbstractController implements UserAPI {
                                            String queryType, Map<String, String> filters) {
 
         var page = Page.of(pageNumber, pageSize, sort, direction);
-        var searchQuery = SearchQuery.of(page, filters);
+        var searchQuery = SearchQuery.of(page, QueryType.of(queryType), filters);
 
         var pagination = userService.searchUsers(searchQuery);
         return pagination.map(UserResponse::from);

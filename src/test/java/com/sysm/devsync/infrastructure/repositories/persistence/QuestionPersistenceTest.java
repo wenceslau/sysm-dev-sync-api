@@ -4,6 +4,7 @@ import com.sysm.devsync.domain.BusinessException;
 import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
+import com.sysm.devsync.domain.enums.QueryType;
 import com.sysm.devsync.domain.enums.QuestionStatus;
 import com.sysm.devsync.domain.enums.UserRole;
 import com.sysm.devsync.domain.models.Project;
@@ -213,7 +214,7 @@ public class QuestionPersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should filter by multiple terms using AND logic")
         void findAll_withMultipleTerms_shouldReturnAndedResults() {
             // Arrange: Search for questions that are OPEN and have the 'java' tag
-            SearchQuery queryWithMatch = SearchQuery.of(Page.of(0, 10), Map.of(
+            SearchQuery queryWithMatch = SearchQuery.of(Page.of(0, 10), QueryType.AND, Map.of(
                     "status", "OPEN",
                     "tagsName", "java"
             ));
@@ -226,7 +227,7 @@ public class QuestionPersistenceTest extends AbstractRepositoryTest {
             assertThat(resultWithMatch.items().get(0).getId()).isEqualTo(question1Domain.getId());
 
             // Arrange: Search for questions that are RESOLVED and have the 'spring' tag (should be none)
-            SearchQuery queryWithoutMatch = SearchQuery.of(Page.of(0, 10), Map.of(
+            SearchQuery queryWithoutMatch = SearchQuery.of(Page.of(0, 10), QueryType.AND, Map.of(
                     "status", "RESOLVED",
                     "tagsName", "spring"
             ));

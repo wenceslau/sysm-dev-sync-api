@@ -141,6 +141,7 @@ public class CommentIntegrationTest extends AbstractIntegrationTest {
 
         // Act & Assert - Filter by multiple fields (targetType=QUESTION and authorId=testAuthor1)
         mockMvc.perform(get("/comments")
+                        .param("queryType", "AND")
                         .param("targetType", "QUESTION")
                         .param("authorId", testAuthor1.getId()))
                 .andExpect(status().isOk())
@@ -149,6 +150,7 @@ public class CommentIntegrationTest extends AbstractIntegrationTest {
 
         // Act & Assert - Filter with no results
         mockMvc.perform(get("/comments")
+                        .param("queryType", "AND")
                         .param("targetType", "NOTE")
                         .param("authorId", testAuthor2.getId()))
                 .andExpect(status().isOk())

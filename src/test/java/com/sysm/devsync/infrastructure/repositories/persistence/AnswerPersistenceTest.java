@@ -4,6 +4,7 @@ import com.sysm.devsync.domain.BusinessException;
 import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
+import com.sysm.devsync.domain.enums.QueryType;
 import com.sysm.devsync.domain.enums.QuestionStatus;
 import com.sysm.devsync.domain.enums.UserRole;
 import com.sysm.devsync.domain.models.Answer;
@@ -233,7 +234,7 @@ public class AnswerPersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should filter by multiple terms using AND logic")
         void findAll_withMultipleTerms_shouldReturnAndedResults() {
             // Arrange: Search for an answer that is NOT accepted AND belongs to question1
-            SearchQuery queryWithMatch = SearchQuery.of(Page.of(0, 10), Map.of(
+            SearchQuery queryWithMatch = SearchQuery.of(Page.of(0, 10), QueryType.AND, Map.of(
                     "isAccepted", "false",
                     "questionId", question1Jpa.getId()
             ));
@@ -247,7 +248,7 @@ public class AnswerPersistenceTest extends AbstractRepositoryTest {
                     .containsExactlyInAnyOrder(answer1Domain.getId(), answer2Domain.getId());
 
             // Arrange: Search for an answer that IS accepted AND belongs to question1 (should be none)
-            SearchQuery queryWithoutMatch = SearchQuery.of(Page.of(0, 10), Map.of(
+            SearchQuery queryWithoutMatch = SearchQuery.of(Page.of(0, 10), QueryType.AND, Map.of(
                     "isAccepted", "true",
                     "questionId", question1Jpa.getId()
             ));

@@ -2,6 +2,7 @@ package com.sysm.devsync.infrastructure.repositories.entities;
 
 
 import com.sysm.devsync.domain.models.Workspace;
+import com.sysm.devsync.domain.models.to.UserTO;
 import jakarta.persistence.*;
 
 import java.time.Instant;
@@ -157,7 +158,7 @@ public class WorkspaceJpaEntity {
         workspaceJpaEntity.setId(workspace.getId());
         workspaceJpaEntity.setName(workspace.getName());
         workspaceJpaEntity.setDescription(workspace.getDescription());
-        workspaceJpaEntity.setOwner(new UserJpaEntity(workspace.getOwnerId()));
+        workspaceJpaEntity.setOwner(new UserJpaEntity(workspace.getOwner().id()));
         workspaceJpaEntity.setMembers(
                 workspace.getMembersId().stream()
                         .map(UserJpaEntity::new)
@@ -181,9 +182,9 @@ public class WorkspaceJpaEntity {
                 workspaceJpaEntity.getName(),
                 workspaceJpaEntity.getDescription(),
                 workspaceJpaEntity.isPrivate(),
-                workspaceJpaEntity.getOwner().getId(),
+                UserTO.of(workspaceJpaEntity.getOwner().getId(), workspaceJpaEntity.getOwner().getName()),
                 workspaceJpaEntity.getMembers().stream()
-                        .map(UserJpaEntity::getId)
+                        .map(entity -> UserTO.of(entity.getId(), entity.getName()))
                         .collect(Collectors.toSet())
         );
     }

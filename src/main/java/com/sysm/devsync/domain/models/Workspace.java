@@ -1,11 +1,14 @@
 package com.sysm.devsync.domain.models;
 
+import com.sysm.devsync.domain.models.to.UserTO;
+
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Workspace extends AbstractModel {
 
@@ -16,12 +19,12 @@ public class Workspace extends AbstractModel {
     private String name;
     private String description;
     private boolean isPrivate;
-    private String ownerId;
-    private Set<String> membersId;
+    private UserTO owner;
+    private Set<UserTO> members;
 
     private Workspace(String id, Instant createdAt, Instant updatedAt,
                       String name, String description, boolean isPrivate,
-                      String ownerId, Set<String> membersId) {
+                      UserTO owner, Set<UserTO> members) {
 
         this.id = id;
         this.createdAt = createdAt;
@@ -29,12 +32,12 @@ public class Workspace extends AbstractModel {
         this.name = name;
         this.description = description;
         this.isPrivate = isPrivate;
-        this.ownerId = ownerId;
-        this.membersId = membersId;
+        this.owner = owner;
+        this.members = members;
 
         validate(name, description);
 
-        if (ownerId == null) {
+        if (owner == null) {
             throw new IllegalArgumentException("Owner cannot be null");
         }
 
@@ -66,8 +69,7 @@ public class Workspace extends AbstractModel {
         }
 
         this.updatedAt = Instant.now();
-        this.ownerId = newOwnerId;
-
+        this.owner = UserTO.of(newOwnerId);
     }
 
     public void setPrivate(boolean isPrivate) {
@@ -80,21 +82,33 @@ public class Workspace extends AbstractModel {
             throw new IllegalArgumentException("User cannot be null");
         }
 
-        if (membersId == null) {
-            membersId = new HashSet<>();
+        if (members == null) {
+            members = new HashSet<>();
         }
 
-        this.membersId.add(userId);
+        this.members.add(UserTO.of(userId));
+    }
+
+    public void addMember(String userId, String name) {
+        if (userId == null) {
+            throw new IllegalArgumentException("User cannot be null");
+        }
+
+        if (members == null) {
+            members = new HashSet<>();
+        }
+
+        this.members.add(UserTO.of(userId, name));
     }
 
     public void removeMember(String userId) {
         if (userId == null) {
             throw new IllegalArgumentException("User cannot be null");
         }
-        if (membersId == null) {
+        if (members == null) {
             throw new IllegalArgumentException("Members cannot be null");
         }
-        this.membersId.remove(userId);
+        this.members.removeIf(u-> u.id().equals(userId));
     }
 
     public String getId() {
@@ -127,12 +141,18 @@ public class Workspace extends AbstractModel {
         return isPrivate;
     }
 
-    public String getOwnerId() {
-        return ownerId;
+    public UserTO getOwner() {
+        return owner;
     }
 
     public Set<String> getMembersId() {
-        return Collections.unmodifiableSet(membersId);
+        return members.stream()
+                .map(UserTO::id)
+                .collect(Collectors.toUnmodifiableSet());
+    }
+
+    public Set<UserTO> getMembers() {
+        return Collections.unmodifiableSet(members);
     }
 
     public final boolean equals(Object o) {
@@ -146,7 +166,7 @@ public class Workspace extends AbstractModel {
     }
 
     public static Workspace create(String name, String description, boolean isPrivate,
-                                   String ownerId) {
+                                   UserTO owner) {
 
         String id = java.util.UUID.randomUUID().toString();
         Instant now = Instant.now();
@@ -157,15 +177,20 @@ public class Workspace extends AbstractModel {
                 name,
                 description,
                 isPrivate,
-                ownerId,
+                owner,
                 new HashSet<>()
         );
     }
 
+    public static Workspace create(String name, String description, boolean isPrivate,
+                                   String ownerId) {
+
+        return create(name, description, isPrivate, UserTO.of(ownerId));
+    }
+
     public static Workspace build(String id, Instant createdAt, Instant updatedAt,
                                   String name, String description, boolean isPrivate,
-                                  String ownerId, Set<String> members) {
-
+                                  UserTO ownerId, Set<UserTO> members) {
         return new Workspace(
                 id,
                 createdAt,

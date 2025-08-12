@@ -134,6 +134,7 @@ public class ProjectIntegrationTest extends AbstractIntegrationTest {
 
         // Act & Assert - Filter by multiple fields (name and workspaceId)
         mockMvc.perform(get("/projects")
+                        .param("queryType", "AND")
                         .param("name", "Gamma")
                         .param("workspaceId", workspace1.getId()))
                 .andExpect(status().isOk())
@@ -142,6 +143,7 @@ public class ProjectIntegrationTest extends AbstractIntegrationTest {
 
         // Act & Assert - Filter with no results
         mockMvc.perform(get("/projects")
+                        .param("queryType", "AND")
                         .param("name", "Alpha")
                         .param("workspaceId", workspace2.getId()))
                 .andExpect(status().isOk())

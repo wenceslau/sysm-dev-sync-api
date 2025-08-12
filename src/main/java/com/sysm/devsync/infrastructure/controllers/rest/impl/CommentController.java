@@ -4,6 +4,7 @@ import com.sysm.devsync.application.CommentService;
 import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
+import com.sysm.devsync.domain.enums.QueryType;
 import com.sysm.devsync.domain.enums.TargetType;
 import com.sysm.devsync.infrastructure.controllers.dto.request.CommentCreateUpdate;
 import com.sysm.devsync.infrastructure.controllers.dto.response.CommentResponse;
@@ -49,7 +50,7 @@ public class CommentController extends AbstractController implements CommentAPI 
                                                       String queryType, Map<String, String> filters) {
 
         var page = Page.of(pageNumber, pageSize, sort, direction);
-        var searchQuery = SearchQuery.of(page, filters);
+        var searchQuery = SearchQuery.of(page, QueryType.of(queryType), filters);
 
         return commentService.getAllComments(searchQuery)
                 .map(CommentResponse::from);

@@ -4,6 +4,7 @@ import com.sysm.devsync.application.AnswerService;
 import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
+import com.sysm.devsync.domain.enums.QueryType;
 import com.sysm.devsync.infrastructure.controllers.rest.AnswerAPI;
 import com.sysm.devsync.infrastructure.controllers.dto.request.AnswerCreateUpdate;
 import com.sysm.devsync.infrastructure.controllers.dto.response.AnswerResponse;
@@ -58,7 +59,7 @@ public class AnswerController extends AbstractController implements AnswerAPI {
     public Pagination<AnswerResponse> searchAnswers(int pageNumber, int pageSize, String sort, String direction,
                                                     String queryType, Map<String, String> filters) {
         var page = Page.of(pageNumber, pageSize, sort, direction);
-        var searchQuery = SearchQuery.of(page, filters);
+        var searchQuery = SearchQuery.of(page, QueryType.of(queryType), filters);
 
         return answerService.getAllAnswers(searchQuery).map(AnswerResponse::from);
     }

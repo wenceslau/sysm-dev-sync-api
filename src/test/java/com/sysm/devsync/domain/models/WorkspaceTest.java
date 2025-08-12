@@ -1,6 +1,7 @@
 package com.sysm.devsync.domain.models;
 
 import com.sysm.devsync.domain.enums.UserRole;
+import com.sysm.devsync.domain.models.to.UserTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,7 +23,7 @@ class WorkspaceTest {
 
     private String validName;
     private String validDescription;
-    private String validOwner;
+    private UserTO validOwner;
     private String member1;
     private String member2;
 
@@ -32,7 +33,7 @@ class WorkspaceTest {
         validDescription = "A description for the test workspace.";
         // Assuming User.create is available and works as defined in UserTest.
         // ROLE enum is also assumed to be available.
-        validOwner = UUID.randomUUID().toString();
+        validOwner = UserTO.of(UUID.randomUUID().toString());
         member1 =  UUID.randomUUID().toString();
         member2 =  UUID.randomUUID().toString();
     }
@@ -61,7 +62,7 @@ class WorkspaceTest {
         assertEquals(validName, workspace.getName());
         assertEquals(validDescription, workspace.getDescription());
         assertFalse(workspace.isPrivate(), "isPrivate should be false as provided");
-        assertEquals(validOwner, workspace.getOwnerId());
+        assertEquals(validOwner, workspace.getOwner());
 
         assertNotNull(workspace.getMembersId(), "Members set should not be null");
         assertEquals(1, workspace.getMembersId().size(), "Members set should contain one member");
@@ -82,7 +83,7 @@ class WorkspaceTest {
 
     @Test
     @DisplayName("create should result in NPE for getMembers if members argument is null and no members added")
-    void create_shouldResultInNPEForGetMembers_ifMembersArgumentIsNull() {
+    void create_shouldResultInNPEForGetMembers_ifMembersIdArgumentIsNull() {
         // Current behavior: if 'members' is null, 'this.members' in Workspacce becomes null.
         // getMembers() calls Collections.unmodifiableSet(null), throwing NPE.
         Workspace workspaceWithNullMembers = Workspace.create(validName, validDescription, true, validOwner);
@@ -136,8 +137,9 @@ class WorkspaceTest {
     @Test
     @DisplayName("create should throw IllegalArgumentException for null ownerId")
     void create_shouldThrowException_whenOwnerIdIsNull() {
+        UserTO nullOwner = null;
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            Workspace.create(validName, validDescription, false, null);
+            Workspace.create(validName, validDescription, false, nullOwner);
         });
         assertEquals("Owner cannot be null", exception.getMessage());
     }
@@ -150,8 +152,8 @@ class WorkspaceTest {
         String id = UUID.randomUUID().toString();
         Instant createdAt = Instant.now().minus(1, ChronoUnit.DAYS).truncatedTo(MILLIS);
         Instant updatedAt = Instant.now().minus(12, ChronoUnit.HOURS).truncatedTo(MILLIS);
-        Set<String> members = new HashSet<>();
-        members.add(member1);
+        Set<UserTO> members = new HashSet<>();
+        members.add(UserTO.of(member1));
 
         Workspace workspace = Workspace.build(id, createdAt, updatedAt, validName, validDescription, true, validOwner, members);
 
@@ -161,7 +163,7 @@ class WorkspaceTest {
         assertEquals(validName, workspace.getName());
         assertEquals(validDescription, workspace.getDescription());
         assertTrue(workspace.isPrivate());
-        assertEquals(validOwner, workspace.getOwnerId());
+        assertEquals(validOwner, workspace.getOwner());
         assertNotNull(workspace.getMembersId());
         assertEquals(1, workspace.getMembersId().size());
         assertTrue(workspace.getMembersId().contains(member1));
@@ -178,7 +180,7 @@ class WorkspaceTest {
 
     @Test
     @DisplayName("build should result in NPE for getMembers if members argument is null and no members added")
-    void build_shouldResultInNPEForGetMembers_ifMembersArgumentIsNull() {
+    void build_shouldResultInNPEForGetMembers_ifMembersIdArgumentIsNull() {
         String id = UUID.randomUUID().toString();
         Instant createdAt = Instant.now();
         Instant updatedAt = Instant.now();
@@ -246,7 +248,7 @@ class WorkspaceTest {
         assertNotNull(workspace.getId());
         assertNotNull(workspace.getCreatedAt());
         assertFalse(workspace.isPrivate());
-        assertEquals(validOwner, workspace.getOwnerId());
+        assertEquals(validOwner, workspace.getOwner());
         assertTrue(workspace.getMembersId().isEmpty());
     }
 
@@ -306,7 +308,7 @@ class WorkspaceTest {
 
         workspace.changeOwner(newOwner.getId());
 
-        assertEquals(newOwner.getId(), workspace.getOwnerId());
+        assertEquals(newOwner.getId(), workspace.getOwner().id());
         assertTrue(workspace.getUpdatedAt().isAfter(updatedAtBeforeChange));
     }
 
@@ -402,11 +404,11 @@ class WorkspaceTest {
         String description = "Getter Test Description";
         boolean isPrivate = true;
         User owner = User.create("getterOwner", "getter@owner.com",  UserRole.ADMIN);
-        Set<String> members = new HashSet<>();
+        Set<UserTO> members = new HashSet<>();
         User getterMember = User.create("getterMember", "getter@member.com", UserRole.MEMBER);
-        members.add(getterMember.getId());
+        members.add(UserTO.of(getterMember.getId()));
 
-        Workspace workspace = Workspace.build(id, createdAt, updatedAt, name, description, isPrivate, owner.getId(), members);
+        Workspace workspace = Workspace.build(id, createdAt, updatedAt, name, description, isPrivate, UserTO.of(owner.getId()), members);
 
         assertEquals(id, workspace.getId());
         assertEquals(createdAt, workspace.getCreatedAt());
@@ -414,7 +416,7 @@ class WorkspaceTest {
         assertEquals(name, workspace.getName());
         assertEquals(description, workspace.getDescription());
         assertEquals(isPrivate, workspace.isPrivate());
-        assertEquals(owner.getId(), workspace.getOwnerId());
+        assertEquals(owner.getId(), workspace.getOwner().id());
 
         assertNotNull(workspace.getMembersId());
         assertEquals(1, workspace.getMembersId().size());
@@ -430,7 +432,7 @@ class WorkspaceTest {
         String id = UUID.randomUUID().toString();
         // Create two workspaces with the same ID but different other properties
         Workspace ws1 = Workspace.build(id, Instant.now(), Instant.now(), "Name1", "Desc1", false, validOwner, null);
-        Workspace ws2 = Workspace.build(id, Instant.now().plusSeconds(10), Instant.now().plusSeconds(20), "Name2", "Desc2", true, member1, new HashSet<>());
+        Workspace ws2 = Workspace.build(id, Instant.now().plusSeconds(10), Instant.now().plusSeconds(20), "Name2", "Desc2", true, UserTO.of(member1), new HashSet<>());
         // Create a third workspace with a different ID
         Workspace ws3 = Workspace.build(UUID.randomUUID().toString(), Instant.now(), Instant.now(), "Name1", "Desc1", false, validOwner, null);
 

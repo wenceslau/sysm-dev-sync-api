@@ -111,7 +111,7 @@ public class WorkspaceIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", equalTo(savedWs.getId())))
                 .andExpect(jsonPath("$.name", equalTo("My Workspace")))
-                .andExpect(jsonPath("$.ownerId", equalTo(FAKE_AUTHENTICATED_USER_ID)));
+                .andExpect(jsonPath("$.owner.id", equalTo(FAKE_AUTHENTICATED_USER_ID)));
     }
 
     @Test
@@ -190,6 +190,7 @@ public class WorkspaceIntegrationTest extends AbstractIntegrationTest {
 
         // Act & Assert - Filter by multiple fields (name and isPrivate)
         mockMvc.perform(get("/workspaces")
+                        .param("queryType", "AND")
                         .param("name", "Gamma")
                         .param("isPrivate", "false"))
                 .andExpect(status().isOk())
@@ -198,6 +199,7 @@ public class WorkspaceIntegrationTest extends AbstractIntegrationTest {
 
         // Act & Assert - Filter with no results
         mockMvc.perform(get("/workspaces")
+                        .param("queryType", "AND")
                         .param("name", "Alpha")
                         .param("isPrivate", "true"))
                 .andExpect(status().isOk())

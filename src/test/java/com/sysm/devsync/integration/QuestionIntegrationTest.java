@@ -191,6 +191,7 @@ public class QuestionIntegrationTest extends AbstractIntegrationTest {
 
         // Act & Assert - Filter by multiple fields (status and projectId)
         mockMvc.perform(get("/questions")
+                        .param("queryType", "AND")
                         .param("status", "OPEN")
                         .param("projectId", testProject1.getId()))
                 .andExpect(status().isOk())
@@ -199,6 +200,7 @@ public class QuestionIntegrationTest extends AbstractIntegrationTest {
 
         // Act & Assert - Filter with no results
         mockMvc.perform(get("/questions")
+                        .param("queryType", "AND")
                         .param("status", "RESOLVED")
                         .param("projectId", testProject2.getId()))
                 .andExpect(status().isOk())

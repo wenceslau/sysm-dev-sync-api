@@ -4,6 +4,7 @@ import com.sysm.devsync.domain.BusinessException;
 import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
+import com.sysm.devsync.domain.enums.QueryType;
 import com.sysm.devsync.domain.enums.UserRole;
 import com.sysm.devsync.domain.models.User;
 import com.sysm.devsync.infrastructure.AbstractRepositoryTest;
@@ -239,7 +240,7 @@ public class UserPersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should filter by multiple valid terms (AND logic)")
         void findAll_withMultipleTerms_shouldReturnAndedResults() {
             // Arrange: Search for a user who is a MEMBER and whose name is "John Doe"
-            SearchQuery queryWithMatch = SearchQuery.of(Page.of(0, 10), Map.of("role", "MEMBER", "name", "John Doe"));
+            SearchQuery queryWithMatch = SearchQuery.of(Page.of(0, 10), QueryType.AND, Map.of("role", "MEMBER", "name", "John Doe"));
 
             // Act
             Pagination<User> resultWithMatch = userPersistence.findAll(queryWithMatch);
@@ -250,7 +251,7 @@ public class UserPersistenceTest extends AbstractRepositoryTest {
             assertThat(resultWithMatch.total()).isEqualTo(1);
 
             // Arrange: Search for a user who is an ADMIN and whose name is "John Doe" (should not exist)
-            SearchQuery queryWithoutMatch = SearchQuery.of(Page.of(0, 10), Map.of("role", "ADMIN", "name", "John Doe"));
+            SearchQuery queryWithoutMatch = SearchQuery.of(Page.of(0, 10), QueryType.AND, Map.of("role", "ADMIN", "name", "John Doe"));
 
             // Act
             Pagination<User> resultWithoutMatch = userPersistence.findAll(queryWithoutMatch);

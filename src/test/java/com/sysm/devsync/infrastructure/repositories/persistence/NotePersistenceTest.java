@@ -4,6 +4,7 @@ import com.sysm.devsync.domain.BusinessException;
 import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
+import com.sysm.devsync.domain.enums.QueryType;
 import com.sysm.devsync.domain.enums.UserRole;
 import com.sysm.devsync.domain.models.Note;
 import com.sysm.devsync.domain.models.Project;
@@ -216,7 +217,7 @@ public class NotePersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should filter by multiple terms using AND logic")
         void findAll_withMultipleTerms_shouldReturnAndedResults() {
             // Arrange: Search for a note with title "First" AND in project1
-            SearchQuery queryWithMatch = SearchQuery.of(Page.of(0, 10), Map.of(
+            SearchQuery queryWithMatch = SearchQuery.of(Page.of(0, 10), QueryType.AND, Map.of(
                     "title", "First",
                     "projectId", project1Jpa.getId()
             ));
@@ -229,7 +230,7 @@ public class NotePersistenceTest extends AbstractRepositoryTest {
             assertThat(resultWithMatch.items().get(0).getId()).isEqualTo(note1Domain.getId());
 
             // Arrange: Search for a note with title "First" AND in project2 (should be none)
-            SearchQuery queryWithoutMatch = SearchQuery.of(Page.of(0, 10), Map.of(
+            SearchQuery queryWithoutMatch = SearchQuery.of(Page.of(0, 10), QueryType.AND, Map.of(
                     "title", "First",
                     "projectId", project2Jpa.getId()
             ));

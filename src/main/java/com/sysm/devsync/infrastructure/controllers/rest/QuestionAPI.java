@@ -45,7 +45,7 @@ public interface QuestionAPI {
             @RequestParam(name = "pageSize", defaultValue = "10") int pageSize,
             @RequestParam(name = "sort", defaultValue = "createdAt") String sort,
             @RequestParam(name = "direction", defaultValue = "desc") String direction,
-            @RequestParam(name = "queryType", required = false, defaultValue = "or") String queryType,
+            @RequestParam(name = "queryType", defaultValue = "or") String queryType,
             @RequestParam Map<String, String> filters
     );
 

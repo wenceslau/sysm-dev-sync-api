@@ -4,6 +4,7 @@ import com.sysm.devsync.application.QuestionService;
 import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
+import com.sysm.devsync.domain.enums.QueryType;
 import com.sysm.devsync.infrastructure.controllers.rest.QuestionAPI;
 import com.sysm.devsync.infrastructure.controllers.dto.request.QuestionCreateUpdate;
 import com.sysm.devsync.infrastructure.controllers.dto.request.QuestionStatusUpdate;
@@ -49,7 +50,7 @@ public class QuestionController extends AbstractController implements QuestionAP
                                                        String queryType, Map<String, String> filters) {
 
         var page = Page.of(pageNumber, pageSize, sort, direction);
-        var searchQuery = SearchQuery.of(page, filters);
+        var searchQuery = SearchQuery.of(page, QueryType.of(queryType), filters);
 
         return questionService.getAllQuestions(searchQuery).map(QuestionResponse::from);
     }

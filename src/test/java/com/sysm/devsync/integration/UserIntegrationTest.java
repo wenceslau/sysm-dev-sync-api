@@ -240,6 +240,7 @@ public class UserIntegrationTest extends AbstractIntegrationTest {
 
         // Act & Assert - Filter by multiple fields (name and role)
         mockMvc.perform(get("/users")
+                        .param("queryType", "AND")
                         .param("name", "Charles")
                         .param("role", "MEMBER"))
                 .andExpect(status().isOk())
@@ -248,6 +249,7 @@ public class UserIntegrationTest extends AbstractIntegrationTest {
 
         // Act & Assert - Filter with no results
         mockMvc.perform(get("/users")
+                        .param("queryType", "AND")
                         .param("name", "Diana")
                         .param("role", "ADMIN"))
                 .andExpect(status().isOk())

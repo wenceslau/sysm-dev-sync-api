@@ -2,6 +2,7 @@ package com.sysm.devsync.application;
 
 import com.sysm.devsync.domain.BusinessException;
 import com.sysm.devsync.domain.NotFoundException;
+import com.sysm.devsync.domain.models.to.UserTO;
 import com.sysm.devsync.domain.persistence.ProjectPersistencePort;
 import com.sysm.devsync.infrastructure.controllers.dto.response.CreateResponse;
 import com.sysm.devsync.infrastructure.controllers.dto.request.WorkspaceCreateUpdate;
@@ -13,8 +14,8 @@ import com.sysm.devsync.domain.persistence.WorkspacePersistencePort;
 import com.sysm.devsync.infrastructure.controllers.dto.response.WorkspaceResponse;
 import com.sysm.devsync.infrastructure.repositories.objects.KeyValue;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class WorkspaceService {
 
@@ -38,7 +39,7 @@ public class WorkspaceService {
                 workspaceCreateUpdate.name(),
                 workspaceCreateUpdate.description(),
                 workspaceCreateUpdate.isPrivate(),
-                ownerId
+                UserTO.of(ownerId)
         );
 
         workspacePersistence.create(workspace);
@@ -148,12 +149,7 @@ public class WorkspaceService {
                 .map(Workspace::getId)
                 .toList();
 
-        var ownerIds = workspacePage.items().stream()
-                .map(Workspace::getOwnerId)
-                .toList();
-
         var mapProjectCounts = projectPersistence.countProjectsByWorkspaceIdIn(workspaceIds);
-        var mapUserNames = userPersistence.userIdXUseName(ownerIds);
 
         return workspacePage.map(ws -> {
             Object countValue = mapProjectCounts.stream()
@@ -162,16 +158,9 @@ public class WorkspaceService {
                     .map(KeyValue::value)
                     .orElse(0L);
 
-            Object nameValue = mapUserNames.stream()
-                    .filter(x->x.key().equals(ws.getOwnerId()))
-                    .findFirst()
-                    .map(KeyValue::value)
-                    .orElse("");
-
             var count = Long.parseLong(String.valueOf(countValue));
-            var name =  String.valueOf(nameValue);
 
-            return WorkspaceResponse.from(ws, count, name);
+            return WorkspaceResponse.from(ws, count);
         });
 
     }

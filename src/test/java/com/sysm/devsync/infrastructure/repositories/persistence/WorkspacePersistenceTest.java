@@ -4,8 +4,10 @@ import com.sysm.devsync.domain.BusinessException;
 import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
+import com.sysm.devsync.domain.enums.QueryType;
 import com.sysm.devsync.domain.enums.UserRole;
 import com.sysm.devsync.domain.models.Workspace;
+import com.sysm.devsync.domain.models.to.UserTO;
 import com.sysm.devsync.infrastructure.AbstractRepositoryTest;
 import com.sysm.devsync.infrastructure.repositories.entities.UserJpaEntity;
 import com.sysm.devsync.infrastructure.repositories.entities.WorkspaceJpaEntity;
@@ -95,7 +97,7 @@ public class WorkspacePersistenceTest extends AbstractRepositoryTest {
             WorkspaceJpaEntity foundInDb = entityManager.find(WorkspaceJpaEntity.class, workspace1Domain.getId());
             assertThat(foundInDb).isNotNull();
             assertThat(foundInDb.getName()).isEqualTo(workspace1Domain.getName());
-            assertThat(foundInDb.getOwner().getId()).isEqualTo(workspace1Domain.getOwnerId());
+            assertThat(foundInDb.getOwner().getId()).isEqualTo(workspace1Domain.getOwner().id());
             assertThat(foundInDb.getMembers().stream().map(UserJpaEntity::getId).collect(Collectors.toSet()))
                     .isEqualTo(workspace1Domain.getMembersId());
         }
@@ -113,7 +115,7 @@ public class WorkspacePersistenceTest extends AbstractRepositoryTest {
             var originalWorkspace = workspacePersistence.findById(workspace1Domain.getId()).orElseThrow();
             Instant originalCreatedAt = originalWorkspace.getCreatedAt();
 
-            Set<String> updatedMembers = new HashSet<>(Collections.singletonList(memberUser2.getId()));
+            Set<UserTO> updatedMembers = new HashSet<>(Collections.singletonList(UserTO.of(memberUser2.getId())));
             Workspace updatedDomainWorkspace = Workspace.build(
                     workspace1Domain.getId(),
                     originalCreatedAt,
@@ -121,7 +123,7 @@ public class WorkspacePersistenceTest extends AbstractRepositoryTest {
                     "Workspace Alpha Updated",
                     "Updated Alpha Description",
                     true,
-                    memberUser1.getId(),
+                    UserTO.of(memberUser1.getId()),
                     updatedMembers
             );
 
@@ -132,8 +134,8 @@ public class WorkspacePersistenceTest extends AbstractRepositoryTest {
             Workspace foundWorkspace = workspacePersistence.findById(workspace1Domain.getId()).orElseThrow();
             assertThat(foundWorkspace.getName()).isEqualTo("Workspace Alpha Updated");
             assertThat(foundWorkspace.isPrivate()).isTrue();
-            assertThat(foundWorkspace.getOwnerId()).isEqualTo(memberUser1.getId());
-            assertThat(foundWorkspace.getMembersId()).isEqualTo(updatedMembers);
+            assertThat(foundWorkspace.getOwner().id()).isEqualTo(memberUser1.getId());
+            assertThat(foundWorkspace.getMembersId()).isEqualTo(updatedMembers.stream().map(UserTO::id).collect(Collectors.toSet()));
             assertThat(foundWorkspace.getUpdatedAt()).isAfter(originalCreatedAt);
         }
     }
@@ -236,7 +238,7 @@ public class WorkspacePersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should filter by multiple valid terms using AND logic")
         void findAll_withMultipleTerms_shouldReturnAndedResults() {
             // Arrange: Search for a public workspace (isPrivate=false) owned by ownerUser
-            SearchQuery queryWithMatch = SearchQuery.of(Page.of(0, 10), Map.of(
+            SearchQuery queryWithMatch = SearchQuery.of(Page.of(0, 10), QueryType.AND, Map.of(
                     "isPrivate", "false",
                     "ownerId", ownerUser.getId()
             ));
@@ -249,7 +251,7 @@ public class WorkspacePersistenceTest extends AbstractRepositoryTest {
             assertThat(resultWithMatch.items().get(0).getName()).isEqualTo("Workspace Alpha");
 
             // Arrange: Search for a private workspace (isPrivate=true) owned by memberUser1 (no such workspace)
-            SearchQuery queryWithoutMatch = SearchQuery.of(Page.of(0, 10), Map.of(
+            SearchQuery queryWithoutMatch = SearchQuery.of(Page.of(0, 10), QueryType.AND, Map.of(
                     "isPrivate", "true",
                     "ownerId", memberUser1.getId()
             ));

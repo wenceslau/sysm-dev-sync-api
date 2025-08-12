@@ -226,6 +226,7 @@ public class NoteIntegrationTest extends AbstractIntegrationTest {
         mockMvc.perform(get("/notes")
                         .param("pageNumber", "0")
                         .param("pageSize", "2")
+                        .param("queryType", "and")
                         .param("sort", "title")
                         .param("direction", "asc"))
                 .andExpect(status().isOk())
@@ -270,6 +271,7 @@ public class NoteIntegrationTest extends AbstractIntegrationTest {
 
         // Act & Assert - Filter by multiple fields (authorId and projectId)
         mockMvc.perform(get("/notes")
+                        .param("queryType", "and")
                         .param("authorId", testAuthor1.getId())
                         .param("projectId", testProject1.getId()))
                 .andExpect(status().isOk())
@@ -278,6 +280,7 @@ public class NoteIntegrationTest extends AbstractIntegrationTest {
 
         // Act & Assert - Filter with no results
         mockMvc.perform(get("/notes")
+                        .param("queryType", "AND")
                         .param("title", "Java")
                         .param("authorId", testAuthor2.getId()))
                 .andExpect(status().isOk())

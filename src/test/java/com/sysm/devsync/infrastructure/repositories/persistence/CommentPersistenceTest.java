@@ -4,6 +4,7 @@ import com.sysm.devsync.domain.BusinessException;
 import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
+import com.sysm.devsync.domain.enums.QueryType;
 import com.sysm.devsync.domain.enums.QuestionStatus;
 import com.sysm.devsync.domain.enums.TargetType;
 import com.sysm.devsync.domain.enums.UserRole;
@@ -232,7 +233,7 @@ public class CommentPersistenceTest extends AbstractRepositoryTest {
         @DisplayName("should filter by multiple terms using AND logic")
         void findAll_withMultipleTerms_shouldReturnAndedResults() {
             // Arrange: Search for a comment with targetType "QUESTION" AND content containing "first"
-            SearchQuery queryWithMatch = SearchQuery.of(Page.of(0, 10), Map.of(
+            SearchQuery queryWithMatch = SearchQuery.of(Page.of(0, 10), QueryType.AND, Map.of(
                     "targetType", "QUESTION",
                     "content", "first"
             ));
@@ -245,7 +246,7 @@ public class CommentPersistenceTest extends AbstractRepositoryTest {
             assertThat(resultWithMatch.items().get(0).getId()).isEqualTo(comment1OnQuestion.getId());
 
             // Arrange: Search for a comment with targetType "NOTE" AND content containing "first" (should be none)
-            SearchQuery queryWithoutMatch = SearchQuery.of(Page.of(0, 10), Map.of(
+            SearchQuery queryWithoutMatch = SearchQuery.of(Page.of(0, 10), QueryType.AND, Map.of(
                     "targetType", "NOTE",
                     "content", "first"
             ));

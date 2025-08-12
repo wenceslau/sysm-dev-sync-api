@@ -4,6 +4,7 @@ import com.sysm.devsync.application.WorkspaceService;
 import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
+import com.sysm.devsync.domain.enums.QueryType;
 import com.sysm.devsync.infrastructure.controllers.dto.request.WorkspaceCreateUpdate;
 import com.sysm.devsync.infrastructure.controllers.dto.response.WorkspaceResponse;
 import com.sysm.devsync.infrastructure.controllers.rest.WorkspaceAPI;
@@ -49,7 +50,7 @@ public class WorkspaceController extends AbstractController implements Workspace
                                                 String queryType, Map<String, String> filters) {
 
         var page = Page.of(pageNumber, pageSize, sort, direction);
-        var searchQuery = SearchQuery.of(page, filters);
+        var searchQuery = SearchQuery.of(page, QueryType.of(queryType), filters);
 
         return workspaceService.getAllWorkspaces(searchQuery);
     }

@@ -4,6 +4,7 @@ import com.sysm.devsync.application.ProjectService;
 import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
+import com.sysm.devsync.domain.enums.QueryType;
 import com.sysm.devsync.infrastructure.controllers.dto.request.ProjectCreateUpdate;
 import com.sysm.devsync.infrastructure.controllers.dto.response.ProjectResponse;
 import com.sysm.devsync.infrastructure.controllers.rest.ProjectAPI;
@@ -48,7 +49,7 @@ public class ProjectController extends AbstractController implements ProjectAPI 
                                                       String queryType, Map<String, String> filters) {
 
         var page = Page.of(pageNumber, pageSize, sort, direction);
-        var searchQuery = SearchQuery.of(page, filters);
+        var searchQuery = SearchQuery.of(page, QueryType.of(queryType), filters);
         return projectService.getAllProjects(searchQuery)
                 .map(ProjectResponse::from);
     }
