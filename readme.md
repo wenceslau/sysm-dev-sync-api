@@ -5,6 +5,7 @@ It allows users to create, organize, and share technical knowledge through notes
 
 This project is the **biggest personal challenge** of my software development career. It's designed to showcase my experience in full-stack development and DevOps, with a modular architecture inspired by **Domain-Driven Design (DDD)**.
 
+Test
 ---
 
 ## 🌟 Goals
