@@ -1,5 +1,6 @@
 package com.sysm.devsync.domain.models;
 
+import com.sysm.devsync.domain.models.to.WorkspaceTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -42,7 +43,7 @@ class ProjectTest {
 
         assertEquals(validName, project.getName());
         assertEquals(validDescription, project.getDescription());
-        assertEquals(validWorkspaceId, project.getWorkspaceId());
+        assertEquals(validWorkspaceId, project.getWorkspace().id());
 
         assertNotNull(project.getCreatedAt(), "CreatedAt should be set");
         assertNotNull(project.getUpdatedAt(), "UpdatedAt should be set");
@@ -55,15 +56,16 @@ class ProjectTest {
     @Test
     @DisplayName("create() should allow null workspaceId")
     void create_shouldAllowNullWorkspaceId() {
-        Project project = Project.create(validName, validDescription, null);
-        assertNull(project.getWorkspaceId(), "WorkspaceId should be null if passed as null");
+        String id = null;
+        Project project = Project.create(validName, validDescription, id);
+        assertNull(project.getWorkspace().id(), "WorkspaceId should be null if passed as null");
     }
 
     @Test
     @DisplayName("create() should allow blank workspaceId")
     void create_shouldAllowBlankWorkspaceId() {
         Project project = Project.create(validName, validDescription, "   ");
-        assertEquals("   ", project.getWorkspaceId(), "WorkspaceId should be blank if passed as blank");
+        assertEquals("   ", project.getWorkspace().id(), "WorkspaceId should be blank if passed as blank");
     }
 
     @Test
@@ -116,7 +118,7 @@ class ProjectTest {
         assertEquals(id, project.getId());
         assertEquals(validName, project.getName());
         assertEquals(validDescription, project.getDescription());
-        assertEquals(validWorkspaceId, project.getWorkspaceId());
+        assertEquals(validWorkspaceId, project.getWorkspace().id());
         assertEquals(createdAt, project.getCreatedAt());
         assertEquals(updatedAt, project.getUpdatedAt());
     }
@@ -125,9 +127,10 @@ class ProjectTest {
     @DisplayName("build() should allow null workspaceId")
     void build_shouldAllowNullWorkspaceId() {
         String id = UUID.randomUUID().toString();
+        String workspaceId = null;
         Instant createdAt = Instant.now();
-        Project project = Project.build(id, validName, validDescription, null, createdAt, createdAt);
-        assertNull(project.getWorkspaceId());
+        Project project = Project.build(id, validName, validDescription, workspaceId, createdAt, createdAt);
+        assertNull(project.getWorkspace().id());
     }
 
     @Test
@@ -185,7 +188,7 @@ class ProjectTest {
         Instant initialUpdatedAt = project.getUpdatedAt();
         String initialId = project.getId();
         Instant initialCreatedAt = project.getCreatedAt();
-        String initialWorkspaceId = project.getWorkspaceId();
+        String initialWorkspaceId = project.getWorkspace().id();
 
         Thread.sleep(1); // Ensure updatedAt will be different
 
@@ -201,7 +204,7 @@ class ProjectTest {
         // Ensure other fields remain unchanged
         assertEquals(initialId, project.getId());
         assertEquals(initialCreatedAt, project.getCreatedAt());
-        assertEquals(initialWorkspaceId, project.getWorkspaceId());
+        assertEquals(initialWorkspaceId, project.getWorkspace().id());
     }
 
     @Test
@@ -261,7 +264,7 @@ class ProjectTest {
         String newWorkspaceId = UUID.randomUUID().toString();
         project.changeWorkspace(newWorkspaceId);
 
-        assertEquals(newWorkspaceId, project.getWorkspaceId());
+        assertEquals(newWorkspaceId, project.getWorkspace().id());
         assertTrue(project.getUpdatedAt().isAfter(initialUpdatedAt), "UpdatedAt should be after the initial value");
 
         // Ensure other fields remain unchanged
@@ -307,7 +310,7 @@ class ProjectTest {
         assertEquals(id, project.getId());
         assertEquals(name, project.getName());
         assertEquals(description, project.getDescription());
-        assertEquals(workspaceId, project.getWorkspaceId());
+        assertEquals(workspaceId, project.getWorkspace().id());
         assertEquals(createdAt.truncatedTo(MILLIS), project.getCreatedAt());
         assertEquals(updatedAt.truncatedTo(MILLIS), project.getUpdatedAt());
     }

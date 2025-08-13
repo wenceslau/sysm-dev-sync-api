@@ -76,7 +76,7 @@ class ProjectServiceTest {
         Project capturedProject = projectCaptor.getValue();
         assertEquals(projectCreateUpdateDto.name(), capturedProject.getName());
         assertEquals(projectCreateUpdateDto.description(), capturedProject.getDescription());
-        assertEquals(projectCreateUpdateDto.workspaceId(), capturedProject.getWorkspaceId());
+        assertEquals(projectCreateUpdateDto.workspaceId(), capturedProject.getWorkspace().id());
         assertEquals(response.id(), capturedProject.getId()); // Ensure ID from response matches created project
     }
 

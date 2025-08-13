@@ -1,6 +1,7 @@
 package com.sysm.devsync.infrastructure.controllers.dto.response;
 
 import com.sysm.devsync.domain.models.Project;
+import com.sysm.devsync.domain.models.to.WorkspaceTO;
 
 import java.time.Instant;
 
@@ -8,7 +9,7 @@ public record ProjectResponse(
         String id,
         String name,
         String description,
-        String workspaceId,
+        WorkspaceTO workspace,
         Instant createdAt,
         Instant updatedAt
 ) {
@@ -17,7 +18,7 @@ public record ProjectResponse(
                 project.getId(),
                 project.getName(),
                 project.getDescription(),
-                project.getWorkspaceId(),
+                project.getWorkspace(),
                 project.getCreatedAt(),
                 project.getUpdatedAt()
         );

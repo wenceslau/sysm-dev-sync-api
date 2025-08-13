@@ -2,10 +2,10 @@ package com.sysm.devsync.infrastructure.repositories.entities;
 
 
 import com.sysm.devsync.domain.models.Project;
+import com.sysm.devsync.domain.models.to.WorkspaceTO;
 import jakarta.persistence.*;
 
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
 @Entity(name = "Project")
@@ -126,8 +126,8 @@ public class ProjectJpaEntity {
         entity.setCreatedAt(project.getCreatedAt());
         entity.setUpdatedAt(project.getUpdatedAt());
 
-        if (project.getWorkspaceId() != null) {
-            entity.setWorkspace(new WorkspaceJpaEntity(project.getWorkspaceId()));
+        if (project.getWorkspace() != null) {
+            entity.setWorkspace(new WorkspaceJpaEntity(project.getWorkspace().id()));
         }
         return entity;
     }
@@ -140,7 +140,7 @@ public class ProjectJpaEntity {
                 entity.getId(),
                 entity.getName(),
                 entity.getDescription(),
-                entity.getWorkspace() != null ? entity.getWorkspace().getId() : null,
+                entity.getWorkspace() != null ? WorkspaceTO.of(entity.getWorkspace().getId(), entity.getWorkspace().getName()) : null,
                 entity.getCreatedAt(),
                 entity.getUpdatedAt()
         );

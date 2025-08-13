@@ -1,5 +1,7 @@
 package com.sysm.devsync.domain.models;
 
+import com.sysm.devsync.domain.models.to.WorkspaceTO;
+
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
@@ -10,13 +12,13 @@ public class Project extends AbstractModel {
     private Instant updatedAt;
     private String name;
     private String description;
-    private String workspaceId;
+    private WorkspaceTO workspace;
 
-    private Project(String id, Instant createdAt, Instant updatedAt, String name, String description, String workspaceId) {
+    private Project(String id, Instant createdAt, Instant updatedAt, String name, String description, WorkspaceTO workspace) {
         this.id = id;
         this.name = name;
         this.description = description;
-        this.workspaceId = workspaceId;
+        this.workspace = workspace;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         validate(name, description);
@@ -43,8 +45,8 @@ public class Project extends AbstractModel {
         return description;
     }
 
-    public String getWorkspaceId() {
-        return workspaceId;
+    public WorkspaceTO getWorkspace() {
+        return workspace;
     }
 
     public Instant getCreatedAt() {
@@ -72,18 +74,26 @@ public class Project extends AbstractModel {
         if (newWorkspaceId == null || newWorkspaceId.isBlank()) {
             throw new IllegalArgumentException("New workspace ID cannot be null or blank");
         }
-        this.workspaceId = newWorkspaceId;
+        this.workspace = WorkspaceTO.of(newWorkspaceId);
         this.updatedAt = Instant.now();
     }
 
-    public static Project create(String name, String description, String workspaceId) {
+    public static Project create(String name, String description, WorkspaceTO workspace) {
         String id = java.util.UUID.randomUUID().toString();
         Instant now = Instant.now();
-        return new Project(id, now, now, name, description, workspaceId);
+        return new Project(id, now, now, name, description, workspace);
+    }
+
+    public static Project create(String name, String description, String workspaceId) {
+        return create(name, description, WorkspaceTO.of(workspaceId));
+    }
+
+    public static Project build(String id, String name, String description, WorkspaceTO workspace, Instant createdAt, Instant updatedAt) {
+        return new Project(id, createdAt, updatedAt, name, description, workspace);
     }
 
     public static Project build(String id, String name, String description, String workspaceId, Instant createdAt, Instant updatedAt) {
-        return new Project(id, createdAt, updatedAt, name, description, workspaceId);
+        return build(id, name, description, WorkspaceTO.of(workspaceId), createdAt, updatedAt);
     }
 
 }

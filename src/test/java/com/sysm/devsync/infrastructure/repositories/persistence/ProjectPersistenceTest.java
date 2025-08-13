@@ -13,7 +13,6 @@ import com.sysm.devsync.infrastructure.AbstractRepositoryTest;
 import com.sysm.devsync.infrastructure.repositories.entities.ProjectJpaEntity;
 import com.sysm.devsync.infrastructure.repositories.entities.UserJpaEntity;
 import com.sysm.devsync.infrastructure.repositories.entities.WorkspaceJpaEntity;
-import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -25,7 +24,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 import static com.sysm.devsync.infrastructure.Utils.sleep;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -100,7 +98,7 @@ public class ProjectPersistenceTest extends AbstractRepositoryTest {
             ProjectJpaEntity foundInDb = entityManager.find(ProjectJpaEntity.class, project1Domain.getId());
             assertThat(foundInDb).isNotNull();
             assertThat(foundInDb.getName()).isEqualTo(project1Domain.getName());
-            assertThat(foundInDb.getWorkspace().getId()).isEqualTo(project1Domain.getWorkspaceId());
+            assertThat(foundInDb.getWorkspace().getId()).isEqualTo(project1Domain.getWorkspace().id());
 
             Optional<Project> foundProject = projectPersistence.findById(project1Domain.getId());
             assertThat(foundProject).isPresent();
@@ -145,7 +143,7 @@ public class ProjectPersistenceTest extends AbstractRepositoryTest {
 
             assertThat(foundProject.getName()).isEqualTo("Project Alpha Updated");
             assertThat(foundProject.getDescription()).isEqualTo("Updated Alpha Description");
-            assertThat(foundProject.getWorkspaceId()).isEqualTo(workspace2Jpa.getId());
+            assertThat(foundProject.getWorkspace().id()).isEqualTo(workspace2Jpa.getId());
             assertThat(foundProject.getUpdatedAt()).isAfter(project1Domain.getCreatedAt());
         }
     }

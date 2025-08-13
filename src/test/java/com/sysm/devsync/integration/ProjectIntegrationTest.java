@@ -101,7 +101,7 @@ public class ProjectIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(project.getId()))
                 .andExpect(jsonPath("$.name").value("Existing Project"))
-                .andExpect(jsonPath("$.workspaceId").value(workspace1.getId()));
+                .andExpect(jsonPath("$.workspace.id").value(workspace1.getId()));
     }
 
     @Test
