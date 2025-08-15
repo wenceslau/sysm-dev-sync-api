@@ -16,6 +16,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.AbstractEnvironment;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @SpringBootApplication
@@ -56,6 +58,11 @@ public class Main {
             String user2Id = user2Response.id();
             log.info("Users created: {}, {}", user1Id, user2Id);
             userDevId = user2Id;
+            List<String> userIds = new ArrayList<>();
+            for (int i = 0; i < 100; i++) {
+                 var response = userService.createUser(new UserCreateUpdate("User " + i, "user" + i + "@example.com", null, UserRole.MEMBER));
+                 userIds.add(response.id());
+            }
 
             // 2. Create Tags
             log.info("Creating tags...");
@@ -84,6 +91,10 @@ public class Main {
             log.info("Adding members to workspace...");
             workspaceService.addMemberToWorkspace(workspaceId, user2Id);
             log.info("User {} added to workspace {}", user2Id, workspaceId);
+            for (String userId : userIds) {
+                workspaceService.addMemberToWorkspace(workspaceId, userId);
+                log.info("User {} added to workspace {}", userId, workspaceId);
+            }
 
             // 5. Create Projects
             log.info("Creating projects...");

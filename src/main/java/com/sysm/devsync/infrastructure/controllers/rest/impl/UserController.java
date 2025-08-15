@@ -5,6 +5,7 @@ import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.enums.QueryType;
+import com.sysm.devsync.domain.models.to.UserTO;
 import com.sysm.devsync.infrastructure.controllers.dto.request.UserCreateUpdate;
 import com.sysm.devsync.infrastructure.controllers.dto.response.UserResponse;
 import com.sysm.devsync.infrastructure.controllers.rest.UserAPI;
@@ -15,7 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 public class UserController extends AbstractController implements UserAPI {
@@ -62,6 +65,16 @@ public class UserController extends AbstractController implements UserAPI {
         return ResponseEntity
                 .noContent()
                 .build();
+    }
+
+    @Override
+    public List<UserTO> list() {
+
+        var page = Page.of(0, 1000, "createdAt", "desc");
+        var searchQuery = SearchQuery.of(page, QueryType.OR, Map.of());
+        var pagination = userService.searchUsers(searchQuery);
+
+        return pagination.map(x-> UserTO.of(x.getId(), x.getName())).items();
     }
 
     @Override

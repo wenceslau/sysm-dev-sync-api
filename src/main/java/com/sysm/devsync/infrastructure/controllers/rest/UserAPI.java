@@ -1,6 +1,7 @@
 package com.sysm.devsync.infrastructure.controllers.rest;
 
 import com.sysm.devsync.domain.Pagination;
+import com.sysm.devsync.domain.models.to.UserTO;
 import com.sysm.devsync.infrastructure.config.security.IsMemberOrAdmin;
 import com.sysm.devsync.infrastructure.controllers.dto.request.UserCreateUpdate;
 import com.sysm.devsync.infrastructure.controllers.dto.response.UserResponse;
@@ -12,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RequestMapping(value = "users")
@@ -87,5 +89,14 @@ public interface UserAPI {
             @RequestParam(name = "queryType", required = false, defaultValue = "or") String queryType,
             @RequestParam Map<String, String> filters
     );
+
+    @IsMemberOrAdmin
+    @GetMapping(value = "/list",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(summary = "List of users, with ID and Name")
+    @ApiResponse(responseCode = "200", description = "User found")
+    @ApiResponse(responseCode = "404", description = "User not found")
+    List<UserTO> list();
 
 }
