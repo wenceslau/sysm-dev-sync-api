@@ -47,6 +47,7 @@ public class GlobalExceptionHandler {
                 request.getRequestURI(),
                 errors
         );
+        log.error("Validation failed for one or more fields", ex);
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
@@ -65,6 +66,7 @@ public class GlobalExceptionHandler {
                 ex.getMessage(),
                 request.getRequestURI()
         );
+        log.error("Business exception occurred: {}", ex.getMessage(), ex);
         return new ResponseEntity<>(errorResponse, status);
     }
 
@@ -84,6 +86,7 @@ public class GlobalExceptionHandler {
                 ex.getMessage(),
                 request.getRequestURI()
         );
+        log.error("Resource not found: {}", ex.getMessage(), ex);
         return new ResponseEntity<>(errorResponse, status);
     }
 
@@ -104,6 +107,7 @@ public class GlobalExceptionHandler {
                 ex.getMessage(),
                 request.getRequestURI()
         );
+        log.error("Argument validation exception occurred: {}", ex.getMessage(), ex);
         return new ResponseEntity<>(errorResponse, status);
     }
 
@@ -125,6 +129,7 @@ public class GlobalExceptionHandler {
                 "You do not have permission to access this resource.",
                 request.getRequestURI()
         );
+        log.error("Authorization denied exception occurred: {}", ex.getMessage(), ex);
         return new ResponseEntity<>(errorResponse, status);
     }
 
@@ -136,9 +141,6 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex, HttpServletRequest request) {
-        // Log the full stack trace for debugging, but don't expose it to the client
-        log.error("An unexpected error occurred at path: {}", request.getRequestURI(), ex);
-
         final HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
 
         var errorResponse = new ErrorResponse(
@@ -148,6 +150,7 @@ public class GlobalExceptionHandler {
                 "An unexpected internal error occurred. Please try again later.",
                 request.getRequestURI()
         );
+        log.error("An unexpected error occurred at path: {}", request.getRequestURI(), ex);
         return new ResponseEntity<>(errorResponse, status);
     }
 }

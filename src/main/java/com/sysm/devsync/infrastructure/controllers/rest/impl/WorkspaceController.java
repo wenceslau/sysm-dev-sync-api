@@ -5,6 +5,7 @@ import com.sysm.devsync.domain.Page;
 import com.sysm.devsync.domain.Pagination;
 import com.sysm.devsync.domain.SearchQuery;
 import com.sysm.devsync.domain.enums.QueryType;
+import com.sysm.devsync.domain.models.to.WorkspaceTO;
 import com.sysm.devsync.infrastructure.controllers.dto.request.WorkspaceCreateUpdate;
 import com.sysm.devsync.infrastructure.controllers.dto.response.WorkspaceResponse;
 import com.sysm.devsync.infrastructure.controllers.rest.WorkspaceAPI;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -53,6 +55,16 @@ public class WorkspaceController extends AbstractController implements Workspace
         var searchQuery = SearchQuery.of(page, QueryType.of(queryType), filters);
 
         return workspaceService.getAllWorkspaces(searchQuery);
+    }
+
+    @Override
+    public List<WorkspaceTO> list() {
+
+        var page = Page.of(0, 1000, "createdAt", "desc");
+        var searchQuery = SearchQuery.of(page, QueryType.OR, Map.of());
+        var pagination = workspaceService.getAllWorkspaces(searchQuery);
+
+        return pagination.map(x-> WorkspaceTO.of(x.id(), x.name())).items();
     }
 
     @Override
