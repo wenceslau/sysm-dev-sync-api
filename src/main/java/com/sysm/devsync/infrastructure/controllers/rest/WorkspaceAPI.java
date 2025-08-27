@@ -73,7 +73,7 @@ public interface WorkspaceAPI {
     ResponseEntity<?> changePrivacy(@PathVariable("id") String id, @RequestParam("isPrivate") boolean isPrivate);
 
     @IsMemberOrAdmin
-    @PostMapping("/{id}/members/{memberId}")
+    @PutMapping("/{id}/members/{memberId}")
     @Operation(summary = "Add a member to a workspace")
     ResponseEntity<?> addMember(@PathVariable("id") String id, @PathVariable("memberId") String memberId);
 

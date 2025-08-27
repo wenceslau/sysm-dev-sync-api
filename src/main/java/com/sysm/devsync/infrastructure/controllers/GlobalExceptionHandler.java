@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -130,6 +131,20 @@ public class GlobalExceptionHandler {
                 request.getRequestURI()
         );
         log.error("Authorization denied exception occurred: {}", ex.getMessage(), ex);
+        return new ResponseEntity<>(errorResponse, status);
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ErrorResponse> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException ex, HttpServletRequest request) {
+        final HttpStatus status = HttpStatus.METHOD_NOT_ALLOWED;
+        var errorResponse = new ErrorResponse(
+                Instant.now(),
+                status.value(),
+                status.getReasonPhrase(),
+                "Request method not supported",
+                request.getRequestURI()
+        );
+        log.error("Request method not supported exception occurred: {}", ex.getMessage(), ex);
         return new ResponseEntity<>(errorResponse, status);
     }
 
